@@ -1,1 +1,32 @@
+# Compiled output
+dist/
+node_modules/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# OS
 .DS_Store
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Testing
+/coverage
+
+# NestJS specific
+Thumbs.db
+db.sqlite
