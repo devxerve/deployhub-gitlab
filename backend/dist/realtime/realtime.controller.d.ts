@@ -16,4 +16,17 @@ export declare class RealtimeController {
         ok: boolean;
         message: string;
     };
+    receiveStart(data: {
+        deployId: string;
+    }): {
+        ok: boolean;
+        message: string;
+    };
+    receiveEnd(data: {
+        deployId: string;
+        success: boolean;
+    }): {
+        ok: boolean;
+        message: string;
+    };
 }

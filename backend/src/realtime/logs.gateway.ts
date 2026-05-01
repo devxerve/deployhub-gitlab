@@ -16,15 +16,13 @@ export class LogsGateway {
   @WebSocketServer()
   server: Server;
 
-  // cliente se une a un deploy
+  // el cliente se une a un deploy
   @SubscribeMessage('join-deploy')
   handleJoin(
     @MessageBody() data: any,
     @ConnectedSocket() socket: Socket,
   ) {
-    // Si recibimos un objeto, extraemos el ID, si es string lo limpiamos de comillas
     const deployId = typeof data === 'object' ? data.deployId : data.replace(/"/g, '');
-    
     console.log(`Cliente unido al deploy: ${deployId}`);
     socket.join(`deploy-${deployId}`);
   }
@@ -38,6 +36,18 @@ export class LogsGateway {
   // enviar estado
   sendStatus(deployId: string, status: string) {
     console.log(`Emitiendo estado para ${deployId}: ${status}`);
-    this.server.to(`deploy-${deployId}`).emit('deploy:status', status);
+    this.server.to(`deploy-${deployId}`).emit('deploy:status', { deployId, status });
+  }
+
+  // enviar inicio de deploy
+  sendStart(deployId: string) {
+    console.log(`Emitiendo inicio para ${deployId}`);
+    this.server.to(`deploy-${deployId}`).emit('deploy:start', { deployId });
+  }
+
+  // enviar fin de deploy
+  sendEnd(deployId: string, success: boolean) {
+    console.log(`Emitiendo fin para ${deployId} (success: ${success})`);
+    this.server.to(`deploy-${deployId}`).emit('deploy:end', { deployId, success });
   }
 }

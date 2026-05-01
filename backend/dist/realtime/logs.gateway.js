@@ -28,7 +28,15 @@ let LogsGateway = class LogsGateway {
     }
     sendStatus(deployId, status) {
         console.log(`Emitiendo estado para ${deployId}: ${status}`);
-        this.server.to(`deploy-${deployId}`).emit('deploy:status', status);
+        this.server.to(`deploy-${deployId}`).emit('deploy:status', { deployId, status });
+    }
+    sendStart(deployId) {
+        console.log(`Emitiendo inicio para ${deployId}`);
+        this.server.to(`deploy-${deployId}`).emit('deploy:start', { deployId });
+    }
+    sendEnd(deployId, success) {
+        console.log(`Emitiendo fin para ${deployId} (success: ${success})`);
+        this.server.to(`deploy-${deployId}`).emit('deploy:end', { deployId, success });
     }
 };
 exports.LogsGateway = LogsGateway;

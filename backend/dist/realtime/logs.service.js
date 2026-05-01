@@ -23,6 +23,12 @@ let LogsService = class LogsService {
     sendStatus(deployId, status) {
         this.gateway.sendStatus(deployId, status);
     }
+    sendStart(deployId) {
+        this.gateway.sendStart(deployId);
+    }
+    sendEnd(deployId, success) {
+        this.gateway.sendEnd(deployId, success);
+    }
 };
 exports.LogsService = LogsService;
 exports.LogsService = LogsService = __decorate([

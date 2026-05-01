@@ -12,4 +12,12 @@ export class LogsService {
   sendStatus(deployId: string, status: string) {
     this.gateway.sendStatus(deployId, status);
   }
+
+  sendStart(deployId: string) {
+    this.gateway.sendStart(deployId);
+  }
+
+  sendEnd(deployId: string, success: boolean) {
+    this.gateway.sendEnd(deployId, success);
+  }
 }

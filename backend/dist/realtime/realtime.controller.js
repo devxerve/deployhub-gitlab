@@ -28,6 +28,14 @@ let RealtimeController = class RealtimeController {
         this.logsService.sendStatus(data.deployId, data.status);
         return { ok: true, message: 'Status broadcasted' };
     }
+    receiveStart(data) {
+        this.logsService.sendStart(data.deployId);
+        return { ok: true, message: 'Start broadcasted' };
+    }
+    receiveEnd(data) {
+        this.logsService.sendEnd(data.deployId, data.success);
+        return { ok: true, message: 'End broadcasted' };
+    }
 };
 exports.RealtimeController = RealtimeController;
 __decorate([
@@ -44,6 +52,20 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], RealtimeController.prototype, "receiveStatus", null);
+__decorate([
+    (0, common_1.Post)('start'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], RealtimeController.prototype, "receiveStart", null);
+__decorate([
+    (0, common_1.Post)('end'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], RealtimeController.prototype, "receiveEnd", null);
 exports.RealtimeController = RealtimeController = __decorate([
     (0, common_1.Controller)('realtime'),
     __metadata("design:paramtypes", [logs_service_1.LogsService])
