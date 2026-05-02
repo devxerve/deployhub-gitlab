@@ -16,28 +16,28 @@ export default function KPISection() {
       <KPICard
         title="CPU Usage"
         value={78}
-        color="#f43f5e"
+        color="var(--danger)"
         trend="up"
         percent={32}
-        icon={<Cpu color="#f43f5e" />}
+        icon={<Cpu color="var(--danger)" />}
       />
 
       <KPICard
         title="Memory Usage"
         value={62}
-        color="#22c55e"
+        color="var(--success)"
         trend="up"
         percent={18}
-        icon={<MemoryStick color="#22c55e" />}
+        icon={<MemoryStick color="var(--success)" />}
       />
 
       <KPICard
         title="Response Time"
         value={65}
-        color="#3b82f6"
+        color="var(--info)"
         trend="down"
         percent={12}
-        icon={<Clock color="#3b82f6" />}
+        icon={<Clock color="var(--info)" />}
       />
 
       <StatusCard status="WARNING" />

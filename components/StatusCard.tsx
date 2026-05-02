@@ -1,103 +1,204 @@
 "use client";
-import { ShieldCheck, AlertTriangle, ShieldX } from "lucide-react";
 
-export default function StatusCard({ status }: { status: string }) {
+import {
+  ShieldCheck,
+  AlertTriangle,
+  ShieldX
+} from "lucide-react";
+
+export default function StatusCard({
+  status
+}: {
+  status: string;
+}) {
   const config: any = {
     GOOD: {
       color: "#22c55e",
       text: "All systems operational",
-      imagen:"status.jpg",
       icon: <ShieldCheck color="#22c55e" size={28} />
     },
+
     BAD: {
       color: "#ef4444",
       text: "System failure detected",
-      imagen:"status2.jpg",
       icon: <ShieldX color="#ef4444" size={28} />
-      
     },
+
     WARNING: {
       color: "#facc15",
       text: "Performance issues detected",
-      imagen:"status3.jpg",
       icon: <AlertTriangle color="#facc15" size={28} />
     }
   };
 
-  const { color, text, icon,imagen } = config[status];
+  const { color, text, icon } = config[status];
 
   return (
     <div
       style={{
         position: "relative",
+
         background: "var(--card)",
-        padding: "20px",
-        borderRadius: "16px",
+
+        padding: "24px",
+
+        borderRadius: "22px",
+
+        border: "1px solid var(--border)",
+
         overflow: "hidden",
-        border: `1px solid ${color}33`,
-        boxShadow: `0 0 30px ${color}33`,
-        transition: "0.3s",
-        transform: "scale(1)",
-        animation: "fadeIn 0.6s ease",
-        minHeight: "180px"
+
+        backdropFilter: "blur(16px)",
+
+        boxShadow: `
+          0 10px 30px rgba(15,23,42,0.08),
+          0 0 18px ${color}22
+        `,
+
+        transition: "all 0.3s ease",
+
+        minHeight: "200px"
       }}
       onMouseEnter={(e) => {
-      e.currentTarget.style.transform = "scale(1.05)";
+        e.currentTarget.style.transform =
+          "translateY(-4px)";
       }}
       onMouseLeave={(e) => {
-      e.currentTarget.style.transform = "scale(1)";
+        e.currentTarget.style.transform =
+          "translateY(0px)";
       }}
-      
     >
-      
-      {/* ICON TOP */}
+      {/* GLOW BACKGROUND */}
       <div
         style={{
-          background: `${color}22`,
-          padding: "10px",
-          borderRadius: "12px",
-          width: "fit-content",
-          marginBottom: "10px"
+          position: "absolute",
+
+          top: "-40px",
+          right: "-40px",
+
+          width: "180px",
+          height: "180px",
+
+          background: `radial-gradient(circle, ${color}22, transparent 70%)`,
+
+          filter: "blur(45px)"
         }}
-        
+      />
+
+      {/* ICON */}
+      <div
+        style={{
+          width: "58px",
+          height: "58px",
+
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+
+          borderRadius: "18px",
+
+          background: `${color}15`,
+
+          border: `1px solid ${color}33`,
+
+          boxShadow: `0 0 20px ${color}22`,
+
+          marginBottom: "18px",
+
+          position: "relative",
+          zIndex: 1
+        }}
       >
-        
         {icon}
       </div>
 
-      {/* TEXT */}
-      <h4>Status</h4>
+      {/* LABEL */}
+      <p
+        style={{
+          margin: 0,
 
+          fontSize: "13px",
+
+          color: "var(--muted)",
+
+          letterSpacing: "0.5px",
+
+          position: "relative",
+          zIndex: 1
+        }}
+      >
+        System Status
+      </p>
+
+      {/* STATUS */}
       <h2
         style={{
+          marginTop: "10px",
+          marginBottom: "10px",
+
+          fontSize: "36px",
+
+          fontWeight: "bold",
+
           color,
-          fontSize: "28px",
-          textShadow: `0 0 12px ${color}`
+
+          textShadow: `0 0 12px ${color}55`,
+
+          position: "relative",
+          zIndex: 1
         }}
       >
         {status}
       </h2>
 
-      <p style={{ color }}>{text}</p>
+      {/* DESCRIPTION */}
+      <p
+        style={{
+          color: "var(--muted)",
 
-      {/* GLOW IMAGE (decoración estilo imagen) */}
+          lineHeight: "1.6",
+
+          maxWidth: "220px",
+
+          position: "relative",
+          zIndex: 1
+        }}
+      >
+        {text}
+      </p>
+
+      {/* DECORATIVE LINES */}
       <div
         style={{
           position: "absolute",
-          right: "-20px",
-          bottom: "-20px",
-          width: "140px",
-          height: "140px",
-          background: `radial-gradient(circle, ${color}55, transparent 70%)`,
-          filter: "blur(20px)"
+
+          bottom: "20px",
+          right: "20px",
+
+          width: "90px",
+          height: "90px",
+
+          borderRadius: "50%",
+
+          border: `1px solid ${color}22`
         }}
-        
       />
 
-      {/* FIGURA TECNOLÓGICA (simulación imagen) */}
-      <img src={imagen} 
-  style={{ position: "absolute", right: 0, bottom: 0, width: "120px" }} 
-/>
+      <div
+        style={{
+          position: "absolute",
+
+          bottom: "35px",
+          right: "35px",
+
+          width: "60px",
+          height: "60px",
+
+          borderRadius: "50%",
+
+          border: `1px solid ${color}22`
+        }}
+      />
     </div>
   );
 }

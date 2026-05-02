@@ -122,15 +122,6 @@ const menu = [
 				</div>
 			</div>
 
-			{/* IMAGEN / ILUSTRACIÓN */}
-			<div style={{ textAlign: "center", marginBottom: "20px" }}>
-				<img
-					src="/servidor1.jpg"
-					width="200px"
-					height="50%" 
-				/>
-			</div>
-
 			{/* USER */}
 			<div style={{
 				display: "flex",

@@ -1,7 +1,5 @@
 "use client";
 
-
-
 const data = [
   {
     version: "v2.1.0",
@@ -29,21 +27,72 @@ export default function DeploymentsTable() {
       style={{
         flex: 1,
         background: "var(--card)",
-        padding: "20px",
-        borderRadius: "16px",
-        border: "1px solid rgba(56,189,248,0.2)"
+        borderRadius: "24px",
+        padding: "24px",
+        border: "1px solid var(--border)",
+        backdropFilter: "blur(18px)",
+        boxShadow: "var(--shadow)",
+        animation: "fadeIn 0.5s ease"
       }}
     >
-      <h3 style={{ marginBottom: "15px" }}>Recent Deployments</h3>
+      {/* TOP */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "24px"
+        }}
+      >
+        <div>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: "20px",
+              fontWeight: "700",
+              color: "var(--text)"
+            }}
+          >
+            Recent Deployments
+          </h2>
+
+          <p
+            style={{
+              marginTop: "6px",
+              color: "var(--muted)",
+              fontSize: "14px"
+            }}
+          >
+            Monitor latest deployment activity
+          </p>
+        </div>
+
+        <button
+          style={{
+            background: "var(--hover)",
+            border: "1px solid var(--border)",
+            color: "var(--text)",
+            padding: "10px 14px",
+            borderRadius: "12px",
+            cursor: "pointer",
+            transition: "0.3s"
+          }}
+        >
+          View All
+        </button>
+      </div>
 
       {/* HEADER */}
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "1.2fr 1fr 2fr 1fr",
-          color: "#94a3b8",
-          fontSize: "14px",
-          marginBottom: "10px"
+          padding: "0 12px",
+          marginBottom: "14px",
+          color: "var(--muted)",
+          fontSize: "13px",
+          fontWeight: 600,
+          letterSpacing: "0.3px"
         }}
       >
         <span>Version</span>
@@ -52,13 +101,14 @@ export default function DeploymentsTable() {
         <span>Date</span>
       </div>
 
+      {/* ROWS */}
       {data.map((d, i) => {
         const color =
-  d.performance > 80
-    ? "#22c55e"
-    : d.performance > 50
-    ? "#facc15"
-    : "#ef4444";
+          d.performance > 80
+            ? "#22c55e"
+            : d.performance > 50
+            ? "#facc15"
+            : "#ef4444";
 
         return (
           <div
@@ -67,43 +117,78 @@ export default function DeploymentsTable() {
               display: "grid",
               gridTemplateColumns: "1.2fr 1fr 2fr 1fr",
               alignItems: "center",
-              padding: "12px",
-              marginBottom: "10px",
-              borderRadius: "10px",
-              background: "var(--sidebar)",
-              transition: "0.3s"
+
+              padding: "18px",
+              marginBottom: "14px",
+
+              borderRadius: "18px",
+
+              background: "rgba(255,255,255,0.03)",
+
+              border: "1px solid var(--border)",
+
+              transition: "all 0.3s ease",
+
+              cursor: "pointer"
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(56,189,248,0.1)";
+              e.currentTarget.style.transform = "translateY(-3px)";
+              e.currentTarget.style.boxShadow =
+                "0 10px 30px rgba(0,0,0,0.12)";
+              e.currentTarget.style.border =
+                `1px solid ${color}55`;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(2,6,23,0.7)";
+              e.currentTarget.style.transform = "translateY(0px)";
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.border =
+                "1px solid var(--border)";
             }}
           >
-            {/* VERSION + DOT */}
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span
+            {/* VERSION */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px"
+              }}
+            >
+              <div
                 style={{
-                  width: "10px",
-                  height: "10px",
+                  width: "12px",
+                  height: "12px",
                   borderRadius: "50%",
                   background: color,
-                  boxShadow: `0 0 8px ${color}`
+                  boxShadow: `0 0 12px ${color}`
                 }}
               />
-              <span>{d.version}</span>
+
+              <span
+                style={{
+                  color: "var(--text)",
+                  fontWeight: 600
+                }}
+              >
+                {d.version}
+              </span>
             </div>
 
-            {/* STATUS BADGE */}
+            {/* STATUS */}
             <div>
               <span
                 style={{
-                  padding: "4px 10px",
-                  borderRadius: "8px",
+                  padding: "7px 14px",
+                  borderRadius: "999px",
+
                   background: `${color}22`,
                   color,
+
                   fontSize: "12px",
-                  boxShadow: `0 0 10px ${color}55`
+                  fontWeight: "700",
+
+                  border: `1px solid ${color}33`,
+
+                  boxShadow: `0 0 12px ${color}22`
                 }}
               >
                 {d.status}
@@ -111,47 +196,60 @@ export default function DeploymentsTable() {
             </div>
 
             {/* PERFORMANCE */}
-               <div style={{ width: "100%" }}>
-  {/* barra fondo */}
-  <div
-    style={{
-      height: "6px",
-      background: "var(--sidebar)",
-      borderRadius: "10px",
-      overflow: "hidden"
-    }}
-  >
-    {/* barra progreso */}
-    <div
-      style={{
-        width: `${d.performance}%`,
-        height: "100%",
-        background: color,
-        borderRadius: "10px",
-        boxShadow: `0 0 10px ${color}`,
-        transition: "width 0.5s ease"
-      }}
-    />
-  </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "14px"
+              }}
+            >
+              <div
+                style={{
+                  flex: 1,
+                  height: "8px",
+                  background: "rgba(255,255,255,0.06)",
+                  borderRadius: "999px",
+                  overflow: "hidden",
+                  position: "relative"
+                }}
+              >
+                <div
+                  style={{
+                    width: `${d.performance}%`,
+                    height: "100%",
+                    borderRadius: "999px",
 
-  {/* porcentaje */}
-  <span
-    style={{
-      fontSize: "12px",
-      color,
-      marginTop: "4px",
-      display: "inline-block"
-    }}
-  >
-    {d.performance}%
-  </span>
-</div>
+                    background: `
+                      linear-gradient(
+                        90deg,
+                        ${color},
+                        ${color}aa
+                      )
+                    `,
+
+                    boxShadow: `0 0 12px ${color}`
+                  }}
+                />
+              </div>
+
+              <span
+                style={{
+                  minWidth: "45px",
+                  color,
+                  fontWeight: 700,
+                  fontSize: "13px"
+                }}
+              >
+                {d.performance}%
+              </span>
+            </div>
 
             {/* TIME */}
             <span
               style={{
-                color,
-                fontSize: "13px"
+                color: "var(--muted)",
+                fontSize: "13px",
+                fontWeight: 500
               }}
             >
               {d.time}
