@@ -105,7 +105,7 @@ const menu = [
       textShadow: "0 0 12px rgba(124,58,237,0.25)",
 			letterSpacing: "0.5px"
 		}}>
-			DeployMetrics
+			DeployHub
 		</h2>
 	</div>
 

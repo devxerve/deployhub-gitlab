@@ -6,7 +6,7 @@ export default function Terminal() {
   const [input, setInput] = useState("");
 
   const [logs, setLogs] = useState<string[]>([
-    "▲ DeployMetrics CLI v2.1.0",
+    "▲ DeployHub CLI v2.1.0",
     "✓ Connected to production environment",
     "✓ Monitoring active deployments..."
   ]);

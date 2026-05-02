@@ -95,7 +95,7 @@ export default function LoginPage() {
               letterSpacing: "1px"
             }}
           >
-            DeployMetrics
+            DeployHub
           </h1>
           
           <p

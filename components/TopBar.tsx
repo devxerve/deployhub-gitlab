@@ -85,7 +85,7 @@ export default function TopBar() {
 							fontSize: "14px"
 							}}
 						>
-						DeployMetrics Team
+						DeployHub Team
 					</span>					
 				</div>
 			</div>
