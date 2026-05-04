@@ -1,4 +1,5 @@
 "use client";
+import { usePathname } from "next/navigation";
 
 import {
   Bell,
@@ -9,7 +10,19 @@ import {
 
 import ThemeToggle from "./ThemeToggle";
 
+
+
 export default function TopBar() {
+	const pathname = usePathname();
+
+const titles: any = {
+  "/dashboard": "Dashboard",
+  "/deployments": "Deployments",
+  "/metrics": "Metrics",
+  "/logs": "Logs",
+};
+
+const title = titles[pathname] || "Dashboard";
   return (
     <div
       style={{
@@ -33,59 +46,78 @@ export default function TopBar() {
       }}
     >
       {/* LEFT */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "18px"
-        }}
-      >
-        {/* MENU */}
-        <div
-          style={{
-            width: "42px",
-            height: "42px",
+     <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "18px"
+  }}
+>
+  {/* MENU */}
+  <div
+    style={{
+      width: "42px",
+      height: "42px",
+      borderRadius: "12px",
+      background: "transparent",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      border: "1px solid var(--border)",
+      cursor: "pointer",
+    }}
+  >
+    <Menu size={18} color="var(--text)" />
+  </div>
 
-            borderRadius: "12px",
+  {/* 👇 NUEVO BLOQUE (TÍTULO) */}
+  <div>
+    <h1
+      style={{
+        margin: 0,
+        fontSize: "20px",
+        fontWeight: 600,
+        color: "var(--text)",
+      }}
+    >
+      {title}
+    </h1>
 
-            background: "var(--hover)",
+    <span
+      style={{
+        fontSize: "12px",
+        color: "var(--muted)"
+      }}
+    >
+      Manage your infrastructure
+    </span>
+  </div>
 
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-
-            border: "1px solid var(--border)",
-
-            cursor: "pointer",
-
-            transition: "0.3s"
-          }}
-        >
-          <Menu size={18} color="var(--text)" />
-        </div>
-
-        {/* SEARCH */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-
-            background: "var(--input-bg)",
-
-            border: "1px solid var(--border)",
-
-            borderRadius: "14px",
-
-            padding: "12px 16px",
-
-            width: "320px"
-          }}
-        >
-          <Search size={18} color="var(--muted)" />
+  {/* SEARCH */}
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+      background: "var(--input-bg)",
+      border: "1px solid var(--border)",
+      borderRadius: "14px",
+      padding: "12px 16px",
+      width: "280px"
+    }}
+  >
+    <Search size={18} color="var(--muted)" />
 
           <input
             placeholder="Search deployments, metrics..."
+			onFocus={(e) =>
+  (e.currentTarget.parentElement!.style.border =
+    "1px solid var(--primary)")
+}
+onBlur={(e) =>
+  (e.currentTarget.parentElement!.style.border =
+    "1px solid var(--border)")
+}
             style={{
               border: "none",
               outline: "none",
@@ -95,7 +127,8 @@ export default function TopBar() {
 
               color: "var(--text)",
 
-              fontSize: "14px"
+              fontSize: "14px",
+			  
             }}
           />
         </div>

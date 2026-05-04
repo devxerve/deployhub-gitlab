@@ -18,10 +18,10 @@ function NeonLogo() {
 	return (
 		<svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org" style={{ filter: "drop-shadow(0 0 5px rgba(56, 189, 248, 0.6))" }}>
 			{/* Cubo Morado (Base/Fondo) */}
-			<path d="M12 21L4 16.5V7.5L12 3L20 7.5V16.5L12 21Z" fill="#a855f7" fillOpacity="0.3" stroke="#a855f7" strokeWidth="1"/>
+			<path d="M12 21L4 16.5V7.5L12 3L20 7.5V16.5L12 21Z" fill="#3b82f6" fillOpacity="0.3" stroke="#3b82f6" strokeWidth="1"/>
 			
 			{/* Cubo Azul (Superior/Frente) */}
-			<path d="M12 15L6 11.5V6.5L12 3L18 6.5V11.5L12 15Z" fill="#00d9ff" stroke="#00d9ff" strokeWidth="1.5" style={{ filter: "drop-shadow(0 0 3px #00d9ff)" }}/>
+			<path d="M12 15L6 11.5V6.5L12 3L18 6.5V11.5L12 15Z" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" style={{ filter: "drop-shadow(0 0 3px #00d9ff)" }}/>
 			
 			{/* Líneas de profundidad del cubo azul */}
 			<path d="M12 3V15M6 6.5L12 10L18 6.5" stroke="#020617" strokeWidth="0.5" opacity="0.5"/>
@@ -102,13 +102,13 @@ const menu = [
 			fontSize: "20px",
 			fontWeight: "bold",
 			color: "var(--primary)",
-      textShadow: "0 0 12px rgba(124,58,237,0.25)",
+      textShadow: "0 0 12px rgba(59,130,246,0.25)",
 			letterSpacing: "0.5px"
 		}}>
 			DeployHub
 		</h2>
 	</div>
-
+        
 				<div style={{ marginTop: "30px", display: "flex", flexDirection: "column", gap: "15px" }}>
 					{menu.map((item) => (
   				<MenuItem
@@ -171,14 +171,12 @@ function MenuItem({ icon, text, path, active }: any) {
             ? "var(--active)"
             : "var(--hover)",
 
-        borderLeft:
-          active || isHovered
-            ? "4px solid var(--secondary)"
-            : "4px solid transparent",
+        borderLeft: "none",
+        border: active ? "1px solid var(--primary)" : "1px solid transparent",
 
         boxShadow:
-          active || isHovered
-          ? "var(--glow)"
+          active
+            ? "inset 0 0 0 1px var(--primary)"
             : "none",
       }}
     >
@@ -186,8 +184,8 @@ function MenuItem({ icon, text, path, active }: any) {
       <div
         style={{
           color: active || isHovered
-                  ? "var(--secondary)"
-                  : "var(--primary)",
+                ? "var(--primary)"
+                : "var(--menu-text)",
           transition: "0.3s",
           display: "flex",
           alignItems: "center"
@@ -206,7 +204,7 @@ function MenuItem({ icon, text, path, active }: any) {
           transition: "0.3s",
           textShadow:
             active || isHovered
-              ? "0 0 10px rgba(124,58,237,0.25)"
+              ? "0 0 10px rgba(59,130,246,0.25)"
               : "none"
         }}
       >

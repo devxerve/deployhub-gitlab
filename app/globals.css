@@ -8,7 +8,7 @@
 
 	/* TEXT */
 	--text: #f1f5f9;
-	--muted: #94a3b8;
+  	--muted: #64748b;
 
 	/* BRAND (AZUL PRO) */
 	--primary: #3b82f6;      /* azul principal */
@@ -36,6 +36,13 @@
 
 	/* CHART */
 	--chart-grid: rgba(148,163,184,0.12);
+	 
+  --primary-soft: rgba(59,130,246,0.1);
+  --primary-border: rgba(59,130,246,0.25);
+
+  --surface: #0b1220;
+  --surface-light: rgba(255,255,255,0.7);
+
 }
 
 @theme inline {
