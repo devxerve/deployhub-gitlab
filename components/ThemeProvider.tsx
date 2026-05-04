@@ -12,6 +12,7 @@ export default function Providers({
 	  attribute="class"
 	  defaultTheme="dark"
 	  enableSystem={false}
+	  
 	>
 	  {children}
 	</ThemeProvider>
