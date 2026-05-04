@@ -77,7 +77,7 @@ export default function PerformanceSection() {
 						fontSize: "14px",
 						cursor: "pointer",
 						transition: "0.3s",
-						boxShadow: "0 4px 12px rgba(15,23,42,0.04)"
+						boxShadow: "var(--shadow)"
 					}}
 				>
 					<option>Last Deploy</option>
@@ -111,7 +111,7 @@ export default function PerformanceSection() {
 							height: "12px",
 							borderRadius: "50%",
 							background: "#3b82f6",
-							boxShadow: "0 0 10px #3b82f6"
+							boxShadow: "var(--shadow)"
 						}}
 					/>
 
@@ -139,7 +139,7 @@ export default function PerformanceSection() {
 							height: "12px",
 							borderRadius: "50%",
 							background: "#f43f5e",
-							boxShadow: "0 0 10px #f43f5e"
+							boxShadow: "var(--shadow)"
 						}}
 					/>
 

@@ -24,34 +24,25 @@ const data = [
 ];
 
 export default function PerformanceChart() {
-  return (
-        <div
-  style={{
-    width: "100%",
+return (
+  <div
+    style={{
+      width: "100%",
+      height: "350px",
 
-    height: "380px",
+      background: "transparent",
 
-    background: `
-      linear-gradient(
-        180deg,
-        rgba(255,255,255,0.02),
-        rgba(255,255,255,0.01)
-      )
-    `,
+      padding: "20px",
 
-    borderRadius: "24px",
+      borderRadius: "20px",
 
-    padding: "24px",
+      border: "1px solid var(--border)",
 
-    border: "1px solid var(--border)",
+      backdropFilter: "blur(12px)",
 
-    backdropFilter: "blur(16px)",
-
-    boxShadow: `
-      0 10px 40px rgba(15,23,42,0.08)
-    `
-  }}
->
+      boxShadow: "var(--shadow)"
+    }}
+  >
         <ResponsiveContainer>
         <ComposedChart data={data} margin={{ top: 30, right: 10, left: -20, bottom: 0 }}>
           <defs>
@@ -68,37 +59,27 @@ export default function PerformanceChart() {
           </defs>
 
           <CartesianGrid
-            stroke="rgba(148,163,184,0.08)"
+            stroke="var(--chart-grid)"
             vertical={false}
             strokeDasharray="3 3"
           />          
-          <XAxis dataKey="time" stroke="#64748b" tickLine={false} axisLine={false} fontSize={12} dy={10} />
-          <YAxis stroke="#64748b" tickLine={false} axisLine={false} fontSize={12} />
+          <XAxis dataKey="time" stroke="var(--muted)" tickLine={false} axisLine={false} fontSize={12} dy={10} />
+          <YAxis stroke="var(--muted)" tickLine={false} axisLine={false} fontSize={12} />
           
           <Tooltip
   cursor={{
-    stroke: "#475569",
-    strokeWidth: 1.5,
-    strokeDasharray: "4 4"
-  }}
+  stroke: "var(--primary)",
+  strokeWidth: 1,
+  strokeOpacity: 0.4
+}}
 
   contentStyle={{
-    background: "rgba(15,23,42,0.92)",
-
-    backdropFilter: "blur(18px)",
-
-    border: "1px solid rgba(255,255,255,0.08)",
-
-    borderRadius: "16px",
-
-    boxShadow: `
-      0 10px 40px rgba(0,0,0,0.4)
-    `,
-
-    color: "white",
-
-    fontSize: "13px"
-  }}
+  backgroundColor: "var(--card)",
+  border: "1px solid var(--border)",
+  borderRadius: "12px",
+  color: "var(--text)",
+  backdropFilter: "blur(12px)"
+}}
 
   labelStyle={{
     color: "#94a3b8",

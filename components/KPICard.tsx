@@ -54,7 +54,7 @@ onMouseLeave={(e) => {
 						alignItems: "center",
 						borderRadius: "14px",
 						border: `1px solid ${color}33`,
-						boxShadow: `0 0 12px ${color}22`,
+						boxShadow: "0 10px 20px rgba(15,23,42,0.15)"
 					}}
 					
 				>

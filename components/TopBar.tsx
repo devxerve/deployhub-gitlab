@@ -1,94 +1,236 @@
-import { Bell, Menu } from "lucide-react";
+"use client";
+
+import {
+  Bell,
+  Menu,
+  Search,
+  Sparkles
+} from "lucide-react";
+
 import ThemeToggle from "./ThemeToggle";
 
 export default function TopBar() {
-	return (
-		<div
-			style={{
-				display: "flex",
-				justifyContent: "space-between",
-				alignItems: "center",
-				flexWrap: "wrap",
-				gap: "15px",
-				marginBottom: "20px",
-				background: "var(--card)",
-				borderRadius: "20px",
-				border: "1px solid var(--border)",
-				backdropFilter: "blur(16px)",
-				boxShadow: "var(--shadow)",
-				padding: "18px 22px",
-			}}
-		>
-			{/* LEFT */}
-			<div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
-				<Menu
-					size={22}
-					color="var(--primary)"
-				/>
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
 
-				<input
-					placeholder="Search deployments, logs, metrics..."
-					style={{
-						width: "320px",
-						background: "var(--hover)",
-						border: "1px solid var(--border)",
-						color: "var(--text)",
-						padding: "12px 16px",
-						borderRadius: "12px",
-						outline: "none",
-						fontSize: "14px",
-						transition: "0.3s ease"
-					}}
-				/>
-			</div>
+        marginBottom: "24px",
 
-			{/* RIGHT */}
-			<div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
-				<div
-					style={{
-						background: "var(--hover)",
-						border: "1px solid var(--border)",
-						width: "42px",
-						height: "42px",
-						borderRadius: "12px",
-						display: "flex",
-						justifyContent: "center",
-						alignItems: "center",
-						cursor: "pointer"
-					}}
-				>
-					<Bell
-						size={18}
-						color="var(--primary)"
-					/>
-			</div>
+        padding: "18px 22px",
 
-				<div style={{
-					display: "flex",
-					alignItems: "center",
-					gap: "10px",
-					background: "var(--hover)",
-					padding: "8px 14px",
-					borderRadius: "14px",
-					border: "1px solid var(--border)",
-					backdropFilter: "blur(10px)",
-				}}>
-					<img
-						src="https://i.pravatar.cc/30"
-						style={{ borderRadius: "50%" }}
-					/>
-					<ThemeToggle />
-					<span
-						style={{
-							color: "var(--text)",
-							fontWeight: 500,
-							fontSize: "14px"
-							}}
-						>
-						DeployHub Team
-					</span>					
-				</div>
-			</div>
-		</div>
-	);
+        background: "var(--card)",
+
+        border: "1px solid var(--border)",
+
+        borderRadius: "22px",
+
+        backdropFilter: "blur(16px)",
+
+        boxShadow: "var(--shadow)"
+      }}
+    >
+      {/* LEFT */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "18px"
+        }}
+      >
+        {/* MENU */}
+        <div
+          style={{
+            width: "42px",
+            height: "42px",
+
+            borderRadius: "12px",
+
+            background: "var(--hover)",
+
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+
+            border: "1px solid var(--border)",
+
+            cursor: "pointer",
+
+            transition: "0.3s"
+          }}
+        >
+          <Menu size={18} color="var(--text)" />
+        </div>
+
+        {/* SEARCH */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+
+            background: "var(--input-bg)",
+
+            border: "1px solid var(--border)",
+
+            borderRadius: "14px",
+
+            padding: "12px 16px",
+
+            width: "320px"
+          }}
+        >
+          <Search size={18} color="var(--muted)" />
+
+          <input
+            placeholder="Search deployments, metrics..."
+            style={{
+              border: "none",
+              outline: "none",
+              background: "transparent",
+
+              width: "100%",
+
+              color: "var(--text)",
+
+              fontSize: "14px"
+            }}
+          />
+        </div>
+      </div>
+
+      {/* RIGHT */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "14px"
+        }}
+      >
+        {/* AI STATUS */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+
+            padding: "10px 14px",
+
+            background: "var(--hover)",
+
+            borderRadius: "12px",
+
+            border: "1px solid var(--border)"
+          }}
+        >
+          <Sparkles
+            size={16}
+            color="var(--secondary)"
+          />
+
+          <span
+            style={{
+              fontSize: "13px",
+              color: "var(--text)",
+              fontWeight: 500
+            }}
+          >
+            AI Monitoring Active
+          </span>
+        </div>
+
+        {/* NOTIFICATION */}
+        <div
+          style={{
+            width: "42px",
+            height: "42px",
+
+            borderRadius: "12px",
+
+            background: "var(--hover)",
+
+            border: "1px solid var(--border)",
+
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+
+            position: "relative",
+
+            cursor: "pointer"
+          }}
+        >
+          <Bell size={18} color="var(--text)" />
+
+          {/* DOT */}
+          <div
+            style={{
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+
+              width: "8px",
+              height: "8px",
+
+              borderRadius: "50%",
+
+              background: "#ef4444",
+
+              boxShadow: "0 0 10px #ef4444"
+            }}
+          />
+        </div>
+
+        {/* PROFILE */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+
+            background: "var(--hover)",
+
+            border: "1px solid var(--border)",
+
+            padding: "8px 14px",
+
+            borderRadius: "14px"
+          }}
+        >
+          <img
+            src="https://i.pravatar.cc/40"
+            style={{
+              borderRadius: "50%",
+              border: "2px solid var(--primary)"
+            }}
+          />
+
+          <div>
+            <div
+              style={{
+                fontSize: "14px",
+                fontWeight: 600,
+                color: "var(--text)"
+              }}
+            >
+              DeployMetrics
+            </div>
+
+            <div
+              style={{
+                fontSize: "12px",
+                color: "var(--muted)"
+              }}
+            >
+              Production Team
+            </div>
+          </div>
+
+          <ThemeToggle />
+        </div>
+      </div>
+    </div>
+  );
 }

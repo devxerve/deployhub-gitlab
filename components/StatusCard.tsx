@@ -50,10 +50,7 @@ export default function StatusCard({
 
         backdropFilter: "blur(16px)",
 
-        boxShadow: `
-          0 10px 30px rgba(15,23,42,0.08),
-          0 0 18px ${color}22
-        `,
+        boxShadow: "0 10px 25px rgba(15,23,42,0.18)",
 
         transition: "all 0.3s ease",
 
@@ -101,7 +98,7 @@ export default function StatusCard({
 
           border: `1px solid ${color}33`,
 
-          boxShadow: `0 0 20px ${color}22`,
+          boxShadow: "0 10px 25px rgba(15,23,42,0.18)",
 
           marginBottom: "18px",
 

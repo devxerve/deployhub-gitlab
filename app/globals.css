@@ -1,30 +1,41 @@
 @import "tailwindcss";
 
 :root {
+	/* BASE */
 	--bg: #020617;
-	--card: #0f172a;
-	--sidebar: rgba(2,6,23,0.95);
+	--card: #0b1220;
+	--sidebar: rgba(2,6,23,0.9);
 
-	--text: #f8fafc;
+	/* TEXT */
+	--text: #f1f5f9;
 	--muted: #94a3b8;
 
-	--primary: #38bdf8;
-	--secondary: #a855f7;
+	/* BRAND (AZUL PRO) */
+	--primary: #3b82f6;      /* azul principal */
+	--secondary: #2563eb;    /* azul más fuerte */
 
-	--border: rgba(56,189,248,0.2);
-	--hover: rgba(56,189,248,0.08);
-	--active: rgba(168,85,247,0.18);
+	/* BORDERS */
+	--border: rgba(148,163,184,0.15);
+
+	/* INTERACTION */
+	--hover: rgba(59,130,246,0.08);
+	--active: rgba(59,130,246,0.18);
 	
 	--menu-text: #94a3b8;
 	--menu-active: #f8fafc;
 
 	--glow: 0 0 15px rgba(168,85,247,0.35);
-	--input-bg: rgba(15,23,42,0.65);
+	/* UI */
+	--input-bg: rgba(15,23,42,0.6);
 
-	--danger: #f43f5e;
+	/* STATUS */
+	--danger: #ef4444;
 	--success: #22c55e;
-	--info: #3b82f6;
 	--warning: #facc15;
+	--info: #3b82f6;
+
+	/* CHART */
+	--chart-grid: rgba(148,163,184,0.12);
 }
 
 @theme inline {
@@ -43,8 +54,8 @@
 
 body {
 	background:
-		radial-gradient(circle at top left, rgba(124,58,237,0.08), transparent 30%),
-		radial-gradient(circle at bottom right, rgba(59,130,246,0.08), transparent 30%),
+		radial-gradient(circle at 20% 10%, rgba(59,130,246,0.08), transparent 40%),
+		radial-gradient(circle at 80% 90%, rgba(37,99,235,0.06), transparent 40%),
 		var(--bg);
 
 	color: var(--text);
@@ -72,17 +83,17 @@ body {
 /* LIGHT MODE */
 .light {
 	/* BACKGROUNDS */
-	--bg: #f5f7fb;
-	--card: rgba(255,255,255,0.75);
-	--sidebar: rgba(255,255,255,0.85);
+	--bg: #f8fafc;
+	--card: rgba(255,255,255,0.8);
+	--sidebar: rgba(255,255,255,0.9);
 
 	/* TEXT */
-	--text: #111827;
-	--muted: #6b7280;
+	--text: #0f172a;
+	--muted: #64748b;
 
 	/* COLORS */
-	--primary: #7c3aed;
-	--secondary: #8b5cf6;
+	--primary: #2563eb;
+	--secondary: #3b82f6;
 
 	/* PASTEL COLORS */
 	--blue-soft: #dbeafe;
@@ -95,10 +106,11 @@ body {
 	--border: rgba(226,232,240,0.8);
 
 	/* SHADOW */
-	--shadow:
-		0 4px 20px rgba(15,23,42,0.06);
-	--hover: rgba(124,58,237,0.08);
-	--active: rgba(124,58,237,0.12);
+	--shadow: 0 10px 30px rgba(15,23,42,0.2);
+	--shadow-soft: 0 6px 20px rgba(15,23,42,0.12);
+
+	--hover: rgba(37,99,235,0.08);
+	--active: rgba(37,99,235,0.15);
 
 	--menu-text: #6b7280;
 	--menu-active: #111827;
@@ -106,9 +118,12 @@ body {
 	--glow: 0 6px 20px rgba(124,58,237,0.12);
 	--input-bg: rgba(255,255,255,0.9);
 
-	--danger: #fb7185;
-	--success: #4ade80;
+	--danger: #ef4444;
+	--success: #16a34a;
+	--warning: #eab308;
 	--info: #60a5fa;
-	--warning: #facc15;
+	
+
+	--chart-grid: rgba(100,116,139,0.2);
 }
 
