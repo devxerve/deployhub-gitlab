@@ -156,4 +156,30 @@ export class DeploymentsService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  /**
+   * REMOVE: Deletes a deployment record from the database.
+   */
+  async remove(id: string) {
+    await this.getDeployById(id);
+    return await this.prisma.deploy.delete({
+      where: { id },
+    });
+  }
+  
+  /**
+   * GET STATUS: Returns only the status string of a deployment.
+   */
+  async getDeployStatus(id: string) {
+    const deploy = await this.prisma.deploy.findUnique({
+      where: { id },
+      select: { status: true }, // Solo traemos el campo 'status' para ser eficientes
+    });
+
+    if (!deploy) {
+      throw new NotFoundException(`No se puede procesar la solicitud: Deployment ${id} not found.`);
+    }
+
+    return { status: deploy.status };
+  }
 }
