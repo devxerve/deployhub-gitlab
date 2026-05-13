@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+/*import { Injectable, NotFoundException } from "@nestjs/common";
 import {CreateDeployDto} from "./dto/create-deploy.dto";
 import { LogsService } from 'src/realtime/logs.service';
 import { DeployStatus } from "./constants/deploy-states";
@@ -43,16 +43,11 @@ export class DeploymentsService {
     return newDeploy;
    }
 
-  /**
-   * All active deploys
-   */
+  
   getAllDeploys(): Deploy[] {
     return this.deploys;
   }
 
-  /**
-   * Searches for a deploy by its ID and returns it. If not found, throws a NotFoundException.
-   */
   getDeployById(id: string): Deploy {
     const deploy = this.deploys.find((d) => d.id === id);
     if (!deploy) {
@@ -61,9 +56,6 @@ export class DeploymentsService {
     return deploy;
   }
 
-  /**
-   * Returns state of a deploy by its ID.
-   */
   getDeployStatus(id: string) {
     const deploy = this.getDeployById(id);
     return { status: deploy.status };
@@ -77,22 +69,91 @@ export class DeploymentsService {
     this.deploys.splice(index, 1);
     return { message: `Deploy with ID ${id} has been removed` };
   }
-
-  /**
-   * FOR PROCESSOR
-   * Allows the processor to send logs in real-time to the frontend via WebSocket.
-   */
   addLogRealtime(id: string, message: string) {
     this.logsService.sendLog(id, message);
   }
 
-  /**
-   * FOR PROCESSOR
-   * Updates the status of a deploy in real-time and notifies the frontend via WebSocket.
-   */
   updateStatusRealtime(id: string, status: DeployStatus) {
     const deploy = this.getDeployById(id);
     deploy.status = status;
     this.logsService.sendStatus(id, status);
+  }
+}*/
+
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service'; // Daniel
+import { LogsService } from '../realtime/logs.service';     // Loreto
+import { CreateDeployDto } from './dto/create-deploy.dto';
+import { DeployStatus } from './constants/deploy-states';
+
+@Injectable()
+export class DeploymentsService {
+  private readonly logger = new Logger(DeploymentsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly logsService: LogsService,
+  ) {}
+
+  /**
+   * CREATE: Saves the initial deployment record in the database.
+   */
+  async createDeploy(dto: CreateDeployDto) {
+    this.logger.log(`Creating database record for project: ${dto.projectId}`);
+    
+    return await this.prisma.deploy.create({
+      data: {
+        repoUrl: dto.repoUrl,
+        projectId: dto.projectId,
+        status: DeployStatus.PENDING,
+      },
+    });
+  }
+
+  /**
+   * UPDATE STATUS: Updates the DB and broadcasts the new state using Loreto's sendStatus.
+   */
+  async updateStatusRealtime(id: string, status: DeployStatus) {
+    // 1. Update Database (Daniel's part)
+    await this.prisma.deploy.update({
+      where: { id },
+      data: { status },
+    });
+
+    // 2. Broadcast Status (Using Loreto's function: sendStatus)
+    this.logsService.sendStatus(id, status);
+    
+    this.logger.debug(`Status updated and broadcasted: ${id} -> ${status}`);
+  }
+
+  /**
+   * ADD LOG: Sends a live log line using Loreto's sendLog.
+   */
+  async addLogRealtime(id: string, message: string) {
+    // Calling the exact function Loreto defined: sendLog
+    this.logsService.sendLog(id, message);
+  }
+
+  /**
+   * FIND ONE: Retrieves a specific deployment by ID.
+   */
+  async getDeployById(id: string) {
+    const deploy = await this.prisma.deploy.findUnique({
+      where: { id },
+    });
+
+    if (!deploy) {
+      throw new NotFoundException(`No se puede procesar la solicitud: Deployment ${id} not found.`);
+    }
+    return deploy;
+  }
+
+  /**
+   * FIND ALL: Returns the complete list from the database.
+   */
+  async getAllDeploys() {
+    return await this.prisma.deploy.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }
