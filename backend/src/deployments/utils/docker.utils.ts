@@ -10,20 +10,33 @@ export class DockerUtil {
 
   async buildImage(id: string, path: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.logger.log(`[DOCKER] Starting build for ${id}`);
-      
-      const child = spawn('docker', ['build', '-t', `deploy-${id}`, path]);
-
+      const child = spawn('docker', ['build', '-t', `image-${id}`, path]);
+  
+      // 1. Set time limit for build (5 minutes = 300,000 ms)
+      const timeoutDuration = 300000; 
+      const timeout = setTimeout(() => {
+        child.kill(); // stop the build process
+        reject(new Error(`No se puede procesar la solicitud: El build excedió el tiempo límite de 5 minutos.`));
+      }, timeoutDuration);
+  
       child.stdout.on('data', (data) => {
-        this.deploymentsService.addLogRealtime(id, data.toString());
+        this.logger.log(`Build stdout: ${data}`);
       });
-
-      child.stderr.on('data', (data) => {
-        this.deploymentsService.addLogRealtime(id, `[BUILD ERROR]: ${data.toString()}`);
-      });
-
+  
       child.on('close', (code) => {
-        code === 0 ? resolve() : reject(new Error(`Docker build failed: ${code}`));
+        // 2. if the process finishes before timeout, clear the timeout
+        clearTimeout(timeout);
+  
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Docker build falló con código ${code}`));
+        }
+      });
+  
+      child.on('error', (err) => {
+        clearTimeout(timeout);
+        reject(err);
       });
     });
   }

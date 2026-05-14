@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import * as fs from 'fs';
+import * as path from 'path';
 import { DeployStatus } from "./constants/deploy-states";
 import { DeploymentsService } from "./deployments.service";
 import { GitUtil } from 'src/deployments/utils/git.utils';
@@ -33,6 +34,11 @@ export class DeploymentsProcessor {
             await this.gitUtil.cloneRepository(deploy.repoUrl, workDir, id);
             await this.deploymentsService.addLogRealtime(id, `Repository cloned successfully.`);
 
+            const dockerfilePath = path.join(workDir, 'Dockerfile');
+            // Check if Dockerfile exists
+            if (!fs.existsSync(dockerfilePath)) {
+            throw new Error(`Cannot process request: Dockerfile missing.`);
+    }
             // 3. DOCKER BUILD
             await this.deploymentsService.updateStatusRealtime(id, DeployStatus.BUILDING);
             await this.deploymentsService.addLogRealtime(id, `Step 2/3: Building Docker image (this may take a while)...`);
