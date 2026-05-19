@@ -76,11 +76,26 @@ export class DeploymentsService {
     });
 
     if (!deploy) {
-      throw new NotFoundException(`No se puede procesar la solicitud: Deployment ${id} not found.`);
+      throw new NotFoundException(`Cannot process request: Deployment ${id} not found.`);
     }
     return deploy;
   }
 
+  async getAllDeploys() {
+    this.logger.log('Retrieving all deployments from database');
+    return await this.prisma.deploy.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getDeployStatus(id: string) {
+    const deploy = await this.getDeployById(id);
+    return {
+      id: deploy.id,
+      status: deploy.status,
+    }
+  }
+  
   /**
    * REMOVE: Deletes a deployment and its record.
    */
