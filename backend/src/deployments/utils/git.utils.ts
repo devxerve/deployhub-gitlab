@@ -34,7 +34,7 @@ export class GitUtil {
       if (!fs.existsSync(path)) {
         fs.mkdirSync(path, { recursive: true });
       }
-      const child = spawn('git', ['clone', '--depth', '1', repoUrl, path]);
+      const child = spawn('git', ['clone', repoUrl, path]);
 
       child.stdout.on('data', (data) => {
         this.deploymentsService.addLogRealtime(id, data.toString());
