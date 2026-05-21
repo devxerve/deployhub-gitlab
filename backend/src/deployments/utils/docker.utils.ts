@@ -43,21 +43,29 @@ export class DockerUtil {
     });
   }
 
+
   async runContainer(id: string, port: number): Promise<void> {
     return new Promise((resolve, reject) => {
       
       const netWorkName = process.env.DOCKER_NETWORK_NAME || 'deploy-network';
+      const workDir = `./tmp/${id}`; 
+
       const child = spawn('docker', [
         'run', '-d', 
         '--network', netWorkName,
         '-p', `${port}:3000`, 
-        '--name', `container-${id}`, 
-        `deploy-${id}`
+        '--name', `container-${id}`,
+        '--env-file', `${workDir}/.env`,
+        `image-${id}`
       ]);
 
-      child.on('close', (code) => {
-        code === 0 ? resolve() : reject(new Error(`Docker run failed: ${code}`));
+        child.on('close', (code) => {
+          if (code === 0) {
+            resolve();
+          } else {
+            reject(new Error(`Docker run failed with code: ${code}`));
+          }
+        });
       });
-    });
+    }
   }
-}
