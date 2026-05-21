@@ -27,18 +27,46 @@ export class DeploymentsProcessor {
             // 1. RETRIEVE DEPLOY DETAILS
             const deploy = await this.deploymentsService.getDeployById(id);
 
-            // 2. GIT CLONE
+            // 2. GIT CLONE & COMMITHASH
             await this.deploymentsService.updateStatusRealtime(id, DeployStatus.CLONING);
             await this.deploymentsService.addLogRealtime(id, `Step 1/3: Cloning repository...`);
             
             await this.gitUtil.cloneRepository(deploy.repoUrl, workDir, id);
             await this.deploymentsService.addLogRealtime(id, `Repository cloned successfully.`);
 
+            // IF A VALID COMMIT HASH WAS SPECIFIED
+            if (deploy.commitHash) {
+                await this.deploymentsService.addLogRealtime(id, `Navigating to specific commit: ${deploy.commitHash}...`);
+                try {
+                    await this.gitUtil.checkoutCommit(workDir, deploy.commitHash);
+                    await this.deploymentsService.addLogRealtime(id, `✅ Successfully switched to commit ${deploy.commitHash.substring(0, 7)}.`);
+                } catch (checkoutError) {
+                    throw new Error(`Git Error: Failed to checkout commit ${deploy.commitHash}.`);
+                }
+            }
+
+            // IF ENV VARIABLES WHERE SPECIFIED
+            const variables = typeof deploy.envVariables === 'string'
+                ? JSON.parse(deploy.envVariables)
+                : deploy.envVariables;
+            
+            if (variables && Object.keys(variables).length > 0){
+                await this.deploymentsService.addLogRealtime(id, `Configuring environment variables securely...`);
+
+                const envContent = Object.entries(variables)
+                    .map(([key, value]) => `${key}=${value}`)
+                    .join('\n');
+                
+                const envPath = path.join(workDir, '.env');
+                fs.writeFileSync(envPath, envContent, 'utf-8');
+
+                await this.deploymentsService.addLogRealtime(id, `✅ Environment variables injected successfully.`);
+            }
+
             const dockerfilePath = path.join(workDir, 'Dockerfile');
-            // Check if Dockerfile exists
             if (!fs.existsSync(dockerfilePath)) {
-            throw new Error(`Cannot process request: Dockerfile missing.`);
-    }
+                throw new Error(`Cannot process request: Dockerfile missing.`);
+            }
             // 3. DOCKER BUILD
             await this.deploymentsService.updateStatusRealtime(id, DeployStatus.BUILDING);
             await this.deploymentsService.addLogRealtime(id, `Step 2/3: Building Docker image (this may take a while)...`);
