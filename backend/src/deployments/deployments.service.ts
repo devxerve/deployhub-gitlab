@@ -25,6 +25,8 @@ export class DeploymentsService {
         repoUrl: dto.repoUrl,
         projectId: dto.projectId,
         status: DeployStatus.PENDING,
+        commitHash: dto.commitHash || null,
+        envVariables: dto.envVariables ? JSON.stringify(dto.envVariables) : null,
       },
     });
   }

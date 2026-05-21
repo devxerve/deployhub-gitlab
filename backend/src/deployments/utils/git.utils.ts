@@ -9,6 +9,26 @@ export class GitUtil {
 
   constructor(private readonly deploymentsService: DeploymentsService) {}
 
+  async checkoutCommit(path: string, commitHash: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      
+      const child = spawn('git', ['checkout', commitHash], { cwd: path });
+
+      child.stderr.on('data', (data) => {
+        this.logger.debug(`[GIT CHECKOUT INFO]: ${data}`);
+      });
+
+      child.on('close', (code) => {
+        if (code === 0) {
+          this.logger.log(`[GIT] Successfully moved to commit: ${commitHash}`);
+          resolve();
+        } else {
+          reject(new Error(`Git checkout failed with code ${code}`));
+        }
+      });
+    });
+  }
+
   async cloneRepository(repoUrl: string, path: string, id: string): Promise<void> {
     return new Promise((resolve, reject) => {
       if (!fs.existsSync(path)) {

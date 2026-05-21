@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateDeployDto {
 
@@ -9,4 +9,12 @@ export class CreateDeployDto {
   @IsString()
   @IsNotEmpty()
   projectId: string;
+
+  @IsOptional()
+  @IsString()
+  commitHash?: string;
+
+  @IsOptional()
+  @IsString()
+  envVariables?: Record<string, string>;
 }
