@@ -50,6 +50,7 @@ export class DeploymentsProcessor {
                 ? JSON.parse(deploy.envVariables)
                 : deploy.envVariables;
             
+            const envPath = path.join(workDir, '.env');
             if (variables && Object.keys(variables).length > 0){
                 await this.deploymentsService.addLogRealtime(id, `Configuring environment variables securely...`);
 
@@ -57,10 +58,10 @@ export class DeploymentsProcessor {
                     .map(([key, value]) => `${key}=${value}`)
                     .join('\n');
                 
-                const envPath = path.join(workDir, '.env');
                 fs.writeFileSync(envPath, envContent, 'utf-8');
-
                 await this.deploymentsService.addLogRealtime(id, `✅ Environment variables injected successfully.`);
+            } else {
+                fs.writeFileSync(envPath, '', 'utf-8');
             }
 
             const dockerfilePath = path.join(workDir, 'Dockerfile');
@@ -78,8 +79,9 @@ export class DeploymentsProcessor {
             await this.deploymentsService.updateStatusRealtime(id, DeployStatus.RUNNING);
             await this.deploymentsService.addLogRealtime(id, `Step 3/3: Starting container...`);
 
-            // Find an available port and pass it to runContainer
+            // Find an available port, persist it, and pass it to runContainer
             const port = await this.deploymentsService.getAvailablePort();
+            await this.deploymentsService.savePort(id, port);
             await this.dockerUtil.runContainer(id, port);
             
             // 5. FINISH WITH SUCCESS

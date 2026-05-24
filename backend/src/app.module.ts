@@ -2,21 +2,14 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RealtimeModule } from './realtime/realtime.module';
-
-import { DeploymentsController } from './deployments/deployments.controller';
-import { DeploymentsService } from './deployments/deployments.service';
-import { PrismaService } from './prisma/prisma.service';
+import { DeploymentsModule } from './deployments/deployments.module';
 
 @Module({
-  imports: [RealtimeModule],
-  controllers: [
-    AppController,
-    DeploymentsController
+  imports: [
+    RealtimeModule,
+    DeploymentsModule,
   ],
-  providers: [
-    AppService,
-    DeploymentsService,
-    PrismaService,
-  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

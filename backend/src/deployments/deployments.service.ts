@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service'; // Daniel
 import { LogsService } from '../realtime/logs.service';     // Loreto
 import { CreateDeployDto } from './dto/create-deploy.dto';
 import { DeployStatus } from './constants/deploy-states';
+import * as net from 'net';
 
 @Injectable()
 export class DeploymentsService {
@@ -32,22 +33,40 @@ export class DeploymentsService {
   }
 
   /**
-   * PORT MANAGEMENT: Finds the next available port for a new container.
+   * PORT MANAGEMENT: Finds the next truly available TCP port starting from BASE_PORT.
+   * Uses Node's net module to probe real system port availability,
+   * so it works correctly even after server restarts when mock DB loses state.
    */
   async getAvailablePort(): Promise<number> {
-    // Search for deploy with hihhest assigned port
-    const lastDeploy = await this.prisma.deploy.findFirst({
-      where: { 
-        port: { not: null },
-        status: DeployStatus.RUNNING 
-      },
-      orderBy: { port: 'desc' },
+    const isPortFree = (port: number): Promise<boolean> =>
+      new Promise((resolve) => {
+        const server = net.createServer();
+        server.once('error', () => resolve(false));
+        server.once('listening', () => {
+          server.close();
+          resolve(true);
+        });
+        server.listen(port, '0.0.0.0');
+      });
+
+    let port = this.BASE_PORT + 1; // start at 3001, leaving 3000 for the backend
+    while (!(await isPortFree(port))) {
+      this.logger.warn(`Port ${port} already in use, trying next...`);
+      port++;
+    }
+
+    this.logger.log(`Assigned unique port: ${port}`);
+    return port;
+  }
+
+  /**
+   * PORT SAVE: Persists the assigned port to the deploy record.
+   */
+  async savePort(id: string, port: number) {
+    await this.prisma.deploy.update({
+      where: { id },
+      data: { port },
     });
-    // If there are none, we start at BASE_PORT, if there are, we add 1
-    const nextPort = lastDeploy ? lastDeploy.port + 1 : this.BASE_PORT;
-    
-    this.logger.log(`Assigned unique port: ${nextPort}`);
-    return nextPort;
   }
 
   /**

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsObject } from 'class-validator';
 
 export class CreateDeployDto {
 
@@ -15,6 +15,6 @@ export class CreateDeployDto {
   commitHash?: string;
 
   @IsOptional()
-  @IsString()
+  @IsObject()
   envVariables?: Record<string, string>;
 }
