@@ -248,7 +248,7 @@ onBlur={(e) =>
                 color: "var(--text)"
               }}
             >
-              Deploy
+              DeployHub
             </div>
 
             <div

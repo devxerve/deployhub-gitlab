@@ -43,7 +43,7 @@ return (
       boxShadow: "var(--shadow)"
     }}
   >
-        <ResponsiveContainer>
+        <ResponsiveContainer  width="100%" height={350}>
         <ComposedChart data={data} margin={{ top: 30, right: 10, left: -20, bottom: 0 }}>
           <defs>
             {/* GRADIENTE AZUL NEÓN (Cian Eléctrico) */}
