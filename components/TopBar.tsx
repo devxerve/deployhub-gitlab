@@ -248,7 +248,7 @@ onBlur={(e) =>
                 color: "var(--text)"
               }}
             >
-              DeployMetrics
+              Deploy
             </div>
 
             <div
