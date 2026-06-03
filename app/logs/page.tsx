@@ -1,3 +1,8 @@
-export default function DeploymentsPage() {
-  return <h1>Logs</h1>;
+// app/logs/page.tsx
+"use client";
+import { useTheme } from "@/hooks/useTheme";
+import { LogsModule } from "@/components/modules/LogsModule";
+export default function LogsPage() {
+  const { t } = useTheme();
+  return <LogsModule t={t} />;
 }

@@ -1,46 +1,34 @@
-import Sidebar from "@/components/Sidebar";
-import TopBar from "@/components/TopBar";
-import KPISection from "@/components/KPISection";
-import PerformanceSection from "@/components/PerformanceSection";
-//import RecentActivity from "@/components/RecentActivity";
-//import DeploymentsSection from "@/components/DeploymentsSection";
-//import Card from "@/components/Card";
-//import Status from "@/components/Status";
-//import Chart from "@/components/Chart";
-import Terminal from "@/components/Terminal";
-import DeploymentsTable from "@/components/DeploymentsTable";
-import Logs from "@/components/Logs";
+// app/dashboard/page.tsx
+"use client";
 
-export default function Home() {
+import { useTheme } from "@/hooks/useTheme";
+import { DashboardShell } from "@/components/layout";
+import { DashboardModule }   from "@/components/modules/DashboardModule";
+import { ProjectsModule }    from "@/components/modules/ProjectsModule";
+import { DeploymentsModule } from "@/components/modules/DeploymentsModule";
+import { PipelineModule }    from "@/components/modules/PipelineModule";
+import { MonitoringModule }  from "@/components/modules/MonitoringModule";
+import { LogsModule }        from "@/components/modules/LogsModule";
+import { EvaluationModule }  from "@/components/modules/EvaluationModule";
+import { SettingsModule }    from "@/components/modules/SettingsModule";
+
+export default function DashboardPage() {
+  const { t, isDark, toggle } = useTheme();
+
   return (
-    <div
-	    style={{
-	    	display: "flex",
-	    	background: "var(--bg)",
-	    	minHeight: "100vh"
-	    }}
-    >
-      <Sidebar />
-
-      <div style={{ flex: 1, padding: "20px" }}>
-        <TopBar />
-        <KPISection />
-
-        <div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
-          <PerformanceSection />
-          
-          
-        </div>
-
-        <div style={{ marginTop: "20px" }}>
-  <DeploymentsTable />
-</div>
-
-<div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
-  <Logs />
-  <Terminal />
-</div>
-      </div>
-    </div>
+    <DashboardShell t={t} isDark={isDark} toggle={toggle}>
+      {({ page }) => (
+        <>
+          {page === "dashboard"   && <DashboardModule   t={t} />}
+          {page === "projects"    && <ProjectsModule    t={t} />}
+          {page === "deployments" && <DeploymentsModule t={t} />}
+          {page === "pipeline"    && <PipelineModule    t={t} />}
+          {page === "monitoring"  && <MonitoringModule  t={t} />}
+          {page === "logs"        && <LogsModule        t={t} />}
+          {page === "evaluation"  && <EvaluationModule  t={t} />}
+          {page === "settings"    && <SettingsModule    t={t} />}
+        </>
+      )}
+    </DashboardShell>
   );
 }
