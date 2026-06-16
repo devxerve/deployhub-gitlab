@@ -12,6 +12,10 @@ lerna-debug.log*
 
 # OS
 .DS_Store
+node_modules/
+dist/
+*.tsbuildinfo
+.env
 
 # IDEs
 .vscode
