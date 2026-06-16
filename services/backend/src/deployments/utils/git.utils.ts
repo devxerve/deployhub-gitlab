@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { spawn } from 'child_process';
-import * as fs from 'fs';
-import { DeploymentsService } from '../deployments.service';
+import { Injectable, Logger } from "@nestjs/common";
+import { spawn } from "child_process";
+import * as fs from "fs";
+import { DeploymentsService } from "../deployments.service";
 
 @Injectable()
 export class GitUtil {
@@ -11,14 +11,13 @@ export class GitUtil {
 
   async checkoutCommit(path: string, commitHash: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      
-      const child = spawn('git', ['checkout', commitHash], { cwd: path });
+      const child = spawn("git", ["checkout", commitHash], { cwd: path });
 
-      child.stderr.on('data', (data) => {
+      child.stderr.on("data", (data) => {
         this.logger.debug(`[GIT CHECKOUT INFO]: ${data}`);
       });
 
-      child.on('close', (code) => {
+      child.on("close", (code) => {
         if (code === 0) {
           this.logger.log(`[GIT] Successfully moved to commit: ${commitHash}`);
           resolve();
@@ -29,22 +28,26 @@ export class GitUtil {
     });
   }
 
-  async cloneRepository(repoUrl: string, path: string, id: string): Promise<void> {
+  async cloneRepository(
+    repoUrl: string,
+    path: string,
+    id: string,
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       if (!fs.existsSync(path)) {
         fs.mkdirSync(path, { recursive: true });
       }
-      const child = spawn('git', ['clone', repoUrl, path]);
+      const child = spawn("git", ["clone", repoUrl, path]);
 
-      child.stdout.on('data', (data) => {
+      child.stdout.on("data", (data) => {
         this.deploymentsService.addLogRealtime(id, data.toString());
       });
 
-      child.stderr.on('data', (data) => {
+      child.stderr.on("data", (data) => {
         this.logger.debug(`[GIT INFO]: ${data}`);
       });
 
-      child.on('close', (code) => {
+      child.on("close", (code) => {
         if (code === 0) {
           this.logger.log(`[GIT] Cloned successfully: ${id}`);
           resolve();

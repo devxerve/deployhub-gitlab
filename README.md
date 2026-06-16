@@ -11,7 +11,7 @@ docker ps --format "table {{.Names}}\t{{.Ports}}\t{{.Status}}"
 docker stop $(docker ps -q) && docker rm $(docker ps -aq)
 ```
 
-- El backend se lanza  en el directorio \backend con
+- El backend se lanza en el directorio services/backend con
 ```bash
 npm run start:dev
 ```

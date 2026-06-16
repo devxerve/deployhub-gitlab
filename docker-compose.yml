@@ -32,7 +32,7 @@ services:
     image: prom/prometheus:v2.45.0
     container_name: prometheus
     volumes:
-      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./services/infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
@@ -67,7 +67,7 @@ services:
     networks:
       - paas_network
     volumes:
-      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+      - ./services/infra/grafana/provisioning:/etc/grafana/provisioning
 
 networks:
   paas_network:
