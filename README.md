@@ -15,3 +15,12 @@ docker stop $(docker ps -q) && docker rm $(docker ps -aq)
 ```bash
 npm run start:dev
 ```
+
+- Cómo se prueba la parte de Giselle: user admin@deployhub.com y contraseña 1234
+
+- Grafana: http://grafana.157.230.23.219.nip.io/
+
+- Conectarse servidor Sam:
+```bash
+ssh root@157.230.23.219
+```
