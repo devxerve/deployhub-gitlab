@@ -3,8 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { DeployStatus } from "./constants/deploy-states";
 import { DeploymentsService } from "./deployments.service";
-import { GitUtil } from 'src/deployments/utils/git.utils';
-import { DockerUtil } from 'src/deployments/utils/docker.utils';
+import { GitUtil } from "./utils/git.utils";
+import { DockerUtil } from "./utils/docker.utils";
 
 @Injectable()
 export class DeploymentsProcessor {
@@ -30,7 +30,7 @@ export class DeploymentsProcessor {
             // 2. GIT CLONE & COMMITHASH
             await this.deploymentsService.updateStatusRealtime(id, DeployStatus.CLONING);
             await this.deploymentsService.addLogRealtime(id, `Step 1/3: Cloning repository...`);
-            
+
             await this.gitUtil.cloneRepository(deploy.repoUrl, workDir, id);
             await this.deploymentsService.addLogRealtime(id, `Repository cloned successfully.`);
 
@@ -49,7 +49,7 @@ export class DeploymentsProcessor {
             const variables = typeof deploy.envVariables === 'string'
                 ? JSON.parse(deploy.envVariables)
                 : deploy.envVariables;
-            
+
             const envPath = path.join(workDir, '.env');
             if (variables && Object.keys(variables).length > 0){
                 await this.deploymentsService.addLogRealtime(id, `Configuring environment variables securely...`);
@@ -57,7 +57,7 @@ export class DeploymentsProcessor {
                 const envContent = Object.entries(variables)
                     .map(([key, value]) => `${key}=${value}`)
                     .join('\n');
-                
+
                 fs.writeFileSync(envPath, envContent, 'utf-8');
                 await this.deploymentsService.addLogRealtime(id, `✅ Environment variables injected successfully.`);
             } else {
@@ -71,7 +71,7 @@ export class DeploymentsProcessor {
             // 3. DOCKER BUILD
             await this.deploymentsService.updateStatusRealtime(id, DeployStatus.BUILDING);
             await this.deploymentsService.addLogRealtime(id, `Step 2/3: Building Docker image (this may take a while)...`);
-            
+
             await this.dockerUtil.buildImage(id, workDir);
             await this.deploymentsService.addLogRealtime(id, `Docker image built successfully.`);
 
@@ -83,24 +83,25 @@ export class DeploymentsProcessor {
             const port = await this.deploymentsService.getAvailablePort();
             await this.deploymentsService.savePort(id, port);
             await this.dockerUtil.runContainer(id, port);
-            
+
             // 5. FINISH WITH SUCCESS
             await this.deploymentsService.updateStatusRealtime(id, DeployStatus.SUCCESS);
             await this.deploymentsService.addLogRealtime(id, `Deployment completed! Application is running on port ${port}`);
             this.logger.log(`[SUCCESS] Deploy ${id} finished on port ${port}.`);
 
         } catch (error) {
-            this.logger.error(`[CRITICAL ERROR] Deploy ${id} failed: ${error.message}`);
-            
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            this.logger.error(`[CRITICAL ERROR] Deploy ${id} failed: ${errorMessage}`);
+
             await this.deploymentsService.updateStatusRealtime(id, DeployStatus.FAILED);
-            
+
             let errorMsg = 'An unexpected error occurred during deployment.';
-            if (error.message.includes('git')) {
+            if (errorMessage.includes('git')) {
                 errorMsg = 'Git Error: Please verify the repository is public and the URL is correct.';
-            } else if (error.message.includes('docker')) {
+            } else if (errorMessage.includes('docker')) {
                 errorMsg = 'Docker Error: Build failed or container could not be started.';
             }
-            
+
             await this.deploymentsService.addLogRealtime(id, `PROCESS FAILED: ${errorMsg}`);
 
         } finally {
@@ -110,7 +111,8 @@ export class DeploymentsProcessor {
                     fs.rmSync(workDir, { recursive: true, force: true });
                     this.logger.log(`[CLEANUP] Temporary workspace ${workDir} deleted.`);
                 } catch (cleanupError) {
-                    this.logger.error(`[CLEANUP ERROR] Could not delete ${workDir}: ${cleanupError.message}`);
+                    const cleanupMessage = cleanupError instanceof Error ? cleanupError.message : String(cleanupError);
+                    this.logger.error(`[CLEANUP ERROR] Could not delete ${workDir}: ${cleanupMessage}`);
                 }
             }
         }

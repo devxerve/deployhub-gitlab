@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; // Daniel
-import { LogsService } from '../realtime/logs.service';     // Loreto
-import { CreateDeployDto } from './dto/create-deploy.dto';
-import { DeployStatus } from './constants/deploy-states';
-import * as net from 'net';
+import { Injectable, NotFoundException, Logger } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service"; // Daniel
+import { LogsService } from "../realtime/logs.service"; // Loreto
+import { CreateDeployDto } from "./dto/create-deploy.dto";
+import { DeployStatus } from "./constants/deploy-states";
+import * as net from "net";
 
 @Injectable()
 export class DeploymentsService {
@@ -20,14 +20,16 @@ export class DeploymentsService {
    */
   async createDeploy(dto: CreateDeployDto) {
     this.logger.log(`Creating database record for project: ${dto.projectId}`);
-    
+
     return await this.prisma.deploy.create({
       data: {
         repoUrl: dto.repoUrl,
         projectId: dto.projectId,
         status: DeployStatus.PENDING,
         commitHash: dto.commitHash || null,
-        envVariables: dto.envVariables ? JSON.stringify(dto.envVariables) : null,
+        envVariables: dto.envVariables
+          ? JSON.stringify(dto.envVariables)
+          : null,
       },
     });
   }
@@ -41,12 +43,12 @@ export class DeploymentsService {
     const isPortFree = (port: number): Promise<boolean> =>
       new Promise((resolve) => {
         const server = net.createServer();
-        server.once('error', () => resolve(false));
-        server.once('listening', () => {
+        server.once("error", () => resolve(false));
+        server.once("listening", () => {
           server.close();
           resolve(true);
         });
-        server.listen(port, '0.0.0.0');
+        server.listen(port, "0.0.0.0");
       });
 
     let port = this.BASE_PORT + 1; // start at 3001, leaving 3000 for the backend
@@ -97,15 +99,17 @@ export class DeploymentsService {
     });
 
     if (!deploy) {
-      throw new NotFoundException(`Cannot process request: Deployment ${id} not found.`);
+      throw new NotFoundException(
+        `Cannot process request: Deployment ${id} not found.`,
+      );
     }
     return deploy;
   }
 
   async getAllDeploys() {
-    this.logger.log('Retrieving all deployments from database');
+    this.logger.log("Retrieving all deployments from database");
     return await this.prisma.deploy.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -114,9 +118,9 @@ export class DeploymentsService {
     return {
       id: deploy.id,
       status: deploy.status,
-    }
+    };
   }
-  
+
   /**
    * REMOVE: Deletes a deployment and its record.
    */

@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { LogsGateway } from './logs.gateway';
+import { Injectable } from "@nestjs/common";
+import { LogsGateway } from "./logs.gateway";
 
 @Injectable()
 export class LogsService {

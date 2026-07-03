@@ -1,7 +1,6 @@
-import { IsString, IsNotEmpty, IsOptional, IsObject } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsObject } from "class-validator";
 
 export class CreateDeployDto {
-
   @IsString()
   @IsNotEmpty()
   repoUrl: string;
