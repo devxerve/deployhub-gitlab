@@ -23,7 +23,6 @@ dist/
 .idea
 *.swp
 *.swo
-.claude
 
 # Environment variables
 .env
