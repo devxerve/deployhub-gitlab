@@ -11,7 +11,26 @@ docker ps --format "table {{.Names}}\t{{.Ports}}\t{{.Status}}"
 docker stop $(docker ps -q) && docker rm $(docker ps -aq)
 ```
 
-- El backend se lanza  en el directorio \backend con
+- El backend se lanza en el directorio services/backend con
 ```bash
 npm run start:dev
+```
+
+- Cómo se prueba la parte de Giselle: user admin@deployhub.com y contraseña 1234
+
+- Grafana: http://grafana.157.230.23.219.nip.io/
+
+- Conectarse servidor Sam:
+```bash
+ssh root@157.230.23.219
+```
+
+- Lanzar backend - Terminal 1 - Puerto 3001
+```bash
+cd services/backend && npm run start:dev
+```
+
+- Lanzar frontend - Terminal 2 - Puerto 3000
+```bash
+cd services/frontend && npm run dev
 ```
