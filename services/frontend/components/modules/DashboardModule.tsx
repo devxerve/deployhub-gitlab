@@ -1,17 +1,39 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { Theme } from "@/lib/themes";
 import { statusColor } from "@/lib/themes";
-import { DEPLOYMENTS } from "@/lib/data";
 import { Card, Badge, Sparkline } from "@/components/ui";
 import { DeployActivityChart } from "@/components/charts";
+import { getDeployments, type Deploy } from "@/lib/api";
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "just now";
+  if (min < 60) return `${min} min ago`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h} hr ago`;
+  return `${Math.floor(h / 24)} days ago`;
+}
 
 export function DashboardModule({ t }: { t: Theme }) {
+  const [deploys, setDeploys] = useState<Deploy[]>([]);
+
+  useEffect(() => {
+    getDeployments().then(setDeploys).catch(() => {});
+  }, []);
+
+  const totalProjects = new Set(deploys.map((d) => d.projectId)).size;
+  const today = new Date().toDateString();
+  const deploymentsToday = deploys.filter((d) => new Date(d.createdAt).toDateString() === today).length;
+  const failedDeploys = deploys.filter((d) => d.status === "FAILED").length;
+
   const kpis = [
-    { label: "Total Projects",     value: 5,        sub: "2 active",           color: "#3b82f6", spark: [3,4,3,5,4,5,5] },
-    { label: "Deployments Today",  value: 12,       sub: "+4 from yesterday",  color: "#22c55e", spark: [6,8,7,9,10,11,12] },
-    { label: "Failed Deploys",     value: 2,        sub: "16.6% failure rate", color: "#ef4444", spark: [1,2,1,3,2,2,2] },
-    { label: "Avg Build Time",     value: "1m 52s", sub: "-12s improvement",   color: "#a855f7", spark: [130,120,125,115,118,112,112] },
+    { label: "Total Projects",    value: totalProjects || 0,   sub: "proyectos únicos",       color: "#3b82f6", spark: [0,0,0,0,0,0,totalProjects] },
+    { label: "Deployments Today", value: deploymentsToday,     sub: "hoy",                    color: "#22c55e", spark: [0,0,0,0,0,0,deploymentsToday] },
+    { label: "Failed Deploys",    value: failedDeploys,        sub: `de ${deploys.length} total`, color: "#ef4444", spark: [0,0,0,0,0,0,failedDeploys] },
+    { label: "Total Deploys",     value: deploys.length,       sub: "histórico",              color: "#a855f7", spark: [0,0,0,0,0,0,deploys.length] },
   ];
 
   return (
@@ -31,33 +53,25 @@ export function DashboardModule({ t }: { t: Theme }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20, marginBottom: 20 }}>
-        {/* DEPLOY CHART */}
         <Card t={t}>
           <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>Deployment Activity (24h)</h3>
           <DeployActivityChart t={t} />
         </Card>
 
-        {/* PLATFORM STATUS */}
         <Card t={t}>
-          <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>Platform Status</h3>
-          {[
-            { svc: "API Gateway", status: "operational", lat: "23ms" },
-            { svc: "Build Nodes", status: "operational", lat: "—"    },
-            { svc: "CDN",         status: "operational", lat: "11ms" },
-            { svc: "DB Primary",  status: "degraded",    lat: "89ms" },
-            { svc: "DB Replica",  status: "operational", lat: "12ms" },
-          ].map((s) => (
-            <div key={s.svc} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: `1px solid ${t.border}` }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: s.status === "operational" ? t.success : t.warning, display: "inline-block" }} />
-                <span style={{ fontSize: 13, color: t.text }}>{s.svc}</span>
+          <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>Deploy Status</h3>
+          {(["SUCCESS", "BUILDING", "FAILED", "RUNNING", "PENDING"] as const).map((s) => {
+            const count = deploys.filter((d) => d.status === s).length;
+            return (
+              <div key={s} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: `1px solid ${t.border}` }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: statusColor(t, s), display: "inline-block" }} />
+                  <span style={{ fontSize: 13, color: t.text }}>{s}</span>
+                </div>
+                <Badge label={String(count)} color={statusColor(t, s)} />
               </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <span style={{ fontSize: 11, color: t.muted }}>{s.lat}</span>
-                <Badge label={s.status} color={s.status === "operational" ? t.success : t.warning} />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </Card>
       </div>
 
@@ -65,20 +79,22 @@ export function DashboardModule({ t }: { t: Theme }) {
       <Card t={t}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>Recent Deployments</h3>
-          <Badge label="Live Feed" color={t.success} />
+          <Badge label="Live" color={t.success} />
         </div>
-        {DEPLOYMENTS.slice(0, 5).map((d) => {
+        {deploys.length === 0 && (
+          <div style={{ color: t.muted, fontSize: 13, textAlign: "center", padding: 24 }}>No hay deployments aún</div>
+        )}
+        {deploys.slice(0, 5).map((d) => {
           const c = statusColor(t, d.status);
           return (
-            <div key={d.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${t.border}`, gap: 8 }}>
+            <div key={d.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${t.border}`, gap: 8 }}>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{d.app}</div>
-                <div style={{ fontSize: 11, color: t.muted }}>{d.branch} · {d.commit}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{d.projectId}</div>
+                <div style={{ fontSize: 11, color: t.muted }}>{d.commitHash?.slice(0, 7) ?? "—"} · {d.repoUrl.split("/").slice(-1)[0]}</div>
               </div>
               <Badge label={d.status} color={c} />
-              <span style={{ fontSize: 12, color: t.muted }}>{d.version}</span>
-              <span style={{ fontSize: 12, color: t.muted }}>{d.duration}</span>
-              <span style={{ fontSize: 12, color: t.muted, textAlign: "right" }}>{d.time}</span>
+              <span style={{ fontSize: 12, color: d.port ? t.success : t.muted }}>{d.port ? `:${d.port}` : "—"}</span>
+              <span style={{ fontSize: 12, color: t.muted, textAlign: "right" }}>{timeAgo(d.createdAt)}</span>
             </div>
           );
         })}

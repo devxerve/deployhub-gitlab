@@ -1,87 +1,207 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Theme } from "@/lib/themes";
 import { statusColor } from "@/lib/themes";
-import { DEPLOYMENTS, BUILD_LOG_LINES } from "@/lib/data";
 import { Card, Badge, Bar } from "@/components/ui";
-import { useInterval } from "@/hooks/useInterval";
+import {
+  getDeployments,
+  createDeployment,
+  deleteDeployment,
+  type Deploy,
+} from "@/lib/api";
+import { joinDeployRoom, onDeployLog, onDeployStatus } from "@/lib/socket";
 
-type Deploy = (typeof DEPLOYMENTS)[0] & { id: string; progress: number };
+const STATUS_PROGRESS: Record<string, number> = {
+  PENDING: 5,
+  CLONING: 20,
+  BUILDING: 60,
+  RUNNING: 90,
+  SUCCESS: 100,
+  FAILED: 100,
+};
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "just now";
+  if (min < 60) return `${min} min ago`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h} hr ago`;
+  return `${Math.floor(h / 24)} days ago`;
+}
 
 export function DeploymentsModule({ t }: { t: Theme }) {
-  const [deploys, setDeploys] = useState<Deploy[]>(DEPLOYMENTS as Deploy[]);
+  const [deploys, setDeploys] = useState<Deploy[]>([]);
   const [selected, setSelected] = useState<Deploy | null>(null);
-  const [logRunning, setLogRunning] = useState(false);
   const [liveLogs, setLiveLogs] = useState<string[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ repoUrl: "", projectId: "", commitHash: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
-  function launchDeploy(appName: string) {
-    const id = `dpl_${Date.now()}`;
-    const newDeploy: Deploy = {
-      id, app: appName, branch: "main",
-      commit: Math.random().toString(36).slice(2, 9),
-      version: "v2.1.1", status: "BUILDING", duration: "—",
-      user: "giselle@corp.com", time: "just now", progress: 0,
+  useEffect(() => {
+    getDeployments()
+      .then(setDeploys)
+      .catch(() => setError("No se pudo conectar con el backend"));
+  }, []);
+
+  useEffect(() => {
+    if (!selected) return;
+
+    joinDeployRoom(selected.id);
+
+    const offLog = onDeployLog((log) => {
+      setLiveLogs((prev) => [...prev, log]);
+      if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+    });
+
+    const offStatus = onDeployStatus(({ deployId, status }) => {
+      if (deployId !== selected.id) return;
+      setDeploys((prev) =>
+        prev.map((d) => (d.id === deployId ? { ...d, status } : d))
+      );
+      setSelected((prev) => (prev?.id === deployId ? { ...prev, status } : prev));
+    });
+
+    return () => {
+      offLog();
+      offStatus();
     };
-    setDeploys((d) => [newDeploy, ...d]);
-    setSelected(newDeploy);
-    setLiveLogs([]);
-    setLogRunning(true);
+  }, [selected?.id]);
+
+  async function handleCreate() {
+    if (!form.repoUrl || !form.projectId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const deploy = await createDeployment({
+        repoUrl: form.repoUrl,
+        projectId: form.projectId,
+        commitHash: form.commitHash || undefined,
+      });
+      setDeploys((prev) => [deploy, ...prev]);
+      setSelected(deploy);
+      setLiveLogs([]);
+      setShowForm(false);
+      setForm({ repoUrl: "", projectId: "", commitHash: "" });
+    } catch {
+      setError("Error al crear el deployment");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  useInterval(() => {
-    if (!logRunning) return;
-    setLiveLogs((ll) => {
-      if (ll.length >= BUILD_LOG_LINES.length) {
-        setLogRunning(false);
-        setDeploys((d) => d.map((x) => x.status === "BUILDING" ? { ...x, status: "SUCCESS", duration: "1m 48s", progress: 100 } : x));
-        return ll;
-      }
-      const next = [...ll, BUILD_LOG_LINES[ll.length]];
-      setDeploys((d) => d.map((x) => x.status === "BUILDING" ? { ...x, progress: Math.min(100, Math.round((next.length / BUILD_LOG_LINES.length) * 100)) } : x));
-      if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
-      return next;
-    });
-  }, 300);
+  async function handleDelete(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    try {
+      await deleteDeployment(id);
+      setDeploys((prev) => prev.filter((d) => d.id !== id));
+      if (selected?.id === id) setSelected(null);
+    } catch {
+      setError("Error al eliminar el deployment");
+    }
+  }
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: selected ? "1.2fr 1fr" : "1fr", gap: 20 }}>
       {/* LEFT: DEPLOY LIST */}
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>All Deployments</h3>
+          <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>
+            All Deployments
+          </h3>
           <button
-            onClick={() => launchDeploy("deployhub-web")}
+            onClick={() => setShowForm((v) => !v)}
             style={{ padding: "9px 18px", borderRadius: 10, background: "linear-gradient(135deg,#1d4ed8,#3b82f6)", border: "none", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
           >
             🚀 New Deploy
           </button>
         </div>
 
+        {error && (
+          <div style={{ color: "#f87171", fontSize: 13, marginBottom: 12, padding: "8px 12px", background: "rgba(248,113,113,0.1)", borderRadius: 8 }}>
+            {error}
+          </div>
+        )}
+
+        {showForm && (
+          <Card t={t} style={{ marginBottom: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <input
+                placeholder="Repo URL (ej: https://github.com/org/repo)"
+                value={form.repoUrl}
+                onChange={(e) => setForm((f) => ({ ...f, repoUrl: e.target.value }))}
+                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.surface, color: t.text, fontSize: 13, fontFamily: "inherit" }}
+              />
+              <input
+                placeholder="Project ID (ej: my-app)"
+                value={form.projectId}
+                onChange={(e) => setForm((f) => ({ ...f, projectId: e.target.value }))}
+                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.surface, color: t.text, fontSize: 13, fontFamily: "inherit" }}
+              />
+              <input
+                placeholder="Commit hash (opcional)"
+                value={form.commitHash}
+                onChange={(e) => setForm((f) => ({ ...f, commitHash: e.target.value }))}
+                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.surface, color: t.text, fontSize: 13, fontFamily: "inherit" }}
+              />
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={handleCreate}
+                  disabled={loading || !form.repoUrl || !form.projectId}
+                  style={{ flex: 1, padding: "9px 0", borderRadius: 8, background: "#1d4ed8", border: "none", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: loading ? 0.6 : 1 }}
+                >
+                  {loading ? "Lanzando..." : "Lanzar"}
+                </button>
+                <button
+                  onClick={() => setShowForm(false)}
+                  style={{ padding: "9px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${t.border}`, color: t.muted, fontSize: 13, cursor: "pointer" }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {deploys.length === 0 && !error && (
+          <div style={{ color: t.muted, fontSize: 13, textAlign: "center", padding: 32 }}>
+            No hay deployments aún
+          </div>
+        )}
+
         {deploys.map((d) => {
           const c = statusColor(t, d.status);
           const isActive = selected?.id === d.id;
+          const progress = STATUS_PROGRESS[d.status] ?? 0;
+          const isBuilding = ["PENDING", "CLONING", "BUILDING", "RUNNING"].includes(d.status);
+
           return (
-            <Card key={d.id} t={t}
+            <Card
+              key={d.id} t={t}
               style={{ marginBottom: 12, cursor: "pointer", border: isActive ? `1px solid ${t.accent}` : undefined, transition: "all 0.2s" }}
-              onClick={() => setSelected(d)}>
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", alignItems: "center", gap: 8 }}>
+              onClick={() => { setSelected(d); setLiveLogs([]); }}
+            >
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr auto", alignItems: "center", gap: 8 }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{d.app}</div>
-                  <div style={{ fontSize: 11, color: t.muted }}>{d.branch} · {d.commit} · {d.version}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{d.projectId}</div>
+                  <div style={{ fontSize: 11, color: t.muted }}>{d.commitHash?.slice(0, 7) ?? "—"} · {d.repoUrl.split("/").slice(-1)[0]}</div>
                 </div>
                 <Badge label={d.status} color={c} />
-                <div style={{ fontSize: 12, color: t.muted }}>
-                  <div>⏱ {d.duration}</div>
-                  <div style={{ marginTop: 2 }}>👤 {d.user.split("@")[0]}</div>
-                </div>
-                <span style={{ fontSize: 12, color: t.muted, textAlign: "right" }}>{d.time}</span>
+                <span style={{ fontSize: 11, color: t.muted }}>{timeAgo(d.createdAt)}</span>
+                <button
+                  onClick={(e) => handleDelete(d.id, e)}
+                  style={{ padding: "4px 8px", borderRadius: 6, background: "transparent", border: `1px solid ${t.border}`, color: t.muted, fontSize: 11, cursor: "pointer" }}
+                >
+                  ✕
+                </button>
               </div>
-              {d.status === "BUILDING" && (
+              {isBuilding && (
                 <div style={{ marginTop: 10 }}>
-                  <Bar pct={d.progress} color={t.accent} h={4} />
-                  <div style={{ fontSize: 10, color: t.muted, marginTop: 4 }}>{d.progress}% complete</div>
+                  <Bar pct={progress} color={t.accent} h={4} />
+                  <div style={{ fontSize: 10, color: t.muted, marginTop: 4 }}>{d.status}... {progress}%</div>
                 </div>
               )}
             </Card>
@@ -93,33 +213,36 @@ export function DeploymentsModule({ t }: { t: Theme }) {
       {selected && (
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>Build Logs · {selected.app}</h3>
+            <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>
+              Logs · {selected.projectId}
+            </h3>
             <button
               onClick={() => setSelected(null)}
               style={{ padding: "6px 12px", borderRadius: 8, background: "transparent", border: `1px solid ${t.border}`, color: t.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
             >
-              ✕ Close
+              ✕ Cerrar
             </button>
           </div>
           <Card t={t}>
             <div
               ref={logRef}
-              style={{
-                fontFamily: "'JetBrains Mono',monospace", fontSize: 12, lineHeight: "1.8",
-                height: 420, overflowY: "auto", background: "rgba(0,0,0,0.3)", borderRadius: 10, padding: 16,
-              }}
+              style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, lineHeight: "1.8", height: 420, overflowY: "auto", background: "rgba(0,0,0,0.3)", borderRadius: 10, padding: 16 }}
             >
-              {liveLogs.length === 0 && <span style={{ color: t.muted }}>Waiting for logs...</span>}
+              {liveLogs.length === 0 && (
+                <span style={{ color: t.muted }}>Conectando con el servidor...</span>
+              )}
               {liveLogs.map((l, i) => (
                 <div key={i} style={{
-                  color: l.startsWith("✓") || l.startsWith("🚀") ? "#22c55e"
-                    : l.startsWith("$") ? "#3b82f6"
+                  color: l.includes("✅") || l.includes("completed") ? "#22c55e"
+                    : l.includes("FAILED") || l.includes("Error") ? "#f87171"
                     : "#94a3b8",
                 }}>
                   {l}
                 </div>
               ))}
-              {logRunning && <span style={{ color: "#3b82f6" }}>▋</span>}
+              {["PENDING", "CLONING", "BUILDING"].includes(selected.status) && (
+                <span style={{ color: "#3b82f6" }}>▋</span>
+              )}
             </div>
           </Card>
         </div>

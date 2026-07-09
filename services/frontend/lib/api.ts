@@ -1,0 +1,52 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+
+export interface Deploy {
+  id: string;
+  repoUrl: string;
+  projectId: string;
+  status: string;
+  commitHash?: string;
+  envVariables?: string;
+  port?: number;
+  createdAt: string;
+}
+
+export interface CreateDeployDto {
+  repoUrl: string;
+  projectId: string;
+  commitHash?: string;
+  envVariables?: Record<string, string>;
+}
+
+export async function getDeployments(): Promise<Deploy[]> {
+  const res = await fetch(`${API_URL}/deploy`);
+  if (!res.ok) throw new Error("Error al obtener deployments");
+  return res.json();
+}
+
+export async function createDeployment(dto: CreateDeployDto): Promise<Deploy> {
+  const res = await fetch(`${API_URL}/deploy`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dto),
+  });
+  if (!res.ok) throw new Error("Error al crear deployment");
+  return res.json();
+}
+
+export async function getDeployment(id: string): Promise<Deploy> {
+  const res = await fetch(`${API_URL}/deploy/${id}`);
+  if (!res.ok) throw new Error("Error al obtener deployment");
+  return res.json();
+}
+
+export async function deleteDeployment(id: string): Promise<void> {
+  const res = await fetch(`${API_URL}/deploy/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Error al eliminar deployment");
+}
+
+export async function getDeploymentStatus(id: string): Promise<{ id: string; status: string }> {
+  const res = await fetch(`${API_URL}/deploy/${id}/status`);
+  if (!res.ok) throw new Error("Error al obtener estado");
+  return res.json();
+}

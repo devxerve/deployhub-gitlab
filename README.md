@@ -24,3 +24,13 @@ npm run start:dev
 ```bash
 ssh root@157.230.23.219
 ```
+
+- Lanzar backend - Terminal 1 - Puerto 3001
+```bash
+cd services/backend && npm run start:dev
+```
+
+- Lanzar frontend - Terminal 2 - Puerto 3000
+```bash
+cd services/frontend && npm run dev
+```
