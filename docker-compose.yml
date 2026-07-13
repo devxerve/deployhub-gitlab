@@ -16,6 +16,25 @@ services:
     networks:
       - paas_network
 
+  backend:
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile
+    container_name: nest_backend
+    env_file:
+      - ./services/backend/.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.localhost`)"
+      - "traefik.http.services.backend.loadbalancer.server.port=3001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # DooD
+      - /app/tmp:/app/tmp                          # shared with host docker daemon
+    depends_on:
+      - db
+    networks:
+      - paas_network
+
   db:
     image: postgres:15-alpine
     container_name: postgres_db
@@ -71,7 +90,8 @@ services:
 
 networks:
   paas_network:
-    external: true
+    name: paas_network
+    driver: bridge
 
 volumes:
   db_data:

@@ -49,17 +49,18 @@ export class DockerUtil {
   async runContainer(id: string, port: number): Promise<void> {
     return new Promise((resolve, reject) => {
       const netWorkName = process.env.DOCKER_NETWORK_NAME || "deploy-network";
-      const workDir = `./tmp/${id}`;
+      const workDir = `/app/tmp/${id}`;
 
       const child = spawn("docker", [
         "run",
         "-d",
         "--network",
         netWorkName,
-        "-p",
-        `${port}:3000`,
         "--name",
         `container-${id}`,
+        "--label", "traefik.enable=true",
+        "--label", `traefik.http.routers.deploy-${id}.rule=Host(\`${id}.localhost\`)`,
+        "--label", `traefik.http.services.deploy-${id}.loadbalancer.server.port=3000`,
         "--env-file",
         `${workDir}/.env`,
         `image-${id}`,
