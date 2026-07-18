@@ -36,7 +36,9 @@ services:
       - paas_network
 
   db:
-    image: postgres:15-alpine
+    build:
+      context: ./database
+      dockerfile: Dockerfile
     container_name: postgres_db
     environment:
       POSTGRES_USER: ${DB_USER}
@@ -45,7 +47,12 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
-      - paas_network
+      - bbdd_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   prometheus:
     image: prom/prometheus:v2.45.0
@@ -88,10 +95,29 @@ services:
     volumes:
       - ./services/infra/grafana/provisioning:/etc/grafana/provisioning
 
+  auth_service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth_service
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres_db:5432/${DB_NAME}?schema=public
+      - JWT_SECRET=super_secret_docker_key
+    ports:
+      - "3001:3001"
+    networks:
+      - paas_network
+      - bbdd_network
+    depends_on:
+      db:
+        condition: service_healthy
+
 networks:
   paas_network:
     name: paas_network
     driver: bridge
+  bbdd_network:
+    internal: true
 
 volumes:
   db_data:
