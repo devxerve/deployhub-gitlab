@@ -17,7 +17,7 @@ const data = [
   { time: "00:00", before: 20, after: 30 },
   { time: "04:00", before: 25, after: 40 },
   { time: "08:00", before: 30, after: 50 },
-  { time: "12:00", before: 35, after: 75 }, // 🔥 MOMENTO DEPLOY
+  { time: "12:00", before: 35, after: 75 }, //  Momento del deployment
   { time: "16:00", before: 40, after: 70 },
   { time: "20:00", before: 45, after: 80 },
   { time: "24:00", before: 50, after: 90 }
@@ -143,7 +143,7 @@ return (
             strokeDasharray="6 6"
           >
             <Label 
-              value="🚀 DEPLOYMENT" 
+              value="DEPLOYMENT" 
               position="top" 
               fill="#a855f7" 
               fontSize={11} 

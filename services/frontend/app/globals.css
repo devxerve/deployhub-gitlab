@@ -134,3 +134,12 @@ body {
 	--chart-grid: rgba(100,116,139,0.2);
 }
 
+.icon-spin {
+  animation: icon-spin 0.9s linear infinite;
+}
+
+@keyframes icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

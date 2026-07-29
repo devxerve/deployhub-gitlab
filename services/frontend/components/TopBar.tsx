@@ -1,5 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 import {
   Bell,
@@ -15,11 +16,15 @@ import ThemeToggle from "./ThemeToggle";
 export default function TopBar() {
 	const pathname = usePathname();
 
-const titles: any = {
+const titles: Record<string, string> = {
   "/dashboard": "Dashboard",
+  "/applications": "Applications",
   "/deployments": "Deployments",
   "/metrics": "Metrics",
+  "/alerts": "Alerts",
   "/logs": "Logs",
+  "/terminal": "Terminal",
+  "/settings": "Settings",
 };
 
 const title = titles[pathname] || "Dashboard";
@@ -70,7 +75,7 @@ const title = titles[pathname] || "Dashboard";
     <Menu size={18} color="var(--text)" />
   </div>
 
-  {/* 👇 NUEVO BLOQUE (TÍTULO) */}
+  {/* NUEVO BLOQUE (TÍTULO) */}
   <div>
     <h1
       style={{
@@ -232,11 +237,14 @@ onBlur={(e) =>
             borderRadius: "14px"
           }}
         >
-          <img
+          <Image
             src="https://i.pravatar.cc/40"
+            width={40}
+            height={40}
+            alt="DeployHub team profile"
             style={{
               borderRadius: "50%",
-              border: "2px solid var(--primary)"
+              border: "2px solid var(--primary)",
             }}
           />
 

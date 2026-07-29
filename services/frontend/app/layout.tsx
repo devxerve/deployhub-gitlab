@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 
 export const metadata: Metadata = {
-  title: "DeployHub 🚀",
+  title: "DeployHub",
   description: "Web DeployHub ",
   icons: {
     icon: "/favicon.ico"

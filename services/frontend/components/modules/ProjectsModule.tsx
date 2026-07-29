@@ -5,6 +5,7 @@ import type { Theme } from "@/lib/themes";
 import { statusColor } from "@/lib/themes";
 import { Card, Badge, Modal, Btn } from "@/components/ui";
 import { getDeployments, type Deploy } from "@/lib/api";
+import { Package, Search } from "lucide-react";
 
 interface Project {
   id: string;
@@ -72,10 +73,46 @@ export function ProjectsModule({ t }: { t: Theme }) {
   return (
     <div>
       <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
-        <input
-          value={search} onChange={(e) => setSearch(e.target.value)} placeholder="🔍  Search projects..."
-          style={{ flex: 1, minWidth: 180, padding: "10px 14px", borderRadius: 10, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, outline: "none", fontFamily: "inherit" }}
-        />
+        
+        <div
+            style={{
+              position: "relative",
+              flex: 1,
+              minWidth: 180,
+            }}
+          >
+            <Search
+              size={16}
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                left: 13,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: t.muted,
+                pointerEvents: "none",
+              }}
+            />
+
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search projects..."
+              aria-label="Search projects"
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "10px 14px 10px 39px",
+                borderRadius: 10,
+                border: `1px solid ${t.border}`,
+                background: t.inputBg,
+                color: t.text,
+                fontSize: 13,
+                outline: "none",
+                fontFamily: "inherit",
+              }}
+            />
+          </div>
         {["all", "live", "building", "failing", "idle"].map((f) => (
           <button key={f} onClick={() => setFilter(f)} style={{
             padding: "10px 14px", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
@@ -103,7 +140,21 @@ export function ProjectsModule({ t }: { t: Theme }) {
               onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
               onClick={() => setSelected(p)}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: t.accentSoft, border: `1px solid ${t.accentBorder}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>📦</div>
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 12,
+                    background: t.accentSoft,
+                    border: `1px solid ${t.accentBorder}`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: t.accent,
+                  }}
+                >
+                  <Package size={19} aria-hidden="true" />
+                </div>                
                 <Badge label={p.status} color={sc} />
               </div>
               <h3 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700, color: t.text }}>{p.name}</h3>

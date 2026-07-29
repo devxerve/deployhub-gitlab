@@ -11,6 +11,14 @@ import {
   type Deploy,
 } from "@/lib/api";
 import { joinDeployRoom, onDeployLog, onDeployStatus } from "@/lib/socket";
+import {
+  LoaderCircle,
+  Rocket,
+  Trash2,
+  X,
+} from "lucide-react";
+
+
 
 const STATUS_PROGRESS: Record<string, number> = {
   PENDING: 5,
@@ -20,6 +28,7 @@ const STATUS_PROGRESS: Record<string, number> = {
   SUCCESS: 100,
   FAILED: 100,
 };
+
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -40,6 +49,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
+  const selectedDeploymentId = selected?.id;
 
   useEffect(() => {
     getDeployments()
@@ -48,28 +58,46 @@ export function DeploymentsModule({ t }: { t: Theme }) {
   }, []);
 
   useEffect(() => {
-    if (!selected) return;
+  if (!selectedDeploymentId) return;
 
-    joinDeployRoom(selected.id);
+  joinDeployRoom(selectedDeploymentId);
 
-    const offLog = onDeployLog((log) => {
-      setLiveLogs((prev) => [...prev, log]);
-      if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+  const offLog = onDeployLog((log) => {
+    setLiveLogs((previous) => [...previous, log]);
+
+    window.requestAnimationFrame(() => {
+      if (logRef.current) {
+        logRef.current.scrollTop =
+          logRef.current.scrollHeight;
+      }
     });
+  });
 
-    const offStatus = onDeployStatus(({ deployId, status }) => {
-      if (deployId !== selected.id) return;
-      setDeploys((prev) =>
-        prev.map((d) => (d.id === deployId ? { ...d, status } : d))
+  const offStatus = onDeployStatus(
+    ({ deployId, status }) => {
+      if (deployId !== selectedDeploymentId) return;
+
+      setDeploys((previous) =>
+        previous.map((deployment) =>
+          deployment.id === deployId
+            ? { ...deployment, status }
+            : deployment,
+        ),
       );
-      setSelected((prev) => (prev?.id === deployId ? { ...prev, status } : prev));
-    });
 
-    return () => {
-      offLog();
-      offStatus();
-    };
-  }, [selected?.id]);
+      setSelected((previous) =>
+        previous?.id === deployId
+          ? { ...previous, status }
+          : previous,
+      );
+    },
+  );
+
+  return () => {
+    offLog();
+    offStatus();
+  };
+}, [selectedDeploymentId]);
 
   async function handleCreate() {
     if (!form.repoUrl || !form.projectId) return;
@@ -116,7 +144,18 @@ export function DeploymentsModule({ t }: { t: Theme }) {
             onClick={() => setShowForm((v) => !v)}
             style={{ padding: "9px 18px", borderRadius: 10, background: "linear-gradient(135deg,#1d4ed8,#3b82f6)", border: "none", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
           >
-            🚀 New Deploy
+            
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+              }}
+            >
+              <Rocket size={15} aria-hidden="true" />
+              New Deploy
+            </span>
+
           </button>
         </div>
 
@@ -129,23 +168,24 @@ export function DeploymentsModule({ t }: { t: Theme }) {
         {showForm && (
           <Card t={t} style={{ marginBottom: 16 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <input
-                placeholder="Repo URL (ej: https://github.com/org/repo)"
-                value={form.repoUrl}
-                onChange={(e) => setForm((f) => ({ ...f, repoUrl: e.target.value }))}
-                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.surface, color: t.text, fontSize: 13, fontFamily: "inherit" }}
-              />
+             
               <input
                 placeholder="Project ID (ej: my-app)"
                 value={form.projectId}
                 onChange={(e) => setForm((f) => ({ ...f, projectId: e.target.value }))}
-                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.surface, color: t.text, fontSize: 13, fontFamily: "inherit" }}
+                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, fontFamily: "inherit" }}
+              />
+               <input
+                placeholder="Repo URL (ej: https://github.com/org/repo)"
+                value={form.repoUrl}
+                onChange={(e) => setForm((f) => ({ ...f, repoUrl: e.target.value }))}
+                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, fontFamily: "inherit" }}
               />
               <input
                 placeholder="Commit hash (opcional)"
                 value={form.commitHash}
                 onChange={(e) => setForm((f) => ({ ...f, commitHash: e.target.value }))}
-                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.surface, color: t.text, fontSize: 13, fontFamily: "inherit" }}
+                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, fontFamily: "inherit" }}
               />
               <div style={{ display: "flex", gap: 8 }}>
                 <button
@@ -194,8 +234,10 @@ export function DeploymentsModule({ t }: { t: Theme }) {
                 <button
                   onClick={(e) => handleDelete(d.id, e)}
                   style={{ padding: "4px 8px", borderRadius: 6, background: "transparent", border: `1px solid ${t.border}`, color: t.muted, fontSize: 11, cursor: "pointer" }}
+                  aria-label={`Delete deployment ${d.id}`}
+                  title="Delete deployment"
                 >
-                  ✕
+                  <Trash2 size={14} aria-hidden="true" />
                 </button>
               </div>
               {isBuilding && (
@@ -220,7 +262,16 @@ export function DeploymentsModule({ t }: { t: Theme }) {
               onClick={() => setSelected(null)}
               style={{ padding: "6px 12px", borderRadius: 8, background: "transparent", border: `1px solid ${t.border}`, color: t.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
             >
-              ✕ Cerrar
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <X size={14} aria-hidden="true" />
+                Cerrar
+              </span>
             </button>
           </div>
           <Card t={t}>
@@ -233,15 +284,28 @@ export function DeploymentsModule({ t }: { t: Theme }) {
               )}
               {liveLogs.map((l, i) => (
                 <div key={i} style={{
-                  color: l.includes("✅") || l.includes("completed") ? "#22c55e"
-                    : l.includes("FAILED") || l.includes("Error") ? "#f87171"
+                  color: /success|completed|running on port/i.test(l)
+                  ? "#22c55e"
+                  : /failed|error/i.test(l)
+                    ? "#f87171"
                     : "#94a3b8",
                 }}>
                   {l}
                 </div>
               ))}
               {["PENDING", "CLONING", "BUILDING"].includes(selected.status) && (
-                <span style={{ color: "#3b82f6" }}>▋</span>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    color: "#3b82f6",
+                  }}
+                >
+                  <LoaderCircle
+                    size={14}
+                    className="icon-spin"
+                    aria-label="Deployment running"
+                  />
+                </span>
               )}
             </div>
           </Card>

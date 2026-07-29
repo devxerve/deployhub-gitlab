@@ -1,9 +1,15 @@
 "use client";
+interface ComparisonCardProps {
+  title: string;
+  before: number;
+  after: number;
+}
+
 export default function ComparisonCard({
   title,
   before,
-  after
-}: any) {
+  after,
+}: ComparisonCardProps) {
   const isWorse = after > before;
 
   const color = isWorse
