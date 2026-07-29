@@ -234,8 +234,17 @@ export function TopBar({
           aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
           style={{ padding: "8px 13px", borderRadius: 999, background: t.card, border: `1px solid ${t.border}`, cursor: "pointer", fontSize: 12, color: t.muted, fontWeight: 500, fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 7 }}
         >
-          {isDark ? <Sun size={14} /> : <Moon size={14} />}
-          {isDark ? "Light" : "Dark"}
+          {isDark ? (
+            <>
+              <Sun size={14} aria-hidden="true" />
+              Light
+            </>
+              ) : (
+            <>
+              <Moon size={14} aria-hidden="true" />
+              Dark
+            </>
+          )}
         </button>
       </div>
     </header>

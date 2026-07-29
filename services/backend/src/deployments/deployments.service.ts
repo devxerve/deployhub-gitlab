@@ -19,7 +19,8 @@ export class DeploymentsService {
    * CREATE: Saves the initial deployment record in the database.
    */
   async createDeploy(dto: CreateDeployDto) {
-    this.logger.log(`Creating database record for project: ${dto.projectId}`);
+   // this.logger.log(`Creating database record for project: ${dto.projectId}`);
+   this.logger.log(`Creating database record for project:`);
 
     return await this.prisma.deploy.create({
       data: {
@@ -27,6 +28,7 @@ export class DeploymentsService {
         projectId: dto.projectId,
         status: DeployStatus.PENDING,
         commitHash: dto.commitHash || null,
+        branch: dto.branch || null, //agregado para pruebas de conexion GM
         envVariables: dto.envVariables
           ? JSON.stringify(dto.envVariables)
           : null,
