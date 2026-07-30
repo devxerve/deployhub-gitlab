@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 
 /* ─── GITHUB ICON ─── */
 const GitHubIcon = ({ color }: { color: string }) => (
@@ -49,20 +48,89 @@ const BoltIcon = () => (
   </svg>
 );
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || "http://localhost:3001";
+
 export default function LoginPage() {
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isDark, setIsDark] = useState(true);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  function handleLogin(e: React.FormEvent) {
+  // ─── LOGIN HANDLER ───
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (email === "admin@deployhub.com" && password === "1234") {
-      router.push("/dashboard");
-    } else {
-      alert("Usuario incorrecto");
+    setLoading(true);
+    try {
+      // Conectamos con el backend a través del Gateway en NestJS
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",  // ⚠️ necesario para enviar/recibir cookies HttpOnly
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (res.ok) {
+        router.push("/dashboard");
+      } else {
+        const data = await res.json();
+        alert(data.message || "Usuario o contraseña incorrectos");
+      }
+    } catch (err) {
+      alert("Error al conectar con el servidor de autenticación");
+    } finally {
+      setLoading(false);
     }
   }
+
+  // ─── REGISTER HANDLER ───
+async function handleRegister(e: React.FormEvent) {
+  e.preventDefault();
+  setLoading(true);
+
+  // 1. Verificamos la URL y los datos que vamos a enviar
+  console.log("🔍 [REGISTER START]");
+  console.log("📍 API_URL resolvió a:", API_URL);
+  console.log("🌐 URL Final de la petición:", `${API_URL}/auth/register`);
+  console.log("📦 Body enviado:", { username, email, password });
+
+  try {
+    const res = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ username, email, password }),
+    });
+
+    // 2. Imprimimos el status HTTP y headers de la respuesta
+    console.log("📡 Respuesta HTTP recibida!");
+    console.log("Status Code:", res.status, res.statusText);
+    console.log("OK?:", res.ok);
+
+    if (res.ok) {
+      console.log("✅ Registro exitoso en el servidor");
+      alert("¡Cuenta creada con éxito! Por favor inicia sesión.");
+      setIsRegistering(false);
+      setPassword("");
+      setEmail("");
+    } else {
+      const data = await res.json();
+      console.warn("⚠️ El backend respondió con error (HTTP 4xx/5xx):", data);
+      alert(data.message || "Error al registrar el usuario");
+    }
+  } catch (err) {
+    // 3. Capturamos el error exacto de la red / fetch
+    console.error("❌ ERROR EN FETCH (CAUGHT IN CATCH):");
+    console.error(err);
+    alert("Error de conexión al intentar registrar la cuenta");
+  } finally {
+    console.log("🏁 [REGISTER END]\n--------------------");
+    setLoading(false);
+  }
+}
 
   const t = isDark ? light : dark;
 
@@ -88,7 +156,7 @@ export default function LoginPage() {
 
         {/* CARD */}
         <form
-          onSubmit={handleLogin}
+          onSubmit={isRegistering ? handleRegister : handleLogin}
           style={{ ...styles.card, ...t.cardStyle }}
         >
           {/* VERSION TAG */}
@@ -104,57 +172,78 @@ export default function LoginPage() {
             </div>
           </div>
           <div style={{ ...styles.subtitle, color: t.subtitleColor }}>
-            Intelligent deployment monitoring platform
+            {isRegistering ? "Create your account" : "Intelligent deployment monitoring platform"}
           </div>
 
-          {/* OAUTH */}
-          <div style={styles.oauthGrid}>
-            {[
-              { id: "github", label: "GitHub", icon: <GitHubIcon color={t.githubFill} /> },
-              { id: "google", label: "Google", icon: <GoogleIcon /> },
-              { id: "42-school", label: "42 Intra", icon: <FortyTwoIcon color={t.githubFill} /> },
-            ].map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => signIn(p.id)}
-                style={{ ...styles.oauthBtn, ...t.oauthBtnStyle }}
-                onMouseEnter={(e) => {
-                  Object.assign(e.currentTarget.style, t.oauthBtnHover);
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  Object.assign(e.currentTarget.style, t.oauthBtnStyle);
-                  e.currentTarget.style.transform = "translateY(0)";
-                }}
-              >
-                {p.icon}
-                <span style={{ ...styles.btnLabel, color: t.oauthLabelColor }}>{p.label}</span>
-              </button>
-            ))}
-          </div>
+          {/* OAUTH — solo en login */}
+          {!isRegistering && (
+            <>
+              <div style={styles.oauthGrid}>
+                {[
+                  { id: "github", label: "GitHub", icon: <GitHubIcon color={t.githubFill} /> },
+                  { id: "google", label: "Google", icon: <GoogleIcon /> },
+                  { id: "42", label: "42 Intra", icon: <FortyTwoIcon color={t.githubFill} /> },
+                ].map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => { window.location.href = `${AUTH_SERVICE_URL}/auth/oauth/${p.id}`; }}
+                    style={{ ...styles.oauthBtn, ...t.oauthBtnStyle }}
+                    onMouseEnter={(e) => {
+                      Object.assign(e.currentTarget.style, t.oauthBtnHover);
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      Object.assign(e.currentTarget.style, t.oauthBtnStyle);
+                      e.currentTarget.style.transform = "translateY(0)";
+                    }}
+                  >
+                    {p.icon}
+                    <span style={{ ...styles.btnLabel, color: t.oauthLabelColor }}>{p.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div style={styles.divider}>
+                <div style={{ ...styles.divLine, background: t.divLineColor }} />
+                <span style={{ ...styles.divText, color: t.divTextColor }}>or with username</span>
+                <div style={{ ...styles.divLine, background: t.divLineColor }} />
+              </div>
+            </>
+          )}
 
-          {/* DIVIDER */}
-          <div style={styles.divider}>
-            <div style={{ ...styles.divLine, background: t.divLineColor }} />
-            <span style={{ ...styles.divText, color: t.divTextColor }}>or email</span>
-            <div style={{ ...styles.divLine, background: t.divLineColor }} />
-          </div>
-
-          {/* INPUTS */}
+          {/* CAMPO USERNAME — siempre visible */}
           <div style={styles.field}>
-            <label style={{ ...styles.fieldLabel, color: t.labelColor }}>Email</label>
+            <label style={{ ...styles.fieldLabel, color: t.labelColor }}>Username</label>
             <input
-              type="email"
-              placeholder="you@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              placeholder="your_username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
               style={{ ...styles.input, ...t.inputStyle }}
               onFocus={(e) => Object.assign(e.currentTarget.style, t.inputFocus)}
               onBlur={(e) => Object.assign(e.currentTarget.style, t.inputStyle)}
             />
           </div>
 
+          {/* CAMPO EMAIL — solo en registro */}
+          {isRegistering && (
+            <div style={styles.field}>
+              <label style={{ ...styles.fieldLabel, color: t.labelColor }}>Email</label>
+              <input
+                type="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                style={{ ...styles.input, ...t.inputStyle }}
+                onFocus={(e) => Object.assign(e.currentTarget.style, t.inputFocus)}
+                onBlur={(e) => Object.assign(e.currentTarget.style, t.inputStyle)}
+              />
+            </div>
+          )}
+
+          {/* CAMPO PASSWORD */}
           <div style={styles.field}>
             <label style={{ ...styles.fieldLabel, color: t.labelColor }}>Password</label>
             <input
@@ -162,34 +251,66 @@ export default function LoginPage() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
               style={{ ...styles.input, ...t.inputStyle }}
               onFocus={(e) => Object.assign(e.currentTarget.style, t.inputFocus)}
               onBlur={(e) => Object.assign(e.currentTarget.style, t.inputStyle)}
             />
           </div>
 
-          <div style={styles.forgot}>
-            <a href="#" style={{ ...styles.forgotLink, color: t.accent }}>Forgot password?</a>
-          </div>
+          {/* FORGOT — solo en login */}
+          {!isRegistering && (
+            <div style={styles.forgot}>
+              <a href="#" style={{ ...styles.forgotLink, color: t.accent }}>Forgot password?</a>
+            </div>
+          )}
 
+          {/* BOTÓN PRINCIPAL */}
           <button
             type="submit"
-            style={{ ...styles.btnLogin, background: t.btnLoginBg }}
+            disabled={loading}
+            style={{
+              ...styles.btnLogin,
+              background: loading ? "rgba(100,100,100,0.5)" : t.btnLoginBg,
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-1px)";
-              e.currentTarget.style.boxShadow = t.btnLoginShadow;
+              if (!loading) {
+                e.currentTarget.style.transform = "translateY(-1px)";
+                e.currentTarget.style.boxShadow = t.btnLoginShadow;
+              }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(0)";
               e.currentTarget.style.boxShadow = "none";
             }}
           >
-            Sign in to DeployHub
+            {loading ? "Cargando..." : isRegistering ? "Create Account" : "Sign in to DeployHub"}
           </button>
 
+          {/* TOGGLE LOGIN / REGISTER */}
           <div style={{ ...styles.footerNote, color: t.footerColor }}>
-            No account?{" "}
-            <a href="#" style={{ color: t.accent, textDecoration: "none" }}>Request access</a>
+            {isRegistering ? "Already have an account? " : "No account? "}
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegistering(!isRegistering);
+                setPassword("");
+                setEmail("");
+                setUsername("");
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: t.accent,
+                cursor: "pointer",
+                fontSize: 12,
+                padding: 0,
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              {isRegistering ? "Sign in" : "Create account"}
+            </button>
           </div>
         </form>
       </div>

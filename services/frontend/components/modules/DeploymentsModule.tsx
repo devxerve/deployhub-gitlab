@@ -133,19 +133,19 @@ export function DeploymentsModule({ t }: { t: Theme }) {
                 placeholder="Repo URL (ej: https://github.com/org/repo)"
                 value={form.repoUrl}
                 onChange={(e) => setForm((f) => ({ ...f, repoUrl: e.target.value }))}
-                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.surface, color: t.text, fontSize: 13, fontFamily: "inherit" }}
+                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, fontFamily: "inherit" }}
               />
               <input
                 placeholder="Project ID (ej: my-app)"
                 value={form.projectId}
                 onChange={(e) => setForm((f) => ({ ...f, projectId: e.target.value }))}
-                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.surface, color: t.text, fontSize: 13, fontFamily: "inherit" }}
+                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, fontFamily: "inherit" }}
               />
               <input
                 placeholder="Commit hash (opcional)"
                 value={form.commitHash}
                 onChange={(e) => setForm((f) => ({ ...f, commitHash: e.target.value }))}
-                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.surface, color: t.text, fontSize: 13, fontFamily: "inherit" }}
+                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, fontFamily: "inherit" }}
               />
               <div style={{ display: "flex", gap: 8 }}>
                 <button
