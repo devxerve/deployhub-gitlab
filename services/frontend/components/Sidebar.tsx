@@ -146,11 +146,11 @@ const menu = [
           src="https://i.pravatar.cc/40"
           width={40}
           height={40}
-          alt="Giselle profile"
+          alt="User profile"
           style={{ borderRadius: "50%" }}
         />
 				<div>
-					<p style={{ margin: 0 }}>Giselle</p>
+					<p style={{ margin: 0 }}>User</p>
 					<small style={{ color: "var(--muted)" }}>Administrator</small>
 				</div>
 			</div>

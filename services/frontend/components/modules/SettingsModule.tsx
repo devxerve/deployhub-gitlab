@@ -114,10 +114,11 @@ export function SettingsModule({ t }: { t: Theme }) {
   const [tab, setTab] = useState<TabId>("users");
 
   const users = [
-    { name: "Giselle Moreno", email: "giselle@corp.com", role: "Admin",  avatar: "5"  },
-    { name: "Alex Vega",      email: "alex@corp.com",    role: "Dev",    avatar: "8"  },
-    { name: "Ana Torres",     email: "ana@corp.com",     role: "Dev",    avatar: "16" },
-    { name: "Marcos Ruiz",    email: "marcos@corp.com",  role: "Viewer", avatar: "20" },
+    { name: "Giselle Maccha", email: "giselle@deployhub.com", role: "Admin",  avatar: "5"  },
+    { name: "Loreto Urquizo", email: "loreto@deployhub.com",     role: "Dev",    avatar: "16" },
+    { name: "Claudia Gil",      email: "claudia@deployhub.com",    role: "Dev",    avatar: "8"  },
+    { name: "Daniel",     email: "daniel@deployhub.com",     role: "Dev",    avatar: "16" },
+    { name: "Sam",    email: "sam@deployhub.com",  role: "Viewer", avatar: "20" },
   ];
 
   return (

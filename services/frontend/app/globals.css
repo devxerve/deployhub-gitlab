@@ -138,11 +138,6 @@ body {
   animation: icon-spin 0.9s linear infinite;
 }
 
-@keyframes icon-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 .deployments-layout {
   display: grid;

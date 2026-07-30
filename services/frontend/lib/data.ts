@@ -10,11 +10,12 @@ export const PROJECTS = [
 ];
 
 export const DEPLOYMENTS = [
-  { id: "dpl_001", app: "deployhub-web",    branch: "main",         commit: "a1b2c3d", version: "v2.1.0", status: "SUCCESS",  duration: "1m 42s", user: "giselle@corp.com", time: "2 min ago",   progress: 100 },
-  { id: "dpl_002", app: "deployhub-api",    branch: "develop",      commit: "f4g5h6i", version: "v2.0.9", status: "FAILED",   duration: "3m 12s", user: "alex@corp.com",    time: "1 hr ago",    progress: 100 },
-  { id: "dpl_003", app: "deployhub-worker", branch: "feature/auth", commit: "x7y8z9k", version: "v2.0.8", status: "BUILDING", duration: "0m 38s", user: "giselle@corp.com", time: "5 min ago",   progress: 60  },
-  { id: "dpl_004", app: "analytics-svc",   branch: "main",         commit: "m3n4o5p", version: "v1.5.2", status: "SUCCESS",  duration: "2m 05s", user: "marcos@corp.com",  time: "1 day ago",   progress: 100 },
-  { id: "dpl_005", app: "ml-pipeline",     branch: "v2",           commit: "q6r7s8t", version: "v2.0.0", status: "PENDING",  duration: "—",      user: "ana@corp.com",     time: "3 days ago",  progress: 0   },
+  { id: "dpl_001", app: "deployhub-web",    branch: "main",         commit: "a1b2c3d", version: "v2.1.0", status: "SUCCESS",  duration: "1m 42s", user: "giselle@deployhub.com", time: "2 min ago",   progress: 100 },
+  { id: "dpl_002", app: "deployhub-api",    branch: "develop",      commit: "f4g5h6i", version: "v2.0.9", status: "FAILED",   duration: "3m 12s", user: "claudia@deployhub.com",    time: "1 hr ago",    progress: 100 },
+  { id: "dpl_003", app: "deployhub-worker", branch: "feature/auth", commit: "x7y8z9k", version: "v2.0.8", status: "BUILDING", duration: "0m 38s", user: "giselle@deployhub.com", time: "5 min ago",   progress: 60  },
+  { id: "dpl_004", app: "analytics-svc",   branch: "main",         commit: "m3n4o5p", version: "v1.5.2", status: "SUCCESS",  duration: "2m 05s", user: "daniel@deployhub.com",  time: "1 day ago",   progress: 100 },
+  { id: "dpl_006", app: "analytics-svc",   branch: "main",         commit: "m3n4o5c", version: "v1.5.3", status: "SUCCESS",  duration: "2m 09s", user: "loreto@deployhub.com",  time: "1 day ago",   progress: 100 },
+  { id: "dpl_005", app: "ml-pipeline",     branch: "v2",           commit: "q6r7s8t", version: "v2.0.0", status: "PENDING",  duration: "—",      user: "sam@deployhub.com",     time: "3 days ago",  progress: 0   },
 ];
 
 export const PIPELINE_STAGES = [

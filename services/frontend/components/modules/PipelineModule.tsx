@@ -82,7 +82,7 @@ export function PipelineModule({ t }: { t: Theme }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <div>
           <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>CI/CD Pipeline · deployhub-web</h3>
-          <p style={{ margin: "4px 0 0", fontSize: 12, color: t.muted }}>Commit a1b2c3d · branch main · triggered by giselle</p>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: t.muted }}>Commit a1b2c3d · branch main · triggered by User</p>
         </div>
         <button
           onClick={runPipeline} disabled={running}
