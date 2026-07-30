@@ -9,7 +9,7 @@ services:
       - "--entrypoints.web.address=:80"
       - "--providers.docker.network=paas_network"
     ports:
-      - "80:80"
+      - "8000:80"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
@@ -25,7 +25,7 @@ services:
       - ./services/backend/.env
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`api.localhost`)"
+      - "traefik.http.routers.backend.rule=Host(`api.localhost`) || Host(`localhost`) || Host(`127.0.0.1`)"
       - "traefik.http.services.backend.loadbalancer.server.port=3001"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # DooD
@@ -37,7 +37,7 @@ services:
 
   db:
     build:
-      context: ./database
+      context: ./services/database
       dockerfile: Dockerfile
     container_name: postgres_db
     environment:
@@ -97,12 +97,21 @@ services:
 
   auth_service:
     build:
-      context: ./auth-service
+      context: ./services/auth-service
       dockerfile: Dockerfile
     container_name: auth_service
     environment:
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres_db:5432/${DB_NAME}?schema=public
       - JWT_SECRET=super_secret_docker_key
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - GITHUB_REDIRECT_URI=${GITHUB_REDIRECT_URI}
+      - INTRA_CLIENT_ID=${INTRA_CLIENT_ID}
+      - INTRA_CLIENT_SECRET=${INTRA_CLIENT_SECRET}
+      - INTRA_REDIRECT_URI=${INTRA_REDIRECT_URI}
     ports:
       - "3001:3001"
     networks:
@@ -114,8 +123,7 @@ services:
 
 networks:
   paas_network:
-    name: paas_network
-    driver: bridge
+    external: true
   bbdd_network:
     internal: true
 

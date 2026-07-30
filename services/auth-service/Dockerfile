@@ -26,4 +26,4 @@ RUN npm run build
 EXPOSE 3001
 
 # Comando por defecto para iniciar el servicio
-CMD ["node", "dist/app.js"]
+CMD ["sh", "-c", "npx prisma db push && node dist/app.js"]

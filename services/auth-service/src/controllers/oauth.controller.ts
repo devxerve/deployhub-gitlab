@@ -101,7 +101,7 @@ function issueTokenAndRedirect(res: Response, user: any) {
   });
 
   // Redirige al frontend. El frontend detecta la cookie y carga el usuario.
-  res.redirect(`${BASE_URL}/oauth-success`);
+  res.redirect(`${BASE_URL}/dashboard`);
 }
 
 // ============================================================
