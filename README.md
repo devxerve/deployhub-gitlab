@@ -25,6 +25,11 @@ npm run start:dev
 ssh root@157.230.23.219
 ```
 
+- Lanzar oauth service
+```bash
+docker compose up -d --build auth_service
+```
+
 - Lanzar backend - Terminal 1 - Puerto 3001
 ```bash
 cd services/backend && npm run start:dev
@@ -36,6 +41,7 @@ cd services/frontend && npm run dev
 ```
 
 - VARIABLES DE ENTORNO ACTUALES - 31/07 - .env raiz
+```
 # Database (PostgreSQL)
 DB_USER=transcendence
 DB_PASSWORD=b50d869aaa3b587f1a4d0a908a99389a
@@ -72,24 +78,20 @@ APP_BASE_URL=http://localhost:3000
 AUTH_SERVICE_URL=http://auth_service:3001
 
 PROMETHEUS_URL=http://prometheus:9090
+```
 
 - VARIABLES DE ENTORNO ACTUALES - 31/07 - .env backend
+```
 DOCKER_NETWORK_NAME=deploy-network
 DOCKER_BUILD_TIMEOUT=300000
 AUTH_SERVICE_URL=http://localhost:3001
 DEPLOY_TMP_DIR=/tmp/transcendence-deploys
+```
 
 - VARIABLES DE ENTORNO ACTUALES - 31/07 - .env.local frontend
+```
 NEXTAUTH_URL=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_AUTH_SERVICE_URL=http://localhost:3001
 NEXTAUTH_SECRET=tNllrtj/+B9zcpd13U/IOz41ya+jitMLWGlNBkYWvX4=
-
-GITHUB_ID=
-GITHUB_SECRET=
-
-GOOGLE_ID=
-GOOGLE_SECRET=
-
-FORTY_TWO_ID=
-FORTY_TWO_SECRET=
+```
