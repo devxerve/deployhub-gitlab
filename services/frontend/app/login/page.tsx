@@ -66,7 +66,8 @@ export default function LoginPage() {
     }
   }
 
-  const t = isDark ? dark : light;
+  const t = isDark ? light : dark;
+  
 
   return (
     <>
