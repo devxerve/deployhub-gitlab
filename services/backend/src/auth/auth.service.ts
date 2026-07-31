@@ -10,7 +10,7 @@ export class AuthService {
 
   async forwardRegister(dto: any) {
     try {
-      const response = await firstValueFrom(
+      const response: any = await firstValueFrom(
         this.httpService.post(`${this.authServiceUrl}/auth/register`, dto)
       );
       return response.data;
@@ -32,7 +32,7 @@ export class AuthService {
 
   async validateToken(token: string) {
     try {
-      const response = await firstValueFrom(
+      const response: any = await firstValueFrom(
         this.httpService.post(
           `${this.authServiceUrl}/auth/validate`,
           {}, // body vacío

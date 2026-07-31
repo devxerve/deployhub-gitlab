@@ -148,3 +148,11 @@ export const validate = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
+
+// --------------------- LOGOUT ---------------------------
+
+export const logout = async (_req: Request, res: Response): Promise<void> => {
+  res.clearCookie('auth_token');
+  res.status(200).json({ message: 'Sesión cerrada con éxito' });
+};
+
