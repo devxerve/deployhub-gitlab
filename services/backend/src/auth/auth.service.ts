@@ -4,7 +4,13 @@ import { firstValueFrom } from "rxjs";
 
 @Injectable()
 export class AuthService {
-  private readonly authServiceUrl: string = process.env.AUTH_SERVICE_URL || 'http://auth_service:3001';
+  private readonly authServiceUrl: string = (() => {
+    const url = process.env.AUTH_SERVICE_URL;
+    if (!url) {
+      throw new Error('AUTH_SERVICE_URL no está definido');
+    }
+    return url;
+  })();
 
   constructor(private readonly httpService: HttpService) {}
 

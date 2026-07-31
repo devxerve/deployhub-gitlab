@@ -51,8 +51,8 @@ const BoltIcon = () => (
   </svg>
 );
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -135,16 +135,8 @@ async function handleRegister(e: React.FormEvent) {
   }
 }
 
-  window.localStorage.setItem(
-    "deployhub-demo-session",
-    "active",
-  );
-
-  router.replace("/dashboard");
-}
-
   const t = isDark ? light : dark;
-  
+
 
   return (
     <>

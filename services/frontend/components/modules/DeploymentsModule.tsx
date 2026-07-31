@@ -196,29 +196,12 @@ export function DeploymentsModule({ t }: { t: Theme }) {
         {showForm && projects.length > 0 && (
           <Card t={t} style={{ marginBottom: 16 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <input
-                placeholder="Repo URL (ej: https://github.com/org/repo)"
-                value={form.repoUrl}
-                onChange={(e) => setForm((f) => ({ ...f, repoUrl: e.target.value }))}
-                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, fontFamily: "inherit" }}
-              />
-              <input
-                placeholder="Project ID (ej: my-app)"
-                value={form.projectId}
-                onChange={(e) => setForm((f) => ({ ...f, projectId: e.target.value }))}
-                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, fontFamily: "inherit" }}
-              />
-              <input
-                placeholder="Commit hash (opcional)"
-                value={form.commitHash}
-                onChange={(e) => setForm((f) => ({ ...f, commitHash: e.target.value }))}
-                style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, fontFamily: "inherit" }}
-              />
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  onClick={handleCreate}
-                  disabled={loading || !form.repoUrl || !form.projectId}
-                  style={{ flex: 1, padding: "9px 0", borderRadius: 8, background: "#1d4ed8", border: "none", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: loading ? 0.6 : 1 }}
+              <label style={{ fontSize: 12, color: t.muted }}>
+                Project
+                <select
+                  value={projectId}
+                  onChange={(e) => setProjectId(e.target.value)}
+                  style={{ display: "block", width: "100%", marginTop: 6, padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, fontFamily: "inherit" }}
                 >
                   {projects.map((project) => (
                     <option key={project.id} value={project.id}>{project.name}</option>

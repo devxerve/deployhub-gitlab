@@ -8,7 +8,6 @@ import type { Theme } from "@/lib/themes";
 import Image from "next/image";
 import { NOTIFICATIONS } from "@/lib/data";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import {
   AlertTriangle,
   Bell,
@@ -32,6 +31,8 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /* ─── NAV ITEMS ──────────────────────────────────────────────────────────── */
 export const NAV: ReadonlyArray<{ id: PageId; icon: LucideIcon; label: string }> = [
@@ -663,12 +664,13 @@ export function DashboardShell({
       "deployhub-demo-session",
     );
 
-    await signOut({
-      redirect: false,
+    await fetch(`${API_URL}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
     });
   } catch (error) {
     console.error(
-      "Unable to close NextAuth session:",
+      "Unable to close session:",
       error,
     );
   } finally {

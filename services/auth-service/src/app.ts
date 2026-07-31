@@ -17,13 +17,11 @@ app.use(cookieParser());
 // Rutas
 app.use('/auth', authRoutes);
 app.use('/auth/oauth', oauthRoutes);  // Google, GitHub, 42
-
-// Endpoint de prueba (Healthcheck)
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', service: 'auth-service' });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT_AUTH_SERVICE;
 
 app.listen(PORT, () => {
   console.log(`Auth service running on port ${PORT}`);

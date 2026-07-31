@@ -21,7 +21,7 @@ export class DeploymentsProcessor {
      */
     async process(id: string) {
         this.logger.log(`[START] Initializing pipeline for deploy ID: ${id}`);
-        const workDir = `/app/tmp/${id}`;
+        const workDir = path.join(process.env.DEPLOY_TMP_DIR || '/app/tmp', id);
 
         try {
             // 1. RETRIEVE DEPLOY DETAILS

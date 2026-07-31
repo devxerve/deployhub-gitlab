@@ -11,9 +11,7 @@ import {
 const router = Router();
 
 // ---- Google ----
-// 1. El usuario hace clic en "Entrar con Google" → frontend llama a esta ruta
 router.get('/google', googleRedirect);
-// 2. Google redirige aquí tras el consentimiento
 router.get('/google/callback', googleCallback);
 
 // ---- GitHub ----

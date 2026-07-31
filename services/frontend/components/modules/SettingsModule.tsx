@@ -115,7 +115,7 @@ export function SettingsModule({ t }: { t: Theme }) {
 
   const users = [
     { name: "Giselle Maccha", email: "giselle@deployhub.com", role: "Admin",  avatar: "26"  },
-    { name: "Loreto Urquizo", email: "loreto@deployhub.com",     role: "Dev",    avatar: "20" },
+    { name: "Loreto Uzquiano", email: "loreto@deployhub.com",     role: "Dev",    avatar: "20" },
     { name: "Claudia Gil",      email: "claudia@deployhub.com",    role: "Dev",    avatar: "44"  },
     { name: "Daniel",     email: "daniel@deployhub.com",     role: "Dev",    avatar: "7" },
     { name: "Sam",    email: "sam@deployhub.com",  role: "Viewer", avatar: "8" },
@@ -221,7 +221,7 @@ export function SettingsModule({ t }: { t: Theme }) {
                 Generate
               </span>
             </Btn>
-            
+
           </div>
           {[
             { name: "CI/CD Pipeline Token", prefix: "dhk_ci_••••••••••••8f3a",  created: "2026-01-15", expires: "2026-12-31", scopes: "deploy:write,logs:read" },
@@ -266,7 +266,7 @@ export function SettingsModule({ t }: { t: Theme }) {
                         color={t.accent}
                         aria-hidden="true"
                       />
-                    )} 
+                    )}
                   </div>
                   <span style={{ color: t.muted, textTransform: "capitalize" }}>{ch}</span>
                 </div>
@@ -393,7 +393,7 @@ export function SettingsModule({ t }: { t: Theme }) {
                 <Plus size={14} aria-hidden="true" />
                 Add Variable
               </span>
-            </Btn>            
+            </Btn>
           </div>
           {[
             { key: "DEPLOYHUB_API_URL", val: "https://api.deployhub.io",   scope: "Global"       },

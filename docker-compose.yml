@@ -102,7 +102,10 @@ services:
     container_name: auth_service
     environment:
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres_db:5432/${DB_NAME}?schema=public
-      - JWT_SECRET=super_secret_docker_key
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - PORT_AUTH_SERVICE=${PORT_AUTH_SERVICE}
+      - APP_BASE_URL=${APP_BASE_URL}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
@@ -113,7 +116,7 @@ services:
       - INTRA_CLIENT_SECRET=${INTRA_CLIENT_SECRET}
       - INTRA_REDIRECT_URI=${INTRA_REDIRECT_URI}
     ports:
-      - "3001:3001"
+      - "${PORT_AUTH_SERVICE}:${PORT_AUTH_SERVICE}"
     networks:
       - paas_network
       - bbdd_network

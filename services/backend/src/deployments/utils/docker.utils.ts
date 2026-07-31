@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { spawn } from "child_process";
+import * as path from "path";
 import { DeploymentsService } from "../deployments.service";
 
 @Injectable()
@@ -49,7 +50,7 @@ export class DockerUtil {
   async runContainer(id: string, port: number): Promise<void> {
     return new Promise((resolve, reject) => {
       const netWorkName = process.env.DOCKER_NETWORK_NAME || "deploy-network";
-      const workDir = `/app/tmp/${id}`;
+      const workDir = path.join(process.env.DEPLOY_TMP_DIR || '/app/tmp', id);
 
       const child = spawn("docker", [
         "run",

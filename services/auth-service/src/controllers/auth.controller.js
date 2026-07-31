@@ -75,8 +75,6 @@ const login = async (req, res) => {
             role: user.role
         };
         const token = (0, jwt_1.generateToken)(payload);
-        // Enviar el token como una cookie HTTP-Only.
-        // El backend NestJS capturará esta cabecera y la reenviará al frontend.
         res.cookie('auth_token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -96,8 +94,6 @@ const login = async (req, res) => {
 exports.login = login;
 const validate = async (req, res) => {
     try {
-        // Intentar obtener el token de las cookies (requiere cookie-parser)
-        // o de la cabecera de Authorization
         let token = req.cookies?.auth_token;
         if (!token && req.headers.authorization?.startsWith('Bearer ')) {
             token = req.headers.authorization.split(' ')[1];
@@ -122,4 +118,3 @@ const validate = async (req, res) => {
     }
 };
 exports.validate = validate;
-//# sourceMappingURL=auth.controller.js.map
