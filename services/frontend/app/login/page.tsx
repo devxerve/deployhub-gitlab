@@ -57,14 +57,25 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isDark, setIsDark] = useState(true);
 
-  function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    if (email === "admin@deployhub.com" && password === "1234") {
-      router.push("/dashboard");
-    } else {
-      alert("Usuario incorrecto");
-    }
+  function handleLogin(event: React.FormEvent) {
+  event.preventDefault();
+
+  const validDemoCredentials =
+    email === "admin@deployhub.com" &&
+    password === "1234";
+
+  if (!validDemoCredentials) {
+    alert("Usuario o contraseña incorrectos");
+    return;
   }
+
+  window.localStorage.setItem(
+    "deployhub-demo-session",
+    "active",
+  );
+
+  router.replace("/dashboard");
+}
 
   const t = isDark ? light : dark;
   
@@ -130,7 +141,11 @@ export default function LoginPage() {
               <button
                 key={p.id}
                 type="button"
-                onClick={() => signIn(p.id)}
+                onClick={() =>
+                  signIn(p.id, {
+                    callbackUrl: "/dashboard",
+                  })
+                }
                 style={{ ...styles.oauthBtn, ...t.oauthBtnStyle }}
                 onMouseEnter={(e) => {
                   Object.assign(e.currentTarget.style, t.oauthBtnHover);

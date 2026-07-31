@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 import type { Theme } from "@/lib/themes";
 import Image from "next/image";
 import { NOTIFICATIONS } from "@/lib/data";
+import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   AlertTriangle,
   Bell,
@@ -14,6 +19,8 @@ import {
   Gauge,
   GitPullRequestArrow,
   Info,
+  LoaderCircle,
+  LogOut,
   Menu,
   Moon,
   Rocket,
@@ -56,17 +63,23 @@ export function Sidebar({
   active,
   onNav,
   collapsed,
+  onLogout,
+  logoutLoading,
 }: {
   t: Theme;
   active: PageId;
   onNav: (id: PageId) => void;
   collapsed: boolean;
+  onLogout: () => void;
+  logoutLoading: boolean;
 }) {
   return (
     <aside
       style={{
-        width: collapsed ? 64 : 240,
+        width: collapsed ? 72 : 240,
+        minWidth: collapsed ? 72 : 240,
         minHeight: "100vh",
+        height: "100dvh",
         background: t.sidebar,
         borderRight: `1px solid ${t.border}`,
         backdropFilter: "blur(18px)",
@@ -74,9 +87,10 @@ export function Sidebar({
         flexDirection: "column",
         justifyContent: "space-between",
         padding: collapsed ? "20px 8px" : "20px 16px",
-        transition: "width 0.3s ease",
+        transition: "width 0.22s ease, min-width 0.22s ease",
         flexShrink: 0,
         position: "sticky",
+        overflow: "hidden",
         top: 0,
       }}
     >
@@ -107,6 +121,15 @@ export function Sidebar({
 
         {/* NAV ITEMS */}
         <nav aria-label="Main navigation" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <nav
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: "auto",
+              overflowX: "hidden",
+              padding: "8px 10px 16px",
+            }}
+          >
           {NAV.map((item) => {
             const isActive = active === item.id;
             const Icon = item.icon;
@@ -142,27 +165,141 @@ export function Sidebar({
               </button>
             );
           })}
+          </nav>
         </nav>
       </div>
 
       {/* USER CARD */}
-      <div style={{ background: t.card, padding: "10px 12px", borderRadius: 14, border: `1px solid ${t.border}`, display: "flex", alignItems: "center", gap: 8 }}>
-          <Image
-            src="https://i.pravatar.cc/32?img=5"
-            width={32}
-            height={32}
-            alt="User profile"
-            style={{
-              borderRadius: "50%",
-              flexShrink: 0,
-            }}
-          />
+      <div
+        style={{
+          background: t.card,
+          padding: collapsed ? "9px 6px" : "10px",
+          borderRadius: 14,
+          border: `1px solid ${t.border}`,
+          display: "flex",
+          flexDirection: collapsed ? "column" : "row",
+          alignItems: "center",
+          gap: collapsed ? 8 : 10,
+          boxShadow: t.shadow,
+        }}
+      >
+        <Image
+          src="https://i.pravatar.cc/32?img=5"
+          width={32}
+          height={32}
+          alt="User profile"
+          style={{
+            borderRadius: "50%",
+            flexShrink: 0,
+            border: `2px solid ${t.accentBorder}`,
+          }}
+        />
+
         {!collapsed && (
-          <div>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: t.text }}>Usuario</p>
-            <p style={{ margin: 0, fontSize: 11, color: t.muted }}>Administrator</p>
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: 13,
+                fontWeight: 600,
+                color: t.text,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Usuario
+            </p>
+            
+            <p
+              style={{
+                margin: 0,
+                fontSize: 11,
+                color: t.muted,
+              }}
+            >
+              Administrator
+            </p>
           </div>
         )}
+        <div
+        title="Online"
+        aria-label="Online"
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: "50%",
+          background: t.success,
+          boxShadow: `0 0 0 3px ${t.successSoft}`,
+          flexShrink: 0,
+        }}
+      />
+
+        <button
+          type="button"
+          onClick={onLogout}
+          disabled={logoutLoading}
+          aria-label="Sign out"
+          title="Sign out"
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 9,
+            border: `1px solid ${t.border}`,
+            background: "transparent",
+            color: t.muted,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: logoutLoading
+              ? "not-allowed"
+              : "pointer",
+            flexShrink: 0,
+            transition:
+              "background 0.2s ease, color 0.2s ease, border-color 0.2s ease",
+            opacity: logoutLoading ? 0.65 : 1,
+          }}
+          onMouseEnter={(event) => {
+            if (logoutLoading) return;
+          
+            event.currentTarget.style.background =
+              "rgba(239,68,68,0.12)";
+          
+            event.currentTarget.style.borderColor =
+              "rgba(239,68,68,0.35)";
+          
+            event.currentTarget.style.color =
+              t.danger;
+          }}
+          onMouseLeave={(event) => {
+            event.currentTarget.style.background =
+              "transparent";
+          
+            event.currentTarget.style.borderColor =
+              t.border;
+          
+            event.currentTarget.style.color =
+              t.muted;
+          }}
+        >
+          {logoutLoading ? (
+            <LoaderCircle
+              size={16}
+              className="icon-spin"
+              aria-hidden="true"
+            />
+          ) : (
+            <LogOut
+              size={16}
+              aria-hidden="true"
+            />
+          )}
+        </button>
       </div>
     </aside>
   );
@@ -287,6 +424,215 @@ export function NotifPanel({ t, onClose }: { t: Theme; onClose: () => void }) {
   );
 }
 
+/* modal cerrar*/
+function LogoutDialog({
+  t,
+  open,
+  loading,
+  onCancel,
+  onConfirm,
+}: {
+  t: Theme;
+  open: boolean;
+  loading: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  useEffect(() => {
+    if (!open) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (
+        event.key === "Escape" &&
+        !loading
+      ) {
+        onCancel();
+      }
+    }
+
+    window.addEventListener(
+      "keydown",
+      handleKeyDown,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown,
+      );
+    };
+  }, [loading, onCancel, open]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      role="presentation"
+      onMouseDown={() => {
+        if (!loading) {
+          onCancel();
+        }
+      }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 1200,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+        background: "rgba(2,6,23,0.64)",
+        backdropFilter: "blur(8px)",
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logout-title"
+        aria-describedby="logout-description"
+        onMouseDown={(event) =>
+          event.stopPropagation()
+        }
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          borderRadius: 18,
+          padding: 22,
+          background: t.card,
+          border: `1px solid ${t.border}`,
+          boxShadow:
+            "0 24px 80px rgba(0,0,0,0.32)",
+          animation: "fadeIn 0.2s ease",
+        }}
+      >
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 13,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: t.danger,
+            background:
+              "rgba(239,68,68,0.12)",
+            border:
+              "1px solid rgba(239,68,68,0.25)",
+            marginBottom: 16,
+          }}
+        >
+          <LogOut
+            size={21}
+            aria-hidden="true"
+          />
+        </div>
+
+        <h2
+          id="logout-title"
+          style={{
+            margin: "0 0 8px",
+            color: t.text,
+            fontSize: 18,
+            fontWeight: 700,
+          }}
+        >
+          Sign out of DeployHub?
+        </h2>
+
+        <p
+          id="logout-description"
+          style={{
+            margin: 0,
+            color: t.muted,
+            fontSize: 13,
+            lineHeight: 1.6,
+          }}
+        >
+          Your current session will be closed.
+          Projects and deployment history stored in
+          this browser will not be deleted.
+        </p>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 10,
+            marginTop: 22,
+          }}
+        >
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            style={{
+              padding: "10px 15px",
+              borderRadius: 10,
+              border: `1px solid ${t.border}`,
+              background: t.hover,
+              color: t.text,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: loading
+                ? "not-allowed"
+                : "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={loading}
+            style={{
+              minWidth: 116,
+              padding: "10px 15px",
+              borderRadius: 10,
+              border:
+                "1px solid rgba(239,68,68,0.4)",
+              background: t.danger,
+              color: "#ffffff",
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: loading
+                ? "not-allowed"
+                : "pointer",
+              fontFamily: "inherit",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 7,
+              opacity: loading ? 0.75 : 1,
+            }}
+          >
+            {loading ? (
+              <>
+                <LoaderCircle
+                  size={15}
+                  className="icon-spin"
+                  aria-hidden="true"
+                />
+                Signing out
+              </>
+            ) : (
+              <>
+                <LogOut
+                  size={15}
+                  aria-hidden="true"
+                />
+                Sign out
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+} 
+
+
 /* ─── DASHBOARD SHELL (shared layout wrapper) ────────────────────────────── */
 export function DashboardShell({
   t,
@@ -299,10 +645,38 @@ export function DashboardShell({
   toggle: () => void;
   children: (props: { page: PageId }) => React.ReactNode;
 }) {
+  const router = useRouter();
   const [page, setPage] = useState<PageId>("dashboard");
   const [collapsed, setCollapsed] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
+  const [showLogout, setShowLogout] =useState(false);
+  const [logoutLoading, setLogoutLoading] =useState(false);
   const unread = NOTIFICATIONS.filter((notification) => !notification.read).length;
+
+  async function handleLogout() {
+  if (logoutLoading) return;
+
+  setLogoutLoading(true);
+
+  try {
+    window.localStorage.removeItem(
+      "deployhub-demo-session",
+    );
+
+    await signOut({
+      redirect: false,
+    });
+  } catch (error) {
+    console.error(
+      "Unable to close NextAuth session:",
+      error,
+    );
+  } finally {
+    router.replace("/login");
+    router.refresh();
+  }
+}
+
 
   return (
     <div
@@ -317,7 +691,14 @@ export function DashboardShell({
       }}
       onClick={() => setShowNotif(false)}
     >
-      <Sidebar t={t} active={page} onNav={setPage} collapsed={collapsed} />
+      <Sidebar
+        t={t}
+        active={page}
+        onNav={setPage}
+        collapsed={collapsed}
+        onLogout={() => setShowLogout(true)}
+        logoutLoading={logoutLoading}
+      />
 
       <main style={{ flex: 1, padding: 20, minWidth: 0, overflowX: "hidden" }}>
         <TopBar
@@ -333,6 +714,17 @@ export function DashboardShell({
       </main>
 
       {showNotif && <NotifPanel t={t} onClose={() => setShowNotif(false)} />}
+      <LogoutDialog
+       t={t}
+       open={showLogout}
+       loading={logoutLoading}
+       onCancel={() => {
+         if (!logoutLoading) {
+           setShowLogout(false);
+         }
+       }}
+       onConfirm={handleLogout}
+      />
     </div>
   );
 }
