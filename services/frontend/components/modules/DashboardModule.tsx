@@ -27,7 +27,7 @@ export function DashboardModule({ t }: { t: Theme }) {
   const totalProjects = new Set(deploys.map((d) => d.projectId)).size;
   const today = new Date().toDateString();
   const deploymentsToday = deploys.filter((d) => new Date(d.createdAt).toDateString() === today).length;
-  const failedDeploys = deploys.filter((d) => d.status === "FAILED").length;
+  const failedDeploys = deploys.filter((d) => d.status === "failed").length;
 
   const kpis = [
     { label: "Total Projects",    value: totalProjects || 0,   sub: "proyectos únicos",       color: "#3b82f6", spark: [0,0,0,0,0,0,totalProjects] },
@@ -60,7 +60,7 @@ export function DashboardModule({ t }: { t: Theme }) {
 
         <Card t={t}>
           <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>Deploy Status</h3>
-          {(["SUCCESS", "BUILDING", "FAILED", "RUNNING", "PENDING"] as const).map((s) => {
+          {(["SUCCESS", "BUILDING", "failed", "RUNNING", "PENDING"] as const).map((s) => {
             const count = deploys.filter((d) => d.status === s).length;
             return (
               <div key={s} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: `1px solid ${t.border}` }}>

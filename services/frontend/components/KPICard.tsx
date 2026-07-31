@@ -1,15 +1,25 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { ArrowUp, ArrowDown } from "lucide-react";
 
+interface KPICardProps {
+  title: string;
+  value: number;
+  color: string;
+  trend: "up" | "down";
+  percent: number;
+  icon: ReactNode;
+}
+
 export default function KPICard({
-	title,
-	value,
-	color,
-	trend,
-	percent,
-	icon
-}: any) {
+  title,
+  value,
+  color,
+  trend,
+  percent,
+  icon,
+}: KPICardProps) {
 	const radius = 38;
 	const stroke = 6;
 	const normalizedRadius = radius - stroke;

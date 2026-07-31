@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { X } from "lucide-react";
 import type { Theme } from "@/lib/themes";
 
 /* ─── SPARKLINE ──────────────────────────────────────────────────────────── */
@@ -91,9 +92,10 @@ export function Modal({
           <h3 style={{ margin: 0, color: t.text, fontSize: 16, fontWeight: 700 }}>{title}</h3>
           <button
             onClick={onClose}
-            style={{ width: 30, height: 30, borderRadius: 8, background: t.hover, border: `1px solid ${t.border}`, color: t.muted, cursor: "pointer", fontSize: 14 }}
+            aria-label="Close modal"
+            style={{ width: 30, height: 30, borderRadius: 8, background: t.hover, border: `1px solid ${t.border}`, color: t.muted, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
           >
-            ✕
+            <X size={14} />
           </button>
         </div>
         {children}

@@ -6,6 +6,7 @@ import { scoreColor } from "@/lib/themes";
 import { PROJECTS, EVALUATION_SCORES } from "@/lib/data";
 import { Card, Bar } from "@/components/ui";
 import { RadarChart } from "@/components/charts";
+import { Lightbulb } from "lucide-react";
 
 export function EvaluationModule({ t }: { t: Theme }) {
   const [selected, setSelected] = useState(PROJECTS[0]);
@@ -62,7 +63,24 @@ export function EvaluationModule({ t }: { t: Theme }) {
 
           {/* RECOMMENDATIONS */}
           <Card t={t}>
-            <h3 style={{ margin: "0 0 12px", color: t.text, fontSize: 15, fontWeight: 600 }}>💡 Recommendations</h3>
+            <h3
+              style={{
+                margin: "0 0 12px",
+                color: t.text,
+                fontSize: 15,
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <Lightbulb
+                size={17}
+                color={t.accent}
+                aria-hidden="true"
+              />
+              Recommendations
+            </h3>
             {s.recs.map((r, i) => (
               <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: i < s.recs.length - 1 ? `1px solid ${t.border}` : "none" }}>
                 <span style={{ color: t.accent, flexShrink: 0 }}>{i + 1}.</span>

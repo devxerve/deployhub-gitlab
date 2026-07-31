@@ -1,53 +1,116 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 import type { Theme } from "@/lib/themes";
+import Image from "next/image";
 import { NOTIFICATIONS } from "@/lib/data";
+import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import {
+  AlertTriangle,
+  Bell,
+  CheckCircle2,
+  CircleGauge,
+  FileClock,
+  FolderGit2,
+  Gauge,
+  GitPullRequestArrow,
+  Info,
+  LoaderCircle,
+  LogOut,
+  Menu,
+  Moon,
+  Rocket,
+  Settings,
+  ShieldCheck,
+  Sun,
+  X,
+  XCircle,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 
 /* ─── NAV ITEMS ──────────────────────────────────────────────────────────── */
-export const NAV = [
-  { id: "dashboard",   icon: "⬡",  label: "Dashboard"     },
-  { id: "projects",    icon: "📁", label: "Projects"      },
-  { id: "deployments", icon: "🚀", label: "Deployments"   },
-  { id: "pipeline",    icon: "⚙️",  label: "CI/CD Pipeline"},
-  { id: "monitoring",  icon: "📊", label: "Monitoring"    },
-  { id: "logs",        icon: "📋", label: "Logs"          },
-  { id: "evaluation",  icon: "⭐", label: "Evaluation"    },
-  { id: "settings",    icon: "🔧", label: "Settings"      },
-] as const;
+export const NAV: ReadonlyArray<{ id: PageId; icon: LucideIcon; label: string }> = [
+  { id: "dashboard", icon: Gauge, label: "Dashboard" },
+  { id: "projects", icon: FolderGit2, label: "Projects" },
+  { id: "deployments", icon: Rocket, label: "Deployments" },
+  { id: "pipeline", icon: GitPullRequestArrow, label: "CI/CD Pipeline" },
+  { id: "monitoring", icon: CircleGauge, label: "Monitoring" },
+  { id: "logs", icon: FileClock, label: "Logs" },
+  { id: "evaluation", icon: ShieldCheck, label: "Evaluation" },
+  { id: "settings", icon: Settings, label: "Settings" },
+];
 
-export type PageId = typeof NAV[number]["id"];
+
+
+export type PageId =
+  | "dashboard"
+  | "projects"
+  | "deployments"
+  | "pipeline"
+  | "monitoring"
+  | "logs"
+  | "evaluation"
+  | "settings";
 
 /* ─── SIDEBAR ────────────────────────────────────────────────────────────── */
 export function Sidebar({
-  t, active, onNav, collapsed,
-}: { t: Theme; active: PageId; onNav: (id: PageId) => void; collapsed: boolean }) {
+  t,
+  active,
+  onNav,
+  collapsed,
+  onLogout,
+  logoutLoading,
+}: {
+  t: Theme;
+  active: PageId;
+  onNav: (id: PageId) => void;
+  collapsed: boolean;
+  onLogout: () => void;
+  logoutLoading: boolean;
+}) {
   return (
-    <div style={{
-      width: collapsed ? 64 : 240,
-      minHeight: "100vh",
-      background: t.sidebar,
-      borderRight: `1px solid ${t.border}`,
-      backdropFilter: "blur(18px)",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "space-between",
-      padding: collapsed ? "20px 8px" : "20px 16px",
-      transition: "width 0.3s ease",
-      flexShrink: 0,
-      position: "sticky",
-      top: 0,
-    }}>
+    <aside
+      style={{
+        width: collapsed ? 72 : 240,
+        minWidth: collapsed ? 72 : 240,
+        minHeight: "100vh",
+        height: "100dvh",
+        background: t.sidebar,
+        borderRight: `1px solid ${t.border}`,
+        backdropFilter: "blur(18px)",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        padding: collapsed ? "20px 8px" : "20px 16px",
+        transition: "width 0.22s ease, min-width 0.22s ease",
+        flexShrink: 0,
+        position: "sticky",
+        overflow: "hidden",
+        top: 0,
+      }}
+    >
       <div>
-        {/* LOGO */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 32, paddingLeft: 4 }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 10,
-            background: "linear-gradient(135deg,#1d4ed8,#3b82f6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0, boxShadow: "0 4px 12px rgba(59,130,246,0.35)",
-          }}>
-            <span style={{ color: "white", fontSize: 16 }}>⚡</span>
+          <div
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 10,
+              background: "linear-gradient(135deg,#1d4ed8,#3b82f6)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              boxShadow: "0 4px 12px rgba(59,130,246,0.35)",
+              color: "white",
+            }}
+          >
+            <Zap size={18} fill="currentColor" />
           </div>
           {!collapsed && (
             <span style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 600, fontSize: 15, color: t.accent, letterSpacing: "-0.3px" }}>
@@ -57,85 +120,230 @@ export function Sidebar({
         </div>
 
         {/* NAV ITEMS */}
-        <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {NAV.map((n) => {
-            const isActive = active === n.id;
+        <nav aria-label="Main navigation" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <nav
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: "auto",
+              overflowX: "hidden",
+              padding: "8px 10px 16px",
+            }}
+          >
+          {NAV.map((item) => {
+            const isActive = active === item.id;
+            const Icon = item.icon;
             return (
               <button
-                key={n.id}
-                onClick={() => onNav(n.id as PageId)}
+                key={item.id}
+                onClick={() => onNav(item.id)}
+                title={collapsed ? item.label : undefined}
+                aria-current={isActive ? "page" : undefined}
                 style={{
-                  display: "flex", alignItems: "center",
-                  gap: 10, padding: collapsed ? "10px" : "10px 12px",
-                  borderRadius: 10, cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: collapsed ? 10 : "10px 12px",
+                  borderRadius: 10,
+                  cursor: "pointer",
                   background: isActive ? t.active : "transparent",
                   border: isActive ? `1px solid ${t.accentBorder}` : "1px solid transparent",
                   color: isActive ? t.menuActive : t.menuText,
-                  fontSize: 13, fontWeight: isActive ? 600 : 400,
-                  transition: "all 0.2s", textAlign: "left", width: "100%",
+                  fontSize: 13,
+                  fontWeight: isActive ? 600 : 400,
+                  transition: "all 0.2s",
+                  textAlign: "left",
+                  width: "100%",
                   justifyContent: collapsed ? "center" : "flex-start",
                   fontFamily: "inherit",
                 }}
-                onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = t.hover; }}
-                onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+                onMouseEnter={(event) => { if (!isActive) event.currentTarget.style.background = t.hover; }}
+                onMouseLeave={(event) => { if (!isActive) event.currentTarget.style.background = "transparent"; }}
               >
-                <span style={{ fontSize: 16, flexShrink: 0 }}>{n.icon}</span>
-                {!collapsed && <span>{n.label}</span>}
+                <Icon size={17} aria-hidden="true" />
+                {!collapsed && <span>{item.label}</span>}
               </button>
             );
           })}
+          </nav>
         </nav>
       </div>
 
       {/* USER CARD */}
-      <div style={{
-        background: t.card, padding: "10px 12px", borderRadius: 14,
-        border: `1px solid ${t.border}`, display: "flex", alignItems: "center", gap: 8,
-      }}>
-        <img src="https://i.pravatar.cc/32?img=5" style={{ borderRadius: "50%", width: 32, height: 32, flexShrink: 0 }} alt="avatar" />
+      <div
+        style={{
+          background: t.card,
+          padding: collapsed ? "9px 6px" : "10px",
+          borderRadius: 14,
+          border: `1px solid ${t.border}`,
+          display: "flex",
+          flexDirection: collapsed ? "column" : "row",
+          alignItems: "center",
+          gap: collapsed ? 8 : 10,
+          boxShadow: t.shadow,
+        }}
+      >
+        <Image
+          src="https://i.pravatar.cc/32?img=26"
+          width={32}
+          height={32}
+          alt="User profile"
+          style={{
+            borderRadius: "50%",
+            flexShrink: 0,
+            border: `2px solid ${t.accentBorder}`,
+          }}
+        />
+
         {!collapsed && (
-          <div>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: t.text }}>Giselle</p>
-            <p style={{ margin: 0, fontSize: 11, color: t.muted }}>Administrator</p>
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: 13,
+                fontWeight: 600,
+                color: t.text,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Usuario
+            </p>
+            
+            <p
+              style={{
+                margin: 0,
+                fontSize: 11,
+                color: t.muted,
+              }}
+            >
+              Administrator
+            </p>
           </div>
         )}
+        <div
+        title="Online"
+        aria-label="Online"
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: "50%",
+          background: t.success,
+          boxShadow: `0 0 0 3px ${t.successSoft}`,
+          flexShrink: 0,
+        }}
+      />
+
+        <button
+          type="button"
+          onClick={onLogout}
+          disabled={logoutLoading}
+          aria-label="Sign out"
+          title="Sign out"
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 9,
+            border: `1px solid ${t.border}`,
+            background: "transparent",
+            color: t.muted,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: logoutLoading
+              ? "not-allowed"
+              : "pointer",
+            flexShrink: 0,
+            transition:
+              "background 0.2s ease, color 0.2s ease, border-color 0.2s ease",
+            opacity: logoutLoading ? 0.65 : 1,
+          }}
+          onMouseEnter={(event) => {
+            if (logoutLoading) return;
+          
+            event.currentTarget.style.background =
+              "rgba(239,68,68,0.12)";
+          
+            event.currentTarget.style.borderColor =
+              "rgba(239,68,68,0.35)";
+          
+            event.currentTarget.style.color =
+              t.danger;
+          }}
+          onMouseLeave={(event) => {
+            event.currentTarget.style.background =
+              "transparent";
+          
+            event.currentTarget.style.borderColor =
+              t.border;
+          
+            event.currentTarget.style.color =
+              t.muted;
+          }}
+        >
+          {logoutLoading ? (
+            <LoaderCircle
+              size={16}
+              className="icon-spin"
+              aria-hidden="true"
+            />
+          ) : (
+            <LogOut
+              size={16}
+              aria-hidden="true"
+            />
+          )}
+        </button>
       </div>
-    </div>
+    </aside>
   );
 }
 
+
 /* ─── TOPBAR ─────────────────────────────────────────────────────────────── */
 const PAGE_TITLES: Record<PageId, string> = {
-  dashboard:   "Dashboard",
-  projects:    "Projects",
+  dashboard: "Dashboard",
+  projects: "Projects",
   deployments: "Deployments",
-  pipeline:    "CI/CD Pipeline",
-  monitoring:  "Monitoring",
-  logs:        "Logs",
-  evaluation:  "Project Evaluation",
-  settings:    "Settings",
+  pipeline: "CI/CD Pipeline",
+  monitoring: "Monitoring",
+  logs: "Logs",
+  evaluation: "Project Evaluation",
+  settings: "Settings",
 };
 
 export function TopBar({
-  t, page, isDark, onToggleTheme, onToggleSidebar, notifCount, onNotif,
+  t,
+  page,
+  isDark,
+  onToggleTheme,
+  onToggleSidebar,
+  notifCount,
+  onNotif,
 }: {
-  t: Theme; page: PageId; isDark: boolean;
-  onToggleTheme: () => void; onToggleSidebar: () => void;
-  notifCount: number; onNotif: (e: React.MouseEvent) => void;
+  t: Theme;
+  page: PageId;
+  isDark: boolean;
+  onToggleTheme: () => void;
+  onToggleSidebar: () => void;
+  notifCount: number;
+  onNotif: (event: React.MouseEvent) => void;
 }) {
   return (
-    <div style={{
-      display: "flex", justifyContent: "space-between", alignItems: "center",
-      background: t.card, border: `1px solid ${t.border}`, borderRadius: 16,
-      padding: "14px 20px", marginBottom: 20, backdropFilter: "blur(16px)",
-      boxShadow: t.shadow,
-    }}>
+    <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: t.card, border: `1px solid ${t.border}`, borderRadius: 16, padding: "14px 20px", marginBottom: 20, backdropFilter: "blur(16px)", boxShadow: t.shadow, gap: 14, flexWrap: "wrap" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <button
           onClick={onToggleSidebar}
-          style={{ width: 36, height: 36, borderRadius: 10, background: "transparent", border: `1px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: t.text, fontSize: 16 }}
+          aria-label="Toggle sidebar"
+          style={{ width: 36, height: 36, borderRadius: 10, background: "transparent", border: `1px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: t.text }}
         >
-          ☰
+          <Menu size={17} />
         </button>
         <div>
           <h1 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: t.text }}>{PAGE_TITLES[page]}</h1>
@@ -144,83 +352,337 @@ export function TopBar({
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        {/* STATUS PILL */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", background: t.accentSoft, border: `1px solid ${t.accentBorder}`, borderRadius: 999, fontSize: 12, color: t.accent }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: t.success, display: "inline-block" }} />
+          <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: "50%", background: t.success, display: "inline-block" }} />
           All systems operational
         </div>
 
-        {/* BELL */}
         <button
           onClick={onNotif}
-          style={{ width: 36, height: 36, borderRadius: 10, background: t.hover, border: `1px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", color: t.text, fontSize: 16 }}
+          aria-label={`Notifications${notifCount ? `, ${notifCount} unread` : ""}`}
+          style={{ width: 36, height: 36, borderRadius: 10, background: t.hover, border: `1px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", color: t.text }}
         >
-          🔔
-          {notifCount > 0 && (
-            <span style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: t.danger }} />
-          )}
+          <Bell size={17} />
+          {notifCount > 0 && <span aria-hidden="true" style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: t.danger }} />}
         </button>
 
-        {/* THEME TOGGLE */}
         <button
           onClick={onToggleTheme}
-          style={{ padding: "8px 14px", borderRadius: 999, background: t.card, border: `1px solid ${t.border}`, cursor: "pointer", fontSize: 12, color: t.muted, fontWeight: 500, fontFamily: "inherit" }}
+          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          style={{ padding: "8px 13px", borderRadius: 999, background: t.card, border: `1px solid ${t.border}`, cursor: "pointer", fontSize: 12, color: t.muted, fontWeight: 500, fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 7 }}
         >
-          {isDark ? "☀️ Light" : "🌙 Dark"}
+          {isDark ? (
+            <>
+              <Sun size={14} aria-hidden="true" />
+              Light
+            </>
+              ) : (
+            <>
+              <Moon size={14} aria-hidden="true" />
+              Dark
+            </>
+          )}
         </button>
       </div>
-    </div>
+    </header>
   );
 }
 
 /* ─── NOTIFICATION PANEL ─────────────────────────────────────────────────── */
-export function NotifPanel({ t, onClose }: { t: Theme; onClose: () => void }) {
-  const notifs = NOTIFICATIONS;
-  const typeIcon = (type: string) =>
-    type === "success" ? "✅" : type === "error" ? "❌" : type === "warn" ? "⚠️" : "ℹ️";
+function NotificationIcon({ type, color }: { type: string; color: string }) {
+  if (type === "success") return <CheckCircle2 size={17} color={color} />;
+  if (type === "error") return <XCircle size={17} color={color} />;
+  if (type === "warn") return <AlertTriangle size={17} color={color} />;
+  return <Info size={17} color={color} />;
+}
 
+export function NotifPanel({ t, onClose }: { t: Theme; onClose: () => void }) {
   return (
-    <div
-      style={{
-        position: "fixed", top: 70, right: 20, width: 340,
-        background: t.card, border: `1px solid ${t.border}`,
-        borderRadius: 16, boxShadow: t.shadow, zIndex: 999, backdropFilter: "blur(24px)",
-      }}
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div style={{ position: "fixed", top: 70, right: 20, width: 340, maxWidth: "calc(100vw - 40px)", background: t.card, border: `1px solid ${t.border}`, borderRadius: 16, boxShadow: t.shadow, zIndex: 999, backdropFilter: "blur(24px)" }} onClick={(event) => event.stopPropagation()}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderBottom: `1px solid ${t.border}` }}>
         <span style={{ fontSize: 14, fontWeight: 700, color: t.text }}>Notifications</span>
-        <button onClick={onClose} style={{ width: 26, height: 26, borderRadius: 6, background: t.hover, border: `1px solid ${t.border}`, color: t.muted, cursor: "pointer", fontSize: 12 }}>✕</button>
+        <button onClick={onClose} aria-label="Close notifications" style={{ width: 28, height: 28, borderRadius: 7, background: t.hover, border: `1px solid ${t.border}`, color: t.muted, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <X size={14} />
+        </button>
       </div>
-      {notifs.map((n) => (
-        <div key={n.id} style={{ padding: "12px 16px", borderBottom: `1px solid ${t.border}`, background: n.read ? "transparent" : t.accentSoft }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-            <span style={{ fontSize: 16 }}>{typeIcon(n.type)}</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{n.title}</div>
-              <div style={{ fontSize: 12, color: t.muted }}>{n.body}</div>
-              <div style={{ fontSize: 11, color: t.muted, marginTop: 2 }}>{n.time}</div>
+      {NOTIFICATIONS.map((notification) => {
+        const color = notification.type === "success" ? t.success : notification.type === "error" ? t.danger : notification.type === "warn" ? t.warning : t.accent;
+        return (
+          <div key={notification.id} style={{ padding: "12px 16px", borderBottom: `1px solid ${t.border}`, background: notification.read ? "transparent" : t.accentSoft }}>
+            <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+              <NotificationIcon type={notification.type} color={color} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{notification.title}</div>
+                <div style={{ fontSize: 12, color: t.muted }}>{notification.body}</div>
+                <div style={{ fontSize: 11, color: t.muted, marginTop: 2 }}>{notification.time}</div>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
 
+/* modal cerrar*/
+function LogoutDialog({
+  t,
+  open,
+  loading,
+  onCancel,
+  onConfirm,
+}: {
+  t: Theme;
+  open: boolean;
+  loading: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  useEffect(() => {
+    if (!open) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (
+        event.key === "Escape" &&
+        !loading
+      ) {
+        onCancel();
+      }
+    }
+
+    window.addEventListener(
+      "keydown",
+      handleKeyDown,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown,
+      );
+    };
+  }, [loading, onCancel, open]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      role="presentation"
+      onMouseDown={() => {
+        if (!loading) {
+          onCancel();
+        }
+      }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 1200,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+        background: "rgba(2,6,23,0.64)",
+        backdropFilter: "blur(8px)",
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logout-title"
+        aria-describedby="logout-description"
+        onMouseDown={(event) =>
+          event.stopPropagation()
+        }
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          borderRadius: 18,
+          padding: 22,
+          background: t.card,
+          border: `1px solid ${t.border}`,
+          boxShadow:
+            "0 24px 80px rgba(0,0,0,0.32)",
+          animation: "fadeIn 0.2s ease",
+        }}
+      >
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 13,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: t.danger,
+            background:
+              "rgba(239,68,68,0.12)",
+            border:
+              "1px solid rgba(239,68,68,0.25)",
+            marginBottom: 16,
+          }}
+        >
+          <LogOut
+            size={21}
+            aria-hidden="true"
+          />
+        </div>
+
+        <h2
+          id="logout-title"
+          style={{
+            margin: "0 0 8px",
+            color: t.text,
+            fontSize: 18,
+            fontWeight: 700,
+          }}
+        >
+          Sign out of DeployHub?
+        </h2>
+
+        <p
+          id="logout-description"
+          style={{
+            margin: 0,
+            color: t.muted,
+            fontSize: 13,
+            lineHeight: 1.6,
+          }}
+        >
+          Your current session will be closed.
+          Projects and deployment history stored in
+          this browser will not be deleted.
+        </p>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 10,
+            marginTop: 22,
+          }}
+        >
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            style={{
+              padding: "10px 15px",
+              borderRadius: 10,
+              border: `1px solid ${t.border}`,
+              background: t.hover,
+              color: t.text,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: loading
+                ? "not-allowed"
+                : "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={loading}
+            style={{
+              minWidth: 116,
+              padding: "10px 15px",
+              borderRadius: 10,
+              border:
+                "1px solid rgba(239,68,68,0.4)",
+              background: t.danger,
+              color: "#ffffff",
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: loading
+                ? "not-allowed"
+                : "pointer",
+              fontFamily: "inherit",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 7,
+              opacity: loading ? 0.75 : 1,
+            }}
+          >
+            {loading ? (
+              <>
+                <LoaderCircle
+                  size={15}
+                  className="icon-spin"
+                  aria-hidden="true"
+                />
+                Signing out
+              </>
+            ) : (
+              <>
+                <LogOut
+                  size={15}
+                  aria-hidden="true"
+                />
+                Sign out
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+} 
+
+
 /* ─── DASHBOARD SHELL (shared layout wrapper) ────────────────────────────── */
 export function DashboardShell({
-  t, isDark, toggle, children,
-}: { t: Theme; isDark: boolean; toggle: () => void; children: (props: { page: PageId }) => React.ReactNode }) {
+  t,
+  isDark,
+  toggle,
+  children,
+}: {
+  t: Theme;
+  isDark: boolean;
+  toggle: () => void;
+  children: (props: { page: PageId }) => React.ReactNode;
+}) {
+  const router = useRouter();
   const [page, setPage] = useState<PageId>("dashboard");
   const [collapsed, setCollapsed] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
-  const unread = NOTIFICATIONS.filter((n) => !n.read).length;
+  const [showLogout, setShowLogout] =useState(false);
+  const [logoutLoading, setLogoutLoading] =useState(false);
+  const unread = NOTIFICATIONS.filter((notification) => !notification.read).length;
+
+  async function handleLogout() {
+  if (logoutLoading) return;
+
+  setLogoutLoading(true);
+
+  try {
+    window.localStorage.removeItem(
+      "deployhub-demo-session",
+    );
+
+    await signOut({
+      redirect: false,
+    });
+  } catch (error) {
+    console.error(
+      "Unable to close NextAuth session:",
+      error,
+    );
+  } finally {
+    router.replace("/login");
+    router.refresh();
+  }
+}
+
 
   return (
     <div
       style={{
-        display: "flex", minHeight: "100vh",
+        display: "flex",
+        minHeight: "100vh",
         background: isDark
           ? `radial-gradient(circle at 20% 10%,rgba(59,130,246,0.07),transparent 40%), radial-gradient(circle at 80% 90%,rgba(37,99,235,0.05),transparent 40%), ${t.pageBg}`
           : t.pageBg,
@@ -229,22 +691,40 @@ export function DashboardShell({
       }}
       onClick={() => setShowNotif(false)}
     >
-      <Sidebar t={t} active={page} onNav={setPage} collapsed={collapsed} />
+      <Sidebar
+        t={t}
+        active={page}
+        onNav={setPage}
+        collapsed={collapsed}
+        onLogout={() => setShowLogout(true)}
+        logoutLoading={logoutLoading}
+      />
 
-      <div style={{ flex: 1, padding: 20, minWidth: 0, overflowX: "hidden" }}>
+      <main style={{ flex: 1, padding: 20, minWidth: 0, overflowX: "hidden" }}>
         <TopBar
-          t={t} page={page} isDark={isDark}
+          t={t}
+          page={page}
+          isDark={isDark}
           onToggleTheme={toggle}
-          onToggleSidebar={() => setCollapsed((c) => !c)}
+          onToggleSidebar={() => setCollapsed((current) => !current)}
           notifCount={unread}
-          onNotif={(e) => { e.stopPropagation(); setShowNotif((s) => !s); }}
+          onNotif={(event) => { event.stopPropagation(); setShowNotif((current) => !current); }}
         />
-        <div style={{ animation: "fadeIn 0.3s ease" }}>
-          {children({ page })}
-        </div>
-      </div>
+        <div style={{ animation: "fadeIn 0.3s ease" }}>{children({ page })}</div>
+      </main>
 
       {showNotif && <NotifPanel t={t} onClose={() => setShowNotif(false)} />}
+      <LogoutDialog
+       t={t}
+       open={showLogout}
+       loading={logoutLoading}
+       onCancel={() => {
+         if (!logoutLoading) {
+           setShowLogout(false);
+         }
+       }}
+       onConfirm={handleLogout}
+      />
     </div>
   );
 }

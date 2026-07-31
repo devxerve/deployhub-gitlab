@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
+import Image from "next/image";
 
 import {
 	LayoutDashboard,
@@ -13,6 +14,13 @@ import {
 	Terminal,
 	Settings
 } from "lucide-react";
+
+interface MenuItemProps {
+  icon: React.ReactNode;
+  text: string;
+  path: string;
+  active: boolean;
+}
 
 function NeonLogo() {
 	return (
@@ -134,12 +142,15 @@ const menu = [
         boxShadow: "var(--shadow)",
         backdropFilter: "blur(12px)",
 			}}>
-				<img
-					src="https://i.pravatar.cc/40"
-					style={{ borderRadius: "50%" }}
-				/>
+				<Image
+          src="https://i.pravatar.cc/40"
+          width={40}
+          height={40}
+          alt="User profile"
+          style={{ borderRadius: "50%" }}
+        />
 				<div>
-					<p style={{ margin: 0 }}>Giselle</p>
+					<p style={{ margin: 0 }}>User</p>
 					<small style={{ color: "var(--muted)" }}>Administrator</small>
 				</div>
 			</div>
@@ -149,7 +160,12 @@ const menu = [
 
 
 
-function MenuItem({ icon, text, path, active }: any) {
+function MenuItem({
+  icon,
+  text,
+  path,
+  active,
+}: MenuItemProps) {
 	const [isHovered, setIsHovered] = useState(false);
 
 	return (

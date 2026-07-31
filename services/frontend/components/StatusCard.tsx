@@ -1,4 +1,5 @@
 "use client";
+import type { ReactNode } from "react";
 
 import {
   ShieldCheck,
@@ -6,12 +7,22 @@ import {
   ShieldX
 } from "lucide-react";
 
+type SystemStatus = "GOOD" | "BAD" | "WARNING";
+
+interface StatusConfig {
+  color: string;
+  text: string;
+  icon: ReactNode;
+}
+
+interface StatusCardProps {
+  status: SystemStatus;
+}
+
 export default function StatusCard({
-  status
-}: {
-  status: string;
-}) {
-  const config: any = {
+  status,
+}: StatusCardProps) {
+  const config: Record<SystemStatus, StatusConfig> = {
     GOOD: {
       color: "#22c55e",
       text: "All systems operational",

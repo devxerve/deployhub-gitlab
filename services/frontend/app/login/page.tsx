@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { Moon, Sun } from "lucide-react";
 
 /* ─── GITHUB ICON ─── */
 const GitHubIcon = ({ color }: { color: string }) => (
@@ -30,14 +32,14 @@ const GoogleIcon = () => (
 
 /* ─── 42 ICON ─── */
 const FortyTwoIcon = ({ color }: { color: string }) => (
-  <img
+  <Image
     src="/42_logo.png"
     width={22}
     height={22}
-    alt="42"
+    alt="42 School"
     style={{
       objectFit: "contain",
-      filter: color === "#f1f5f9" ? "invert(1)" : "none"
+      filter: color === "#f1f5f9" ? "invert(1)" : "none",
     }}
   />
 );
@@ -55,16 +57,28 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isDark, setIsDark] = useState(true);
 
-  function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    if (email === "admin@deployhub.com" && password === "1234") {
-      router.push("/dashboard");
-    } else {
-      alert("Usuario incorrecto");
-    }
+  function handleLogin(event: React.FormEvent) {
+  event.preventDefault();
+
+  const validDemoCredentials =
+    email === "admin@deployhub.com" &&
+    password === "1234";
+
+  if (!validDemoCredentials) {
+    alert("Usuario o contraseña incorrectos");
+    return;
   }
 
+  window.localStorage.setItem(
+    "deployhub-demo-session",
+    "active",
+  );
+
+  router.replace("/dashboard");
+}
+
   const t = isDark ? light : dark;
+  
 
   return (
     <>
@@ -83,7 +97,17 @@ export default function LoginPage() {
           onClick={() => setIsDark(!isDark)}
           style={{ ...styles.themeToggle, ...t.toggleStyle }}
         >
-          {isDark ? "☀️ Light" : "🌙 Dark"}
+          {isDark ? (
+            <>
+              <Sun size={14} aria-hidden="true" />
+              Light
+            </>
+              ) : (
+            <>
+              <Moon size={14} aria-hidden="true" />
+              Dark
+            </>
+          )}
         </button>
 
         {/* CARD */}
@@ -117,7 +141,11 @@ export default function LoginPage() {
               <button
                 key={p.id}
                 type="button"
-                onClick={() => signIn(p.id)}
+                onClick={() =>
+                  signIn(p.id, {
+                    callbackUrl: "/dashboard",
+                  })
+                }
                 style={{ ...styles.oauthBtn, ...t.oauthBtnStyle }}
                 onMouseEnter={(e) => {
                   Object.assign(e.currentTarget.style, t.oauthBtnHover);
