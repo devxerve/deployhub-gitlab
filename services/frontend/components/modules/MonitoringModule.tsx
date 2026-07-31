@@ -5,6 +5,11 @@ import type { Theme } from "@/lib/themes";
 import { Card, Bar } from "@/components/ui";
 import { MetricsChart } from "@/components/charts";
 import { useInterval } from "@/hooks/useInterval";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Info,
+} from "lucide-react";
 
 export function MonitoringModule({ t }: { t: Theme }) {
   const [tick, setTick] = useState(0);
@@ -61,13 +66,27 @@ export function MonitoringModule({ t }: { t: Theme }) {
         <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>Active Alerts</h3>
         {[
           { sev: "warn",  msg: "deployhub-api — Memory usage above 85% for 10min",         ts: "14:12" },
-          { sev: "info",  msg: "analytics-svc — Auto-scaling triggered (2→4 pods)",         ts: "14:08" },
+          { sev: "info",  msg: "analytics-svc — Auto-scaling triggered (2 to 4 pods)",         ts: "14:08" },
           { sev: "error", msg: "deployhub-api — Container OOM restart loop detected",        ts: "13:55" },
         ].map((a, i) => {
           const c = a.sev === "error" ? t.danger : a.sev === "warn" ? t.warning : t.info;
           return (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 10, background: `${c}0d`, border: `1px solid ${c}33`, marginBottom: 8 }}>
-              <span style={{ fontSize: 16 }}>{a.sev === "error" ? "🔴" : a.sev === "warn" ? "🟡" : "🔵"}</span>
+              <span
+                style={{
+                  display: "inline-flex",
+                  color: c,
+                  flexShrink: 0,
+                }}
+              >
+                {a.sev === "error" ? (
+                  <AlertCircle size={17} aria-hidden="true" />
+                ) : a.sev === "warn" ? (
+                  <AlertTriangle size={17} aria-hidden="true" />
+                ) : (
+                  <Info size={17} aria-hidden="true" />
+                )}
+              </span>
               <span style={{ flex: 1, fontSize: 13, color: t.text }}>{a.msg}</span>
               <span style={{ fontSize: 11, color: t.muted, flexShrink: 0 }}>{a.ts}</span>
             </div>

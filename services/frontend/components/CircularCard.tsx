@@ -1,16 +1,16 @@
 "use client";
 
+interface CircularCardProps {
+  title: string;
+  value: number;
+  color: string;
+}
+
 export default function CircularCard({
   title,
   value,
-imagen,
-  color
-}: {
-  title: string;
-  value: number;
-  imagen:string;
-  color: string;
-}) {
+  color,
+}: CircularCardProps) {
   const radius = 40;
   const stroke = 8;
   const normalizedRadius = radius - stroke;

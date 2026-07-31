@@ -1,14 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Circle,
+  CircleCheck,
+  CircleX,
+  SquareTerminal,
+} from "lucide-react";
 
 export default function Terminal() {
   const [input, setInput] = useState("");
 
   const [logs, setLogs] = useState<string[]>([
-    "▲ DeployHub CLI v2.1.0",
-    "✓ Connected to production environment",
-    "✓ Monitoring active deployments..."
+    "DeployHub CLI v2.1.0",
+    "Connected to production environment",
+    "Monitoring active deployments..."
   ]);
 
   function runCommand() {
@@ -17,15 +23,15 @@ export default function Terminal() {
     let response = "Command not found";
 
     if (input === "deploy") {
-      response = "✓ Deploy executed successfully";
+      response = "Deploy executed successfully";
     } else if (input === "test") {
-      response = "✓ All tests passed";
+      response = "All tests passed";
     } else if (input === "rollback") {
-      response = "✓ Rollback completed";
+      response = "Rollback completed";
     } else if (input === "status") {
-      response = "✓ All systems operational";
+      response = "All systems operational";
     } else if (input === "build") {
-      response = "✓ Production build completed";
+      response = "Production build completed";
     }
 
     setLogs((prev) => [
@@ -131,7 +137,21 @@ export default function Terminal() {
             fontWeight: 700
           }}
         >
-          ● ONLINE
+          <span
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+  }}
+>
+  <Circle
+    size={8}
+    fill="#22c55e"
+    color="#22c55e"
+    aria-hidden="true"
+  />
+  ONLINE
+</span>
         </div>
       </div>
 
@@ -158,27 +178,40 @@ export default function Terminal() {
           `
         }}
       >
-        {logs.map((log, i) => {
+        {logs.map((log, index) => {
           const isCommand = log.startsWith("$");
-
+          const isTitle = index === 0;
+          const isError = log === "Command not found";
+                
           return (
             <div
-              key={i}
+              key={`${index}-${log}`}
               style={{
-                marginBottom: "10px",
-
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 10,
                 color: isCommand
                   ? "#38bdf8"
-                  : "#22c55e",
-
-                fontSize: "14px",
-
-                lineHeight: "1.6",
-
-                animation: "fadeIn 0.3s ease"
+                  : isError
+                    ? "#ef4444"
+                    : "#22c55e",
+                fontSize: 14,
+                lineHeight: 1.6,
+                animation: "fadeIn 0.3s ease",
               }}
             >
-              {log}
+              {!isCommand && (
+                isTitle ? (
+                  <SquareTerminal size={15} aria-hidden="true" />
+                ) : isError ? (
+                  <CircleX size={15} aria-hidden="true" />
+                ) : (
+                  <CircleCheck size={15} aria-hidden="true" />
+                )
+              )}
+        
+              <span>{log}</span>
             </div>
           );
         })}

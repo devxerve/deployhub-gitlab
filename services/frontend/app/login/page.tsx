@@ -1,7 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { Moon, Sun } from "lucide-react";
 
 /* ─── GITHUB ICON ─── */
 const GitHubIcon = ({ color }: { color: string }) => (
@@ -29,14 +32,14 @@ const GoogleIcon = () => (
 
 /* ─── 42 ICON ─── */
 const FortyTwoIcon = ({ color }: { color: string }) => (
-  <img
+  <Image
     src="/42_logo.png"
     width={22}
     height={22}
-    alt="42"
+    alt="42 School"
     style={{
       objectFit: "contain",
-      filter: color === "#f1f5f9" ? "invert(1)" : "none"
+      filter: color === "#f1f5f9" ? "invert(1)" : "none",
     }}
   />
 );
@@ -132,7 +135,16 @@ async function handleRegister(e: React.FormEvent) {
   }
 }
 
+  window.localStorage.setItem(
+    "deployhub-demo-session",
+    "active",
+  );
+
+  router.replace("/dashboard");
+}
+
   const t = isDark ? light : dark;
+  
 
   return (
     <>
@@ -151,7 +163,17 @@ async function handleRegister(e: React.FormEvent) {
           onClick={() => setIsDark(!isDark)}
           style={{ ...styles.themeToggle, ...t.toggleStyle }}
         >
-          {isDark ? "☀️ Light" : "🌙 Dark"}
+          {isDark ? (
+            <>
+              <Sun size={14} aria-hidden="true" />
+              Light
+            </>
+              ) : (
+            <>
+              <Moon size={14} aria-hidden="true" />
+              Dark
+            </>
+          )}
         </button>
 
         {/* CARD */}

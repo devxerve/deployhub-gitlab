@@ -6,6 +6,7 @@ export interface Deploy {
   projectId: string;
   status: string;
   commitHash?: string;
+  branch?: string;
   envVariables?: string;
   port?: number;
   createdAt: string;
@@ -15,6 +16,7 @@ export interface CreateDeployDto {
   repoUrl: string;
   projectId: string;
   commitHash?: string;
+  branch?: string;
   envVariables?: Record<string, string>;
 }
 
