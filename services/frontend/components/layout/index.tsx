@@ -184,7 +184,7 @@ export function Sidebar({
         }}
       >
         <Image
-          src="https://i.pravatar.cc/32?img=5"
+          src="https://i.pravatar.cc/32?img=26"
           width={32}
           height={32}
           alt="User profile"
