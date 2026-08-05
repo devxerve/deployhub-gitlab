@@ -1,7 +1,30 @@
 services:
+  cert-init:
+    image: alpine/openssl
+    container_name: cert_init
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ ! -s /certs/cert.pem ] || [ ! -s /certs/key.pem ]; then
+          echo "Generating self-signed TLS certificate for localhost..."
+          openssl req -x509 -newkey rsa:2048 -keyout /certs/key.pem -out /certs/cert.pem -days 825 -nodes \
+            -subj "/CN=localhost" \
+            -addext "subjectAltName=DNS:localhost,DNS:api.localhost,DNS:auth.localhost,DNS:grafana.localhost,DNS:prometheus.localhost,IP:127.0.0.1"
+          chmod 644 /certs/cert.pem
+          chmod 600 /certs/key.pem
+        else
+          echo "TLS certificate already present, skipping generation."
+        fi
+    volumes:
+      - "./services/infra/traefik/certs:/certs"
+    network_mode: "none"
+
   traefik:
     image: traefik:v2.11
     container_name: traefik
+    depends_on:
+      cert-init:
+        condition: service_completed_successfully
     command:
       - "--api.dashboard=true"
       - "--api.insecure=true"
