@@ -23,7 +23,7 @@ interface AuthGuardResult {
   isAuthenticated: boolean;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL;
 
 export function useAuthGuard(): AuthGuardResult {
   const router = useRouter();
@@ -33,10 +33,8 @@ export function useAuthGuard(): AuthGuardResult {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const res = await fetch(`${API_URL}/auth/validate`, {
+        const res = await fetch('/api/auth/validate', {
           method: "GET",
-          // ⚠️ credentials: "include" es OBLIGATORIO para que el navegador
-          // envíe las cookies HttpOnly junto con la petición cross-origin.
           credentials: "include",
         });
 

@@ -1,0 +1,86 @@
+# ============================================================
+# Prometheus Alert Rules — DeployHub / Transcendence
+# ============================================================
+groups:
+  # ── Infrastructure alerts (CPU, RAM, containers) ──
+  - name: infrastructure
+    rules:
+      - alert: HighCpuUsage
+        expr: >
+          (sum(rate(container_cpu_usage_seconds_total{id="/"}[5m]))
+          / scalar(machine_cpu_cores)) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on host ({{ $value | printf \"%.1f\" }}%)"
+          description: "CPU usage has been above 80% for 5 minutes."
+
+      - alert: HighMemoryUsage
+        expr: >
+          (container_memory_usage_bytes{id="/"}
+          / machine_memory_bytes) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on host ({{ $value | printf \"%.1f\" }}%)"
+          description: "Memory usage has been above 85% for 5 minutes."
+
+      - alert: ContainerRestarting
+        expr: >
+          increase(container_last_seen{name=~"nest_backend|auth_service|postgres_db"}[10m]) == 0
+          and container_last_seen{name=~"nest_backend|auth_service|postgres_db"} > 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container {{ $labels.name }} has disappeared"
+          description: "Container {{ $labels.name }} is no longer seen by cAdvisor."
+
+  # ── Application alerts (latency, errors, availability) ──
+  - name: application
+    rules:
+      - alert: HighRequestLatency
+        expr: >
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket{job="backend"}[5m])) by (le)
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High P95 latency ({{ $value | printf \"%.2f\" }}s)"
+          description: "The 95th percentile of HTTP request latency exceeds 2 seconds."
+
+      - alert: HighErrorRate
+        expr: >
+          sum(rate(http_request_duration_seconds_count{job="backend", status_code=~"5.."}[5m]))
+          / sum(rate(http_request_duration_seconds_count{job="backend"}[5m])) * 100 > 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx error rate ({{ $value | printf \"%.1f\" }}%)"
+          description: "More than 10% of requests are returning 5xx errors."
+
+      - alert: BackendDown
+        expr: up{job="backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend NestJS is unreachable"
+          description: "Prometheus cannot scrape /metrics from the backend for 1 minute."
+
+  # ── Database alerts ──
+  - name: database
+    rules:
+      - alert: PostgresDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is unreachable"
+          description: "The database is not responding."

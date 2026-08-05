@@ -52,3 +52,32 @@ export async function getDeploymentStatus(id: string): Promise<{ id: string; sta
   if (!res.ok) throw new Error("Error al obtener estado");
   return res.json();
 }
+
+export interface OverviewMetrics {
+  cpuPct: number | null;
+  memPct: number | null;
+  memUsedBytes: number | null;
+  memLimitBytes: number | null;
+  netIoBytesPerSec: number | null;
+  requestsPerMin: number | null;
+  latencyP95Ms: number | null;
+  uptimeSeconds: number;
+}
+
+export interface HistoryPoint {
+  hour: string;
+  cpu: number;
+  mem: number;
+}
+
+export async function getMonitoringOverview(): Promise<OverviewMetrics> {
+  const res = await fetch(`${API_URL}/monitoring/overview`);
+  if (!res.ok) throw new Error("Error fetching monitoring overview");
+  return res.json();
+}
+
+export async function getMonitoringHistory(hours: number = 24): Promise<HistoryPoint[]> {
+  const res = await fetch(`${API_URL}/monitoring/history?hours=${hours}`);
+  if (!res.ok) throw new Error("Error fetching monitoring history");
+  return res.json();
+}

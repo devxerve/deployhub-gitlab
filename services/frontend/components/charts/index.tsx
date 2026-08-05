@@ -86,14 +86,17 @@ export function RadarChart({
 }
 
 /* ─── 24H METRICS TIME SERIES ────────────────────────────────────────────── */
-export function MetricsChart({ t }: { t: Theme }) {
-  const data = METRICS_HISTORY;
+import { HistoryPoint } from "@/lib/api";
+
+export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {
+  const chartData = data && data.length > 0 ? data : METRICS_HISTORY;
   const svgW = 600, svgH = 160, pad = { l: 30, r: 10, t: 10, b: 20 };
   const w = svgW - pad.l - pad.r, h = svgH - pad.t - pad.b;
 
-  const mkPath = (key: keyof typeof data[0], min: number, max: number) => {
-    const pts = data.map((d, i) => {
-      const x = pad.l + (i / (data.length - 1)) * w;
+  const mkPath = (key: keyof typeof chartData[0], min: number, max: number) => {
+    const pts = chartData.map((d, i) => {
+      const divisor = Math.max(1, chartData.length - 1);
+      const x = pad.l + (i / divisor) * w;
       const y = pad.t + h - ((Number(d[key]) - min) / (max - min)) * h;
       return `${x},${y}`;
     });
@@ -113,8 +116,8 @@ export function MetricsChart({ t }: { t: Theme }) {
       })}
       <path d={mkPath("cpu", 0, 100)} fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       <path d={mkPath("mem", 0, 100)} fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5,3" />
-      {data.filter((_, i) => i % 4 === 0).map((d, i) => (
-        <text key={i} x={pad.l + (i * 4 / (data.length - 1)) * w} y={svgH - 4} textAnchor="middle" fontSize="9" fill={t.muted}>{d.hour}</text>
+      {chartData.filter((_, i) => i % Math.max(1, Math.floor(chartData.length / 6)) === 0).map((d, i) => (
+        <text key={i} x={pad.l + (i * Math.max(1, Math.floor(chartData.length / 6)) / Math.max(1, chartData.length - 1)) * w} y={svgH - 4} textAnchor="middle" fontSize="9" fill={t.muted}>{d.hour}</text>
       ))}
     </svg>
   );

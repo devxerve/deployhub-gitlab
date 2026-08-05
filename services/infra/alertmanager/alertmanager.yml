@@ -1,0 +1,20 @@
+# ============================================================
+# Alertmanager — Configuration
+# Receives alerts from Prometheus and routes them to the backend
+# (webhook) so they can be displayed in the UI.
+# ============================================================
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: 'default'
+  group_by: ['alertname', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+receivers:
+  - name: 'default'
+    webhook_configs:
+      - url: 'http://nest_backend:3001/monitoring/alerts'
+        send_resolved: true

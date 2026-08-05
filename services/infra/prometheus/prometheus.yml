@@ -1,10 +1,30 @@
 global:
   scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Alert rules file
+rule_files:
+  - "/etc/prometheus/alert_rules.yml"
+
+# Forward firing alerts to Alertmanager
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
 
 scrape_configs:
+  # Prometheus scrapes itself
   - job_name: 'prometheus'
     static_configs:
-    - targets: ['localhost:9090']
+      - targets: ['localhost:9090']
+
+  # Container metrics via cAdvisor
   - job_name: 'cadvisor'
     static_configs:
-    - targets: ['cadvisor:8080']
+      - targets: ['cadvisor:8080']
+
+  # NestJS backend application metrics
+  - job_name: 'backend'
+    static_configs:
+      - targets: ['nest_backend:3001']
+    metrics_path: '/metrics'

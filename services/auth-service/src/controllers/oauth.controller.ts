@@ -84,14 +84,9 @@ function issueTokenAndRedirect(res: Response, user: any) {
 
   const token = generateToken(payload);
 
-  res.cookie('auth_token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 24 * 60 * 60 * 1000, // 1 día
-  });
-
-  res.redirect(`${BASE_URL}/dashboard`);
+  // Redirigimos al frontend (HTTPS) para que pose le cookie en same-origin.
+  // Le cookie doit être posé depuis HTTPS pour fonctionner avec sameSite/secure.
+  res.redirect(`${BASE_URL}/api/auth/callback?token=${encodeURIComponent(token)}`);
 }
 
 // ============================================================

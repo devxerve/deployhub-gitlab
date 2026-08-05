@@ -3,16 +3,50 @@ services:
     image: traefik:v2.11
     container_name: traefik
     command:
+      - "--api.dashboard=true"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
       - "--providers.docker.network=paas_network"
+      # HTTP and HTTPS entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Automatic HTTP → HTTPS redirect
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # Dynamic config (TLS certificates)
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
+      # ModSecurity WAF plugin
+      - "--experimental.plugins.modsecurity.moduleName=github.com/acouvreur/traefik-modsecurity-plugin"
+      - "--experimental.plugins.modsecurity.version=v1.3.0"
     ports:
-      - "8000:80"
+      - "80:80"
+      - "443:443"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./services/infra/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro"
+      - "./services/infra/traefik/certs:/etc/traefik/certs:ro"
+    labels: []
+    networks:
+      - paas_network
+
+  waf:
+    image: owasp/modsecurity-crs:nginx-alpine
+    container_name: modsecurity_waf
+    environment:
+      # Paranoia level 1 = balanced (blocks obvious attacks, low false positives)
+      - PARANOIA=1
+      - ANOMALY_INBOUND=5
+      - ANOMALY_OUTBOUND=4
+      - ALLOWED_METHODS=GET HEAD POST OPTIONS DELETE PUT PATCH
+      - BACKEND=http://dummy:80
+    networks:
+      - paas_network
+
+  dummy:
+    image: traefik/whoami
+    container_name: dummy_backend
     networks:
       - paas_network
 
@@ -23,15 +57,30 @@ services:
     container_name: nest_backend
     env_file:
       - ./services/backend/.env
+    environment:
+      - PROMETHEUS_URL=${PROMETHEUS_URL}
+      - PORT=3001
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`api.localhost`) || Host(`localhost`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.backend.rule=Host(`api.localhost`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.middlewares=waf@docker"
+      - "traefik.http.middlewares.waf.plugin.modsecurity.modSecurityUrl=http://waf:8080"
+      - "traefik.http.middlewares.waf.plugin.modsecurity.maxBodySize=10485760"
       - "traefik.http.services.backend.loadbalancer.server.port=3001"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # DooD
       - /app/tmp:/app/tmp                          # shared with host docker daemon
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3001/metrics || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - paas_network
 
@@ -59,9 +108,13 @@ services:
     container_name: prometheus
     volumes:
       - ./services/infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./services/infra/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+      - prometheus_data:/prometheus
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls=true"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
     networks:
       - paas_network
@@ -81,6 +134,16 @@ services:
     networks:
       - paas_network
 
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: alertmanager
+    volumes:
+      - ./services/infra/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+    networks:
+      - paas_network
+
   grafana:
     image: grafana/grafana:10.0.3
     container_name: grafana
@@ -88,12 +151,15 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.157.230.23.219.nip.io`)"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls=true"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
     networks:
       - paas_network
     volumes:
       - ./services/infra/grafana/provisioning:/etc/grafana/provisioning
+
 
   auth_service:
     build:
@@ -115,14 +181,54 @@ services:
       - INTRA_CLIENT_ID=${INTRA_CLIENT_ID}
       - INTRA_CLIENT_SECRET=${INTRA_CLIENT_SECRET}
       - INTRA_REDIRECT_URI=${INTRA_REDIRECT_URI}
+      - NODE_ENV=production
     ports:
       - "${PORT_AUTH_SERVICE}:${PORT_AUTH_SERVICE}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`auth.localhost`)"
+      - "traefik.http.routers.auth.entrypoints=websecure"
+      - "traefik.http.routers.auth.tls=true"
+      - "traefik.http.services.auth.loadbalancer.server.port=3001"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:${PORT_AUTH_SERVICE}/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     networks:
       - paas_network
       - bbdd_network
     depends_on:
       db:
         condition: service_healthy
+
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - NEXT_PUBLIC_AUTH_SERVICE_URL=${NEXT_PUBLIC_AUTH_SERVICE_URL}
+    container_name: frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_AUTH_SERVICE_URL=${NEXT_PUBLIC_AUTH_SERVICE_URL}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`localhost`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - paas_network
 
 networks:
   paas_network:
@@ -132,3 +238,4 @@ networks:
 
 volumes:
   db_data:
+  prometheus_data:

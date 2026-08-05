@@ -6,7 +6,6 @@ import {
 } from "react";
 
 import { useRouter } from "next/navigation";
-import { getSession } from "next-auth/react";
 import { LoaderCircle } from "lucide-react";
 
 import { useTheme } from "@/hooks/useTheme";

@@ -91,7 +91,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     res.cookie('auth_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       sameSite: 'lax',
       maxAge: 24 * 60 * 60 * 1000 // 1 día
     });

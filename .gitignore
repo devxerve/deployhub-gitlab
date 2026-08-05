@@ -32,3 +32,6 @@ lerna-debug.log*
 # NestJS specific
 Thumbs.db
 db.sqlite
+
+# TLS certificates (generated locally)
+services/infra/traefik/certs/
