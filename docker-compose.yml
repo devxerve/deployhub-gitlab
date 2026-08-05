@@ -255,7 +255,7 @@ services:
 
 networks:
   paas_network:
-    external: true
+    name: paas_network
   bbdd_network:
     internal: true
 
