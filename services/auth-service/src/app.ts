@@ -6,7 +6,7 @@ import oauthRoutes from './routes/oauth.routes';
 
 const app = express();
 
-// Middlewares
+
 app.use(cors({
   origin: true,
   credentials: true,
@@ -14,9 +14,9 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// Rutas
+
 app.use('/auth', authRoutes);
-app.use('/auth/oauth', oauthRoutes);  // Google, GitHub, 42
+app.use('/auth/oauth', oauthRoutes);  
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', service: 'auth-service' });
 });

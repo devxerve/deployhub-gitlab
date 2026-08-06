@@ -76,7 +76,7 @@ export default function StatusCard({
           "translateY(0px)";
       }}
     >
-      {/* GLOW BACKGROUND */}
+      { }
       <div
         style={{
           position: "absolute",
@@ -93,7 +93,7 @@ export default function StatusCard({
         }}
       />
 
-      {/* ICON */}
+      { }
       <div
         style={{
           width: "58px",
@@ -120,7 +120,7 @@ export default function StatusCard({
         {icon}
       </div>
 
-      {/* LABEL */}
+      { }
       <p
         style={{
           margin: 0,
@@ -138,7 +138,7 @@ export default function StatusCard({
         System Status
       </p>
 
-      {/* STATUS */}
+      { }
       <h2
         style={{
           marginTop: "10px",
@@ -159,7 +159,7 @@ export default function StatusCard({
         {status}
       </h2>
 
-      {/* DESCRIPTION */}
+      { }
       <p
         style={{
           color: "var(--muted)",
@@ -175,7 +175,7 @@ export default function StatusCard({
         {text}
       </p>
 
-      {/* DECORATIVE LINES */}
+      { }
       <div
         style={{
           position: "absolute",

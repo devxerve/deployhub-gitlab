@@ -1,55 +1,96 @@
+import { Logger } from "@nestjs/common";
+
 import {
-  WebSocketGateway,
-  WebSocketServer,
-  SubscribeMessage,
   ConnectedSocket,
   MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
 } from "@nestjs/websockets";
-import { Server, Socket } from "socket.io";
+
+import type { Server, Socket } from "socket.io";
+
+const socketAllowedOrigins = (
+  process.env.CORS_ORIGINS ?? "https://localhost,http://localhost:3000"
+)
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+function extractDeployId(data: unknown): string | null {
+  if (typeof data === "string") {
+    const deployId = data.replace(/"/g, "").trim();
+
+    return deployId.length > 0 ? deployId : null;
+  }
+
+  if (typeof data !== "object" || data === null || !("deployId" in data)) {
+    return null;
+  }
+
+  const deployId = (data as Record<string, unknown>).deployId;
+
+  if (typeof deployId !== "string") {
+    return null;
+  }
+
+  const normalized = deployId.trim();
+
+  return normalized.length > 0 ? normalized : null;
+}
 
 @WebSocketGateway({
   cors: {
-    origin: "*",
+    origin: socketAllowedOrigins,
+    credentials: true,
   },
 })
 export class LogsGateway {
-  @WebSocketServer()
-  server: Server;
+  private readonly logger = new Logger(LogsGateway.name);
 
-  // el cliente se une a un deploy
+  @WebSocketServer()
+  server!: Server;
+
   @SubscribeMessage("join-deploy")
-  handleJoin(@MessageBody() data: any, @ConnectedSocket() socket: Socket) {
-    const deployId =
-      typeof data === "object" ? data.deployId : data.replace(/"/g, "");
-    console.log(`Cliente unido al deploy: ${deployId}`);
-    socket.join(`deploy-${deployId}`);
+  async handleJoin(
+    @MessageBody() data: unknown,
+    @ConnectedSocket()
+    socket: Socket,
+  ): Promise<void> {
+    const deployId = extractDeployId(data);
+
+    if (!deployId) {
+      this.logger.warn("Invalid join-deploy payload received");
+
+      return;
+    }
+
+    await socket.join(`deploy-${deployId}`);
+
+    this.logger.debug(`Client joined deploy ${deployId}`);
   }
 
-  // enviar log a un deploy
-  sendLog(deployId: string, log: string) {
-    console.log(`Emitiendo log para ${deployId}: ${log}`);
+  sendLog(deployId: string, log: string): void {
     this.server.to(`deploy-${deployId}`).emit("deploy:log", log);
   }
 
-  // enviar estado
-  sendStatus(deployId: string, status: string) {
-    console.log(`Emitiendo estado para ${deployId}: ${status}`);
-    this.server
-      .to(`deploy-${deployId}`)
-      .emit("deploy:status", { deployId, status });
+  sendStatus(deployId: string, status: string): void {
+    this.server.to(`deploy-${deployId}`).emit("deploy:status", {
+      deployId,
+      status,
+    });
   }
 
-  // enviar inicio de deploy
-  sendStart(deployId: string) {
-    console.log(`Emitiendo inicio para ${deployId}`);
-    this.server.to(`deploy-${deployId}`).emit("deploy:start", { deployId });
+  sendStart(deployId: string): void {
+    this.server.to(`deploy-${deployId}`).emit("deploy:start", {
+      deployId,
+    });
   }
 
-  // enviar fin de deploy
-  sendEnd(deployId: string, success: boolean) {
-    console.log(`Emitiendo fin para ${deployId} (success: ${success})`);
-    this.server
-      .to(`deploy-${deployId}`)
-      .emit("deploy:end", { deployId, success });
+  sendEnd(deployId: string, success: boolean): void {
+    this.server.to(`deploy-${deployId}`).emit("deploy:end", {
+      deployId,
+      success,
+    });
   }
 }

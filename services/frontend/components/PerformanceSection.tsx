@@ -16,7 +16,7 @@ export default function PerformanceSection() {
 				overflow: "hidden"
 			}}
 		>
-			{/* BACKGROUND GLOW */}
+			{ }
 			<div
 				style={{
 					position: "absolute",
@@ -30,7 +30,7 @@ export default function PerformanceSection() {
 				}}
 			/>
 
-			{/* HEADER */}
+			{ }
 			<div
 				style={{
 					display: "flex",
@@ -41,7 +41,7 @@ export default function PerformanceSection() {
 					zIndex: 1
 				}}
 			>
-				{/* TITLE */}
+				{ }
 				<div>
 					<h2
 						style={{
@@ -65,7 +65,7 @@ export default function PerformanceSection() {
 					</p>
 				</div>
 
-				{/* FILTER */}
+				{ }
 				<select
 					style={{
 						background: "var(--sidebar)",
@@ -86,7 +86,7 @@ export default function PerformanceSection() {
 				</select>
 			</div>
 
-			{/* LEGEND */}
+			{ }
 			<div
 				style={{
 					display: "flex",
@@ -97,7 +97,7 @@ export default function PerformanceSection() {
 					zIndex: 1
 				}}
 			>
-				{/* BEFORE */}
+				{ }
 				<div
 					style={{
 						display: "flex",
@@ -125,7 +125,7 @@ export default function PerformanceSection() {
 					</span>
 				</div>
 
-				{/* AFTER */}
+				{ }
 				<div
 					style={{
 						display: "flex",
@@ -154,7 +154,7 @@ export default function PerformanceSection() {
 				</div>
 			</div>
 
-			{/* CHART */}
+			{ }
 			<div
 				style={{
 					background: "rgba(255,255,255,0.02)",
@@ -168,7 +168,7 @@ export default function PerformanceSection() {
 				<PerformanceChart />
 			</div>
 
-			{/* COMPARISON CARDS */}
+			{ }
 			<div
 				style={{
 					display: "grid",

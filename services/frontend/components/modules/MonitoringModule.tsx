@@ -72,7 +72,7 @@ export function MonitoringModule({ t }: { t: Theme }) {
 
   return (
     <div>
-      {/* METRIC CARDS */}
+      { }
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16, marginBottom: 20 }}>
         {metrics.map((m) => (
           <Card key={m.label} t={t} style={{ padding: 18 }}>
@@ -84,7 +84,7 @@ export function MonitoringModule({ t }: { t: Theme }) {
         ))}
       </div>
 
-      {/* TIME SERIES */}
+      { }
       <Card t={t} style={{ marginBottom: 20 }}>
         <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>Resource Usage (24h)</h3>
         <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
@@ -98,7 +98,7 @@ export function MonitoringModule({ t }: { t: Theme }) {
         <MetricsChart t={t} data={history} />
       </Card>
 
-      {/* ACTIVE ALERTS */}
+      { }
       <Card t={t}>
         <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>Active Alerts</h3>
         {[

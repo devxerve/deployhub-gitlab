@@ -1,17 +1,4 @@
-/**
- * useAuthGuard
- * ─────────────────────────────────────────────────────────────────────────────
- * Comprueba si el usuario tiene una sesión activa llamando al endpoint
- * GET /auth/validate del Gateway (NestJS). Ese endpoint a su vez lee la
- * cookie HttpOnly `auth_token` y la valida contra el Auth Service (Express).
- *
- * USO:
- *   const { isLoading, isAuthenticated } = useAuthGuard();
- *
- * - Mientras verifica  → isLoading = true
- * - Sin sesión válida  → redirige automáticamente a /login
- * - Con sesión válida  → isAuthenticated = true
- */
+
 
 "use client";
 
@@ -22,8 +9,6 @@ interface AuthGuardResult {
   isLoading: boolean;
   isAuthenticated: boolean;
 }
-
-const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL;
 
 export function useAuthGuard(): AuthGuardResult {
   const router = useRouter();
@@ -41,11 +26,11 @@ export function useAuthGuard(): AuthGuardResult {
         if (res.ok) {
           setIsAuthenticated(true);
         } else {
-          // Sin sesión → redirigir al login
+          
           router.replace("/login");
         }
-      } catch (err) {
-        // Error de red (backend caído, etc.) → también al login
+      } catch {
+        
         router.replace("/login");
       } finally {
         setIsLoading(false);

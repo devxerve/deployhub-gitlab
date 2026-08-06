@@ -44,7 +44,7 @@ export default function CircularCard({
             cy="50"
           />
 
-          {/* progreso */}
+          { }
           <circle
             stroke={color}
             fill="transparent"
@@ -61,7 +61,7 @@ export default function CircularCard({
           />
         </svg>
 
-        {/* valor */}
+        { }
         <div
           style={{
             position: "absolute",

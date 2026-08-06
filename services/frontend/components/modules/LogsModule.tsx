@@ -7,7 +7,7 @@ import { LOGS } from "@/lib/data";
 import { Card } from "@/components/ui";
 import { Download, Search } from "lucide-react";
 
-// Triple the log entries so pagination is visible
+ 
 const ALL_LOGS = [...LOGS, ...LOGS, ...LOGS].map((l, i) => ({ ...l, id: i }));
 
 export function LogsModule({ t }: { t: Theme }) {
@@ -36,7 +36,7 @@ export function LogsModule({ t }: { t: Theme }) {
 
   return (
     <div>
-      {/* TOOLBAR */}
+      { }
       <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
         <div
           style={{
@@ -130,7 +130,7 @@ export function LogsModule({ t }: { t: Theme }) {
                   })}
         </div>
 
-        {/* PAGINATION */}
+        { }
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${t.border}` }}>
           <span style={{ fontSize: 12, color: t.muted }}>
             Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, filtered.length)} of {filtered.length}

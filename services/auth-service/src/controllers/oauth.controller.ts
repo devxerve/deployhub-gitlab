@@ -84,14 +84,10 @@ function issueTokenAndRedirect(res: Response, user: any) {
 
   const token = generateToken(payload);
 
-  // Redirigimos al frontend (HTTPS) para que pose le cookie en same-origin.
-  // Le cookie doit être posé depuis HTTPS pour fonctionner avec sameSite/secure.
+
   res.redirect(`${BASE_URL}/api/auth/callback?token=${encodeURIComponent(token)}`);
 }
 
-// ============================================================
-//  GOOGLE
-// ============================================================
 
 const GOOGLE_CLIENT_ID     = requireEnv('GOOGLE_CLIENT_ID');
 const GOOGLE_CLIENT_SECRET = requireEnv('GOOGLE_CLIENT_SECRET');
@@ -148,9 +144,7 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
   }
 };
 
-// ============================================================
-//  GITHUB
-// ============================================================
+
 
 const GITHUB_CLIENT_ID     = requireEnv('GITHUB_CLIENT_ID');
 const GITHUB_CLIENT_SECRET = requireEnv('GITHUB_CLIENT_SECRET');
@@ -207,9 +201,7 @@ export const githubCallback = async (req: Request, res: Response): Promise<void>
   }
 };
 
-// ============================================================
-//  42 (Intra)
-// ============================================================
+
 
 const INTRA_CLIENT_ID     = requireEnv('INTRA_CLIENT_ID');
 const INTRA_CLIENT_SECRET = requireEnv('INTRA_CLIENT_SECRET');

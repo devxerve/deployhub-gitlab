@@ -59,7 +59,7 @@ export default function DeploymentsTable() {
         animation: "fadeIn 0.5s ease"
       }}
     >
-      {/* TOP */}
+      { }
       <div
         style={{
           display: "flex",
@@ -106,7 +106,7 @@ export default function DeploymentsTable() {
         </button>
       </div>
 
-      {/* HEADER */}
+      { }
       <div
         style={{
           display: "grid",
@@ -125,7 +125,7 @@ export default function DeploymentsTable() {
         <span style={{ textAlign: "right" }}>Date</span>
       </div>
 
-      {/* ROWS */}
+      { }
       {data.map((d, i) => {
   const color = getStatusStyle(d.status);
 
@@ -157,7 +157,7 @@ export default function DeploymentsTable() {
         e.currentTarget.style.border = "1px solid var(--border)";
       }}
     >
-      {/* APP + VERSION */}
+      { }
       <div style={{ display: "flex", flexDirection: "column" }}>
         <span style={{ color: "var(--text)", fontWeight: 600 }}>
           {d.app}
@@ -168,7 +168,7 @@ export default function DeploymentsTable() {
         </span>
       </div>
 
-      {/* STATUS */}
+      { }
       <div>
         <span
           style={{
@@ -185,7 +185,7 @@ export default function DeploymentsTable() {
         </span>
       </div>
 
-      {/* PERFORMANCE */}
+      { }
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
         <div
           style={{
@@ -218,7 +218,7 @@ export default function DeploymentsTable() {
         </span>
       </div>
 
-      {/* TIME */}
+      { }
       <span
   style={{
     textAlign: "right",

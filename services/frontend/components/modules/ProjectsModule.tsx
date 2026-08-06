@@ -93,7 +93,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
 
         setProjects(mergeProjects(imported));
       } catch {
-        // Projects remain usable from browser storage when the API is offline.
+         
       } finally {
         if (!cancelled) setLoading(false);
       }

@@ -79,7 +79,7 @@ const login = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 24 * 60 * 60 * 1000 // 1 día
+            maxAge: 24 * 60 * 60 * 1000 
         });
         res.status(200).json({
             message: 'Inicio de sesión exitoso',

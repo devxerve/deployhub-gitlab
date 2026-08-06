@@ -34,7 +34,7 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-/* ─── NAV ITEMS ──────────────────────────────────────────────────────────── */
+
 export const NAV: ReadonlyArray<{ id: PageId; icon: LucideIcon; label: string }> = [
   { id: "dashboard", icon: Gauge, label: "Dashboard" },
   { id: "projects", icon: FolderGit2, label: "Projects" },
@@ -58,7 +58,7 @@ export type PageId =
   | "evaluation"
   | "settings";
 
-/* ─── SIDEBAR ────────────────────────────────────────────────────────────── */
+
 export function Sidebar({
   t,
   active,
@@ -120,7 +120,7 @@ export function Sidebar({
           )}
         </div>
 
-        {/* NAV ITEMS */}
+        { }
         <nav aria-label="Main navigation" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <nav
             style={{
@@ -170,7 +170,7 @@ export function Sidebar({
         </nav>
       </div>
 
-      {/* USER CARD */}
+      { }
       <div
         style={{
           background: t.card,
@@ -307,7 +307,7 @@ export function Sidebar({
 }
 
 
-/* ─── TOPBAR ─────────────────────────────────────────────────────────────── */
+
 const PAGE_TITLES: Record<PageId, string> = {
   dashboard: "Dashboard",
   projects: "Projects",
@@ -389,7 +389,7 @@ export function TopBar({
   );
 }
 
-/* ─── NOTIFICATION PANEL ─────────────────────────────────────────────────── */
+
 function NotificationIcon({ type, color }: { type: string; color: string }) {
   if (type === "success") return <CheckCircle2 size={17} color={color} />;
   if (type === "error") return <XCircle size={17} color={color} />;
@@ -425,7 +425,7 @@ export function NotifPanel({ t, onClose }: { t: Theme; onClose: () => void }) {
   );
 }
 
-/* modal cerrar*/
+
 function LogoutDialog({
   t,
   open,
@@ -634,7 +634,7 @@ function LogoutDialog({
 } 
 
 
-/* ─── DASHBOARD SHELL (shared layout wrapper) ────────────────────────────── */
+
 export function DashboardShell({
   t,
   isDark,

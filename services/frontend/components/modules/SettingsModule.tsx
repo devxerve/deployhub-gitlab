@@ -123,7 +123,7 @@ export function SettingsModule({ t }: { t: Theme }) {
 
   return (
     <div>
-      {/* TAB STRIP */}
+      { }
       <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
         {SETTINGS_TABS.map((tabItem) => {
             const Icon = tabItem.icon;
@@ -163,7 +163,7 @@ export function SettingsModule({ t }: { t: Theme }) {
           })}
       </div>
 
-      {/* ── USERS ── */}
+      { }
       {tab === "users" && (
         <Card t={t}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -204,7 +204,7 @@ export function SettingsModule({ t }: { t: Theme }) {
         </Card>
       )}
 
-      {/* ── TOKENS ── */}
+      { }
       {tab === "tokens" && (
         <Card t={t}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -244,7 +244,7 @@ export function SettingsModule({ t }: { t: Theme }) {
         </Card>
       )}
 
-      {/* ── NOTIFICATIONS ── */}
+      { }
       {tab === "notifs" && (
         <Card t={t}>
           <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>Notification Preferences</h3>
@@ -276,7 +276,7 @@ export function SettingsModule({ t }: { t: Theme }) {
         </Card>
       )}
 
-      {/* ── INTEGRATIONS ── */}
+      { }
 {tab === "integrations" && (
   <div
     style={{
@@ -377,7 +377,7 @@ export function SettingsModule({ t }: { t: Theme }) {
   </div>
 )}
 
-      {/* ── ENV VARIABLES ── */}
+      { }
       {tab === "env" && (
         <Card t={t}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>

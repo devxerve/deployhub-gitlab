@@ -50,7 +50,7 @@ const title = titles[pathname] || "Dashboard";
         boxShadow: "var(--shadow)"
       }}
     >
-      {/* LEFT */}
+      { }
      <div
   style={{
     display: "flex",
@@ -58,7 +58,7 @@ const title = titles[pathname] || "Dashboard";
     gap: "18px"
   }}
 >
-  {/* MENU */}
+  { }
   <div
     style={{
       width: "42px",
@@ -75,7 +75,7 @@ const title = titles[pathname] || "Dashboard";
     <Menu size={18} color="var(--text)" />
   </div>
 
-  {/* NUEVO BLOQUE (TÍTULO) */}
+  {  }
   <div>
     <h1
       style={{
@@ -98,7 +98,7 @@ const title = titles[pathname] || "Dashboard";
     </span>
   </div>
 
-  {/* SEARCH */}
+  { }
   <div
     style={{
       display: "flex",
@@ -139,7 +139,7 @@ onBlur={(e) =>
         </div>
       </div>
 
-      {/* RIGHT */}
+      { }
       <div
         style={{
           display: "flex",
@@ -147,7 +147,7 @@ onBlur={(e) =>
           gap: "14px"
         }}
       >
-        {/* AI STATUS */}
+        { }
         <div
           style={{
             display: "flex",
@@ -179,7 +179,7 @@ onBlur={(e) =>
           </span>
         </div>
 
-        {/* NOTIFICATION */}
+        { }
         <div
           style={{
             width: "42px",
@@ -202,7 +202,7 @@ onBlur={(e) =>
         >
           <Bell size={18} color="var(--text)" />
 
-          {/* DOT */}
+          { }
           <div
             style={{
               position: "absolute",
@@ -221,7 +221,7 @@ onBlur={(e) =>
           />
         </div>
 
-        {/* PROFILE */}
+        { }
         <div
           style={{
             display: "flex",

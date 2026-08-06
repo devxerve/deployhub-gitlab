@@ -38,7 +38,7 @@ export function DashboardModule({ t }: { t: Theme }) {
 
   return (
     <div>
-      {/* KPI CARDS */}
+      { }
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16, marginBottom: 20 }}>
         {kpis.map((k) => (
           <Card key={k.label} t={t} style={{ padding: 20 }}>
@@ -75,7 +75,7 @@ export function DashboardModule({ t }: { t: Theme }) {
         </Card>
       </div>
 
-      {/* RECENT DEPLOYMENTS */}
+      { }
       <Card t={t}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>Recent Deployments</h3>

@@ -3,7 +3,7 @@
 import type { Theme } from "@/lib/themes";
 import { METRICS_HISTORY } from "@/lib/data";
 
-/* ─── MINI SPARKLINE WITH AREA FILL ─────────────────────────────────────── */
+
 export function SparklineArea({
   data, color, h = 36, w = 120,
 }: { data: number[]; color: string; h?: number; w?: number }) {
@@ -24,7 +24,7 @@ export function SparklineArea({
   );
 }
 
-/* ─── DONUT CHART ────────────────────────────────────────────────────────── */
+
 export function DonutChart({
   value, max = 100, color, size = 80, stroke = 7,
 }: { value: number; max?: number; color: string; size?: number; stroke?: number }) {
@@ -44,7 +44,7 @@ export function DonutChart({
   );
 }
 
-/* ─── RADAR / PENTAGON CHART ─────────────────────────────────────────────── */
+
 export function RadarChart({
   t, dims,
 }: { t: Theme; dims: { label: string; val: number; color: string }[] }) {
@@ -85,7 +85,7 @@ export function RadarChart({
   );
 }
 
-/* ─── 24H METRICS TIME SERIES ────────────────────────────────────────────── */
+
 import { HistoryPoint } from "@/lib/api";
 
 export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {
@@ -123,7 +123,7 @@ export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {
   );
 }
 
-/* ─── DEPLOY ACTIVITY BAR CHART ──────────────────────────────────────────── */
+
 export function DeployActivityChart({ t }: { t: Theme }) {
   const labels = METRICS_HISTORY.slice(0, 12).map((m) => m.hour);
   const success = [2, 3, 1, 2, 2, 1, 3, 2, 1, 2, 3, 2];

@@ -1,4 +1,4 @@
-// app/logs/page.tsx
+
 "use client";
 import { useTheme } from "@/hooks/useTheme";
 import { LogsModule } from "@/components/modules/LogsModule";
