@@ -81,3 +81,16 @@ export async function getMonitoringHistory(hours: number = 24): Promise<HistoryP
   if (!res.ok) throw new Error("Error fetching monitoring history");
   return res.json();
 }
+
+export interface LogEntry {
+  ts: string;
+  level: "INFO" | "WARN" | "ERROR";
+  app: string;
+  msg: string;
+}
+
+export async function getLogs(): Promise<LogEntry[]> {
+  const res = await fetch(`${API_URL}/deploy/logs`);
+  if (!res.ok) throw new Error("Error fetching logs");
+  return res.json();
+}

@@ -2,15 +2,19 @@
 
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 import type { Theme } from "@/lib/themes";
 import Image from "next/image";
-import { NOTIFICATIONS } from "@/lib/data";
+import { getDeployments } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { useTranslation, useLanguage } from "@/lib/i18n/context";
+import type { Language } from "@/lib/i18n/translations";
 import {
   AlertTriangle,
   Bell,
+  CheckCheck,
   CheckCircle2,
   CircleGauge,
   FileClock,
@@ -35,15 +39,15 @@ import {
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /* ─── NAV ITEMS ──────────────────────────────────────────────────────────── */
-export const NAV: ReadonlyArray<{ id: PageId; icon: LucideIcon; label: string }> = [
-  { id: "dashboard", icon: Gauge, label: "Dashboard" },
-  { id: "projects", icon: FolderGit2, label: "Projects" },
-  { id: "deployments", icon: Rocket, label: "Deployments" },
-  { id: "pipeline", icon: GitPullRequestArrow, label: "CI/CD Pipeline" },
-  { id: "monitoring", icon: CircleGauge, label: "Monitoring" },
-  { id: "logs", icon: FileClock, label: "Logs" },
-  { id: "evaluation", icon: ShieldCheck, label: "Evaluation" },
-  { id: "settings", icon: Settings, label: "Settings" },
+export const NAV: ReadonlyArray<{ id: PageId; icon: LucideIcon }> = [
+  { id: "dashboard", icon: Gauge },
+  { id: "projects", icon: FolderGit2 },
+  { id: "deployments", icon: Rocket },
+  { id: "pipeline", icon: GitPullRequestArrow },
+  { id: "monitoring", icon: CircleGauge },
+  { id: "logs", icon: FileClock },
+  { id: "evaluation", icon: ShieldCheck },
+  { id: "settings", icon: Settings },
 ];
 
 
@@ -74,6 +78,7 @@ export function Sidebar({
   onLogout: () => void;
   logoutLoading: boolean;
 }) {
+  const { t: tr } = useTranslation();
   return (
     <aside
       style={{
@@ -121,7 +126,7 @@ export function Sidebar({
         </div>
 
         {/* NAV ITEMS */}
-        <nav aria-label="Main navigation" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <nav aria-label={tr("sidebar.mainNav")} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <nav
             style={{
               flex: 1,
@@ -134,11 +139,12 @@ export function Sidebar({
           {NAV.map((item) => {
             const isActive = active === item.id;
             const Icon = item.icon;
+            const label = tr(`sidebar.${item.id}`);
             return (
               <button
                 key={item.id}
                 onClick={() => onNav(item.id)}
-                title={collapsed ? item.label : undefined}
+                title={collapsed ? label : undefined}
                 aria-current={isActive ? "page" : undefined}
                 style={{
                   display: "flex",
@@ -162,7 +168,7 @@ export function Sidebar({
                 onMouseLeave={(event) => { if (!isActive) event.currentTarget.style.background = "transparent"; }}
               >
                 <Icon size={17} aria-hidden="true" />
-                {!collapsed && <span>{item.label}</span>}
+                {!collapsed && <span>{label}</span>}
               </button>
             );
           })}
@@ -185,12 +191,13 @@ export function Sidebar({
         }}
       >
         <Image
-          src="https://i.pravatar.cc/32?img=26"
+          src="/avatars/giselle.png"
           width={32}
           height={32}
-          alt="User profile"
+          alt={tr("sidebar.userAvatarAlt")}
           style={{
-            borderRadius: "50%",
+            borderRadius: 8,
+            objectFit: "cover",
             flexShrink: 0,
             border: `2px solid ${t.accentBorder}`,
           }}
@@ -214,9 +221,9 @@ export function Sidebar({
                 whiteSpace: "nowrap",
               }}
             >
-              Usuario
+              {tr("sidebar.user")}
             </p>
-            
+
             <p
               style={{
                 margin: 0,
@@ -224,13 +231,13 @@ export function Sidebar({
                 color: t.muted,
               }}
             >
-              Administrator
+              {tr("sidebar.role")}
             </p>
           </div>
         )}
         <div
-        title="Online"
-        aria-label="Online"
+        title={tr("sidebar.online")}
+        aria-label={tr("sidebar.online")}
         style={{
           width: 8,
           height: 8,
@@ -245,8 +252,8 @@ export function Sidebar({
           type="button"
           onClick={onLogout}
           disabled={logoutLoading}
-          aria-label="Sign out"
-          title="Sign out"
+          aria-label={tr("sidebar.signOut")}
+          title={tr("sidebar.signOut")}
           style={{
             width: 34,
             height: 34,
@@ -308,16 +315,58 @@ export function Sidebar({
 
 
 /* ─── TOPBAR ─────────────────────────────────────────────────────────────── */
-const PAGE_TITLES: Record<PageId, string> = {
-  dashboard: "Dashboard",
-  projects: "Projects",
-  deployments: "Deployments",
-  pipeline: "CI/CD Pipeline",
-  monitoring: "Monitoring",
-  logs: "Logs",
-  evaluation: "Project Evaluation",
-  settings: "Settings",
+const PAGE_TITLE_KEYS: Record<PageId, string> = {
+  dashboard: "pageTitle.dashboard",
+  projects: "pageTitle.projects",
+  deployments: "pageTitle.deployments",
+  pipeline: "pageTitle.pipeline",
+  monitoring: "pageTitle.monitoring",
+  logs: "pageTitle.logs",
+  evaluation: "pageTitle.evaluation",
+  settings: "pageTitle.settings",
 };
+
+const LANGUAGE_OPTIONS: ReadonlyArray<Language> = ["en", "es", "fr"];
+
+function LanguageSwitcher({ t }: { t: Theme }) {
+  const { language, setLanguage } = useLanguage();
+  const { t: tr } = useTranslation();
+
+  return (
+    <div
+      role="group"
+      aria-label={tr("topbar.selectLanguage")}
+      style={{ display: "inline-flex", alignItems: "center", gap: 2, padding: 3, borderRadius: 999, background: t.card, border: `1px solid ${t.border}` }}
+    >
+      {LANGUAGE_OPTIONS.map((option) => {
+        const active = language === option;
+        return (
+          <button
+            key={option}
+            type="button"
+            onClick={() => setLanguage(option)}
+            aria-pressed={active}
+            style={{
+              padding: "5px 10px",
+              borderRadius: 999,
+              border: "none",
+              cursor: "pointer",
+              fontSize: 11,
+              fontWeight: 700,
+              fontFamily: "inherit",
+              letterSpacing: "0.3px",
+              background: active ? t.accentSoft : "transparent",
+              color: active ? t.accent : t.muted,
+              transition: "all 0.2s",
+            }}
+          >
+            {option.toUpperCase()}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export function TopBar({
   t,
@@ -336,51 +385,54 @@ export function TopBar({
   notifCount: number;
   onNotif: (event: React.MouseEvent) => void;
 }) {
+  const { t: tr } = useTranslation();
   return (
     <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: t.card, border: `1px solid ${t.border}`, borderRadius: 16, padding: "14px 20px", marginBottom: 20, backdropFilter: "blur(16px)", boxShadow: t.shadow, gap: 14, flexWrap: "wrap" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <button
           onClick={onToggleSidebar}
-          aria-label="Toggle sidebar"
+          aria-label={tr("topbar.toggleSidebar")}
           style={{ width: 36, height: 36, borderRadius: 10, background: "transparent", border: `1px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: t.text }}
         >
           <Menu size={17} />
         </button>
         <div>
-          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: t.text }}>{PAGE_TITLES[page]}</h1>
-          <p style={{ margin: 0, fontSize: 12, color: t.muted }}>DeployHub Platform · v1.0.1</p>
+          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: t.text }}>{tr(PAGE_TITLE_KEYS[page])}</h1>
+          <p style={{ margin: 0, fontSize: 12, color: t.muted }}>{tr("topbar.platformTag")}</p>
         </div>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", background: t.accentSoft, border: `1px solid ${t.accentBorder}`, borderRadius: 999, fontSize: 12, color: t.accent }}>
           <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: "50%", background: t.success, display: "inline-block" }} />
-          All systems operational
+          {tr("topbar.systemsOperational")}
         </div>
 
         <button
           onClick={onNotif}
-          aria-label={`Notifications${notifCount ? `, ${notifCount} unread` : ""}`}
+          aria-label={`${tr("topbar.notifications")}${notifCount ? `, ${notifCount} ${tr("topbar.unread")}` : ""}`}
           style={{ width: 36, height: 36, borderRadius: 10, background: t.hover, border: `1px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", color: t.text }}
         >
           <Bell size={17} />
           {notifCount > 0 && <span aria-hidden="true" style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: t.danger }} />}
         </button>
 
+        <LanguageSwitcher t={t} />
+
         <button
           onClick={onToggleTheme}
-          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          aria-label={isDark ? tr("topbar.switchToLight") : tr("topbar.switchToDark")}
           style={{ padding: "8px 13px", borderRadius: 999, background: t.card, border: `1px solid ${t.border}`, cursor: "pointer", fontSize: 12, color: t.muted, fontWeight: 500, fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 7 }}
         >
           {isDark ? (
             <>
               <Sun size={14} aria-hidden="true" />
-              Light
+              {tr("topbar.light")}
             </>
               ) : (
             <>
               <Moon size={14} aria-hidden="true" />
-              Dark
+              {tr("topbar.dark")}
             </>
           )}
         </button>
@@ -390,6 +442,19 @@ export function TopBar({
 }
 
 /* ─── NOTIFICATION PANEL ─────────────────────────────────────────────────── */
+export interface AppNotification {
+  id: string | number;
+  type: "success" | "error" | "warn" | "info";
+  title?: string;
+  titleKey?: string;
+  body?: string;
+  bodyKey?: string;
+  bodyVars?: Record<string, string | number>;
+  time?: string;
+  timeKey?: string;
+  read: boolean;
+}
+
 function NotificationIcon({ type, color }: { type: string; color: string }) {
   if (type === "success") return <CheckCircle2 size={17} color={color} />;
   if (type === "error") return <XCircle size={17} color={color} />;
@@ -397,25 +462,69 @@ function NotificationIcon({ type, color }: { type: string; color: string }) {
   return <Info size={17} color={color} />;
 }
 
-export function NotifPanel({ t, onClose }: { t: Theme; onClose: () => void }) {
+export function NotifPanel({
+  t,
+  notifications,
+  onClose,
+  onMarkAllRead,
+}: {
+  t: Theme;
+  notifications: AppNotification[];
+  onClose: () => void;
+  onMarkAllRead: () => void;
+}) {
+  const { t: tr } = useTranslation();
+  const hasUnread = notifications.some((notification) => !notification.read);
   return (
-    <div style={{ position: "fixed", top: 70, right: 20, width: 340, maxWidth: "calc(100vw - 40px)", background: t.card, border: `1px solid ${t.border}`, borderRadius: 16, boxShadow: t.shadow, zIndex: 999, backdropFilter: "blur(24px)" }} onClick={(event) => event.stopPropagation()}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderBottom: `1px solid ${t.border}` }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: t.text }}>Notifications</span>
-        <button onClick={onClose} aria-label="Close notifications" style={{ width: 28, height: 28, borderRadius: 7, background: t.hover, border: `1px solid ${t.border}`, color: t.muted, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <X size={14} />
-        </button>
+    <div style={{ position: "fixed", top: 70, right: 20, width: 340, maxWidth: "calc(100vw - 40px)", maxHeight: "70vh", overflowY: "auto", background: t.card, border: `1px solid ${t.border}`, borderRadius: 16, boxShadow: t.shadow, zIndex: 999, backdropFilter: "blur(24px)" }} onClick={(event) => event.stopPropagation()}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderBottom: `1px solid ${t.border}`, gap: 8 }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: t.text }}>{tr("notif.title")}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <button
+            onClick={onMarkAllRead}
+            disabled={!hasUnread}
+            title={tr("notif.markAllRead")}
+            aria-label={tr("notif.markAllRead")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              padding: "5px 9px",
+              borderRadius: 7,
+              background: "transparent",
+              border: `1px solid ${t.border}`,
+              color: hasUnread ? t.accent : t.muted,
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: hasUnread ? "pointer" : "not-allowed",
+              opacity: hasUnread ? 1 : 0.5,
+              fontFamily: "inherit",
+            }}
+          >
+            <CheckCheck size={13} aria-hidden="true" />
+            {tr("notif.markAllRead")}
+          </button>
+          <button onClick={onClose} aria-label={tr("notif.close")} style={{ width: 28, height: 28, borderRadius: 7, background: t.hover, border: `1px solid ${t.border}`, color: t.muted, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <X size={14} />
+          </button>
+        </div>
       </div>
-      {NOTIFICATIONS.map((notification) => {
+      {notifications.length === 0 && (
+        <div style={{ padding: "20px 16px", fontSize: 12, color: t.muted, textAlign: "center" }}>{tr("notif.empty")}</div>
+      )}
+      {notifications.map((notification) => {
         const color = notification.type === "success" ? t.success : notification.type === "error" ? t.danger : notification.type === "warn" ? t.warning : t.accent;
+        const title = notification.titleKey ? tr(notification.titleKey) : notification.title ?? "";
+        const body = notification.bodyKey ? tr(notification.bodyKey, notification.bodyVars) : notification.body ?? "";
+        const time = notification.timeKey ? tr(notification.timeKey) : notification.time ?? "";
         return (
           <div key={notification.id} style={{ padding: "12px 16px", borderBottom: `1px solid ${t.border}`, background: notification.read ? "transparent" : t.accentSoft }}>
             <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
               <NotificationIcon type={notification.type} color={color} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{notification.title}</div>
-                <div style={{ fontSize: 12, color: t.muted }}>{notification.body}</div>
-                <div style={{ fontSize: 11, color: t.muted, marginTop: 2 }}>{notification.time}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{title}</div>
+                <div style={{ fontSize: 12, color: t.muted }}>{body}</div>
+                <div style={{ fontSize: 11, color: t.muted, marginTop: 2 }}>{time}</div>
               </div>
             </div>
           </div>
@@ -439,6 +548,7 @@ function LogoutDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t: tr } = useTranslation();
   useEffect(() => {
     if (!open) return;
 
@@ -537,7 +647,7 @@ function LogoutDialog({
             fontWeight: 700,
           }}
         >
-          Sign out of DeployHub?
+          {tr("logout.title")}
         </h2>
 
         <p
@@ -549,9 +659,7 @@ function LogoutDialog({
             lineHeight: 1.6,
           }}
         >
-          Your current session will be closed.
-          Projects and deployment history stored in
-          this browser will not be deleted.
+          {tr("logout.description")}
         </p>
 
         <div
@@ -580,7 +688,7 @@ function LogoutDialog({
               fontFamily: "inherit",
             }}
           >
-            Cancel
+            {tr("common.cancel")}
           </button>
 
           <button
@@ -615,7 +723,7 @@ function LogoutDialog({
                   className="icon-spin"
                   aria-hidden="true"
                 />
-                Signing out
+                {tr("logout.signingOut")}
               </>
             ) : (
               <>
@@ -623,7 +731,7 @@ function LogoutDialog({
                   size={15}
                   aria-hidden="true"
                 />
-                Sign out
+                {tr("logout.signOut")}
               </>
             )}
           </button>
@@ -652,7 +760,60 @@ export function DashboardShell({
   const [showNotif, setShowNotif] = useState(false);
   const [showLogout, setShowLogout] =useState(false);
   const [logoutLoading, setLogoutLoading] =useState(false);
-  const unread = NOTIFICATIONS.filter((notification) => !notification.read).length;
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const lastStatusRef = useRef<Record<string, string>>({});
+  const firstPollRef = useRef(true);
+  const unread = notifications.filter((notification) => !notification.read).length;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function poll() {
+      try {
+        const deploys = await getDeployments();
+        if (cancelled) return;
+
+        const newNotifications: AppNotification[] = [];
+        for (const deploy of deploys) {
+          const status = deploy.status.toLowerCase();
+          const previousStatus = lastStatusRef.current[deploy.id];
+
+          if (!firstPollRef.current && previousStatus !== status && (status === "success" || status === "failed")) {
+            newNotifications.push({
+              id: `deploy-${deploy.id}-${status}-${Date.now()}`,
+              type: status === "success" ? "success" : "error",
+              titleKey: status === "success" ? "notif.deploySuccessTitle" : "notif.deployFailedTitle",
+              bodyKey: status === "success" ? "notif.deploySuccessBody" : "notif.deployFailedBody",
+              bodyVars: { project: deploy.projectId },
+              timeKey: "common.time.justNow",
+              read: false,
+            });
+          }
+
+          lastStatusRef.current[deploy.id] = status;
+        }
+
+        firstPollRef.current = false;
+
+        if (newNotifications.length > 0) {
+          setNotifications((current) => [...newNotifications, ...current]);
+        }
+      } catch {
+        // Ignore network errors during background polling.
+      }
+    }
+
+    poll();
+    const interval = window.setInterval(poll, 5000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  function markAllNotificationsRead() {
+    setNotifications((current) => current.map((notification) => ({ ...notification, read: true })));
+  }
 
   async function handleLogout() {
   if (logoutLoading) return;
@@ -715,7 +876,14 @@ export function DashboardShell({
         <div style={{ animation: "fadeIn 0.3s ease" }}>{children({ page })}</div>
       </main>
 
-      {showNotif && <NotifPanel t={t} onClose={() => setShowNotif(false)} />}
+      {showNotif && (
+        <NotifPanel
+          t={t}
+          notifications={notifications}
+          onClose={() => setShowNotif(false)}
+          onMarkAllRead={markAllNotificationsRead}
+        />
+      )}
       <LogoutDialog
        t={t}
        open={showLogout}

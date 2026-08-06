@@ -86,7 +86,7 @@ export class DeploymentsProcessor {
 
             // 5. FINISH WITH SUCCESS
             await this.deploymentsService.updateStatusRealtime(id, DeployStatus.SUCCESS);
-            await this.deploymentsService.addLogRealtime(id, `Deployment completed! Application is running on port ${port}`);
+            await this.deploymentsService.addLogRealtime(id, `Deployment completed! Running correctly.`);
             this.logger.log(`[SUCCESS] Deploy ${id} finished on port ${port}.`);
 
         } catch (error) {

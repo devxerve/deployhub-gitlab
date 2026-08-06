@@ -22,6 +22,7 @@ import {
   removeStoredProject,
   type DeployProject,
 } from "@/lib/projects";
+import { useTranslation, type TranslateFn } from "@/lib/i18n/context";
 
 interface ProjectStats {
   status: "live" | "building" | "failing" | "idle";
@@ -40,24 +41,34 @@ const EMPTY_FORM = {
 function deriveStatus(deploys: Deploy[]): ProjectStats["status"] {
   if (deploys.length === 0) return "idle";
   const latest = deploys[0];
-  if (["PENDING", "CLONING", "BUILDING", "RUNNING"].includes(latest.status)) return "building";
-  if (latest.status === "FAILED") return "failing";
-  if (latest.status === "SUCCESS") return "live";
+  const status = latest.status.toLowerCase();
+  if (["pending", "cloning", "building", "running"].includes(status)) return "building";
+  if (status === "failed") return "failing";
+  if (status === "success") return "live";
   return "idle";
 }
 
-function timeAgo(dateStr?: string) {
-  if (!dateStr) return "Never";
+function timeAgo(dateStr: string | undefined, tr: TranslateFn) {
+  if (!dateStr) return tr("common.time.never");
   const diff = Date.now() - new Date(dateStr).getTime();
   const min = Math.floor(diff / 60000);
-  if (min < 1) return "Just now";
-  if (min < 60) return `${min} min ago`;
+  if (min < 1) return tr("common.time.justNow");
+  if (min < 60) return tr("common.time.minAgo", { n: min });
   const h = Math.floor(min / 60);
-  if (h < 24) return `${h} hr ago`;
-  return `${Math.floor(h / 24)} days ago`;
+  if (h < 24) return tr("common.time.hrAgo", { n: h });
+  return tr("common.time.daysAgo", { n: Math.floor(h / 24) });
 }
 
+const FILTER_KEYS: Record<string, string> = {
+  all: "projects.filter.all",
+  live: "projects.filter.live",
+  building: "projects.filter.building",
+  failing: "projects.filter.failing",
+  idle: "projects.filter.idle",
+};
+
 export function ProjectsModule({ t }: { t: Theme }) {
+  const { t: tr } = useTranslation();
   const [projects, setProjects] = useState<DeployProject[]>([]);
   const [deploys, setDeploys] = useState<Deploy[]>([]);
   const [search, setSearch] = useState("");
@@ -87,7 +98,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
           name: deploy.projectId,
           repoUrl: deploy.repoUrl,
           defaultBranch: deploy.branch || "main",
-          description: "Imported from deployment history",
+          description: tr("projects.importedDescription"),
           createdAt: deploy.createdAt,
         }));
 
@@ -119,7 +130,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
           project.id,
           {
             status: deriveStatus(history),
-            lastDeploy: timeAgo(history[0]?.createdAt),
+            lastDeploy: timeAgo(history[0]?.createdAt, tr),
             totalDeploys: history.length,
             port: history.find((deploy) => deploy.port)?.port,
           } satisfies ProjectStats,
@@ -131,10 +142,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
   const filtered = projects.filter((project) => {
     const query = search.toLowerCase();
     const stats = statsByProject[project.id];
-    return (
-      project.name.toLowerCase().includes(query) ||
-      project.repoUrl.toLowerCase().includes(query)
-    ) && (filter === "all" || stats?.status === filter);
+    return project.name.toLowerCase().includes(query) && (filter === "all" || stats?.status === filter);
   });
 
   function handleCreate() {
@@ -145,15 +153,15 @@ export function ProjectsModule({ t }: { t: Theme }) {
       setForm(EMPTY_FORM);
       setShowCreate(false);
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : "Unable to add project.");
+      setFormError(error instanceof Error ? error.message : tr("projects.form.error"));
     }
   }
 
   function handleRemove(project: DeployProject) {
     const hasDeployments = (statsByProject[project.id]?.totalDeploys ?? 0) > 0;
     const question = hasDeployments
-      ? `Remove ${project.name} from Projects? Deployment history will not be deleted.`
-      : `Remove ${project.name} from Projects?`;
+      ? tr("projects.confirmRemoveWithDeploys", { name: project.name })
+      : tr("projects.confirmRemove", { name: project.name });
 
     if (!window.confirm(question)) return;
     removeStoredProject(project.id);
@@ -165,14 +173,14 @@ export function ProjectsModule({ t }: { t: Theme }) {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 16, marginBottom: 18, flexWrap: "wrap" }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 19, color: t.text }}>Projects</h2>
+          <h2 style={{ margin: 0, fontSize: 19, color: t.text }}>{tr("projects.title")}</h2>
           <p style={{ margin: "5px 0 0", color: t.muted, fontSize: 12 }}>
-            Register GitHub repositories here. Deployments only executes registered projects.
+            {tr("projects.subtitle")}
           </p>
         </div>
         <Btn t={t} onClick={() => { setFormError(null); setShowCreate(true); }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
-            <Plus size={15} /> Add project
+            <Plus size={15} /> {tr("projects.addProject")}
           </span>
         </Btn>
       </div>
@@ -183,8 +191,8 @@ export function ProjectsModule({ t }: { t: Theme }) {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search projects..."
-            aria-label="Search projects"
+            placeholder={tr("projects.searchPlaceholder")}
+            aria-label={tr("projects.searchAriaLabel")}
             style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px 10px 39px", borderRadius: 10, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, outline: "none", fontFamily: "inherit" }}
           />
         </div>
@@ -205,7 +213,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
               transition: "all 0.2s",
             }}
           >
-            {item.charAt(0).toUpperCase() + item.slice(1)}
+            {tr(FILTER_KEYS[item])}
           </button>
         ))}
       </div>
@@ -213,13 +221,13 @@ export function ProjectsModule({ t }: { t: Theme }) {
       {!loading && projects.length === 0 && (
         <Card t={t} style={{ textAlign: "center", padding: 48 }}>
           <FolderGit2 size={36} color={t.accent} style={{ marginBottom: 12 }} />
-          <h3 style={{ margin: "0 0 6px", color: t.text, fontSize: 15 }}>No projects registered</h3>
+          <h3 style={{ margin: "0 0 6px", color: t.text, fontSize: 15 }}>{tr("projects.emptyTitle")}</h3>
           <p style={{ margin: "0 0 16px", color: t.muted, fontSize: 12 }}>
-            Add a public GitHub repository with a Dockerfile to make it deployable.
+            {tr("projects.emptyBody")}
           </p>
           <Btn t={t} onClick={() => setShowCreate(true)}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
-              <Plus size={15} /> Add first project
+              <Plus size={15} /> {tr("projects.addFirstProject")}
             </span>
           </Btn>
         </Card>
@@ -227,7 +235,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(290px,1fr))", gap: 16 }}>
         {filtered.map((project) => {
-          const stats = statsByProject[project.id] ?? { status: "idle", lastDeploy: "Never", totalDeploys: 0 };
+          const stats = statsByProject[project.id] ?? { status: "idle", lastDeploy: tr("common.time.never"), totalDeploys: 0 };
           const status = stats.status === "live" ? "SUCCESS" : stats.status === "building" ? "BUILDING" : stats.status === "failing" ? "FAILED" : "PENDING";
           const color = statusColor(t, status);
 
@@ -245,10 +253,10 @@ export function ProjectsModule({ t }: { t: Theme }) {
                   <GitBranch size={21} />
                 </div>
                 <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
-                  <Badge label={stats.status} color={color} />
+                  <Badge label={tr(FILTER_KEYS[stats.status])} color={color} />
                   <button
-                    aria-label={`Remove ${project.name}`}
-                    title="Remove project"
+                    aria-label={tr("projects.removeAriaLabel", { name: project.name })}
+                    title={tr("projects.removeTitle")}
                     onClick={(event) => { event.stopPropagation(); handleRemove(project); }}
                     style={{ width: 30, height: 30, borderRadius: 8, background: "transparent", border: `1px solid ${t.border}`, color: t.muted, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
                   >
@@ -259,7 +267,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
 
               <h3 style={{ margin: "0 0 5px", fontSize: 15, fontWeight: 700, color: t.text }}>{project.name}</h3>
               <p style={{ margin: "0 0 12px", minHeight: 34, fontSize: 12, lineHeight: 1.45, color: t.muted }}>
-                {project.description || "GitHub project ready for deployment."}
+                {project.description || tr("projects.descriptionFallback")}
               </p>
 
               <div style={{ display: "flex", alignItems: "center", gap: 7, color: t.muted, fontSize: 11, marginBottom: 8 }}>
@@ -271,11 +279,11 @@ export function ProjectsModule({ t }: { t: Theme }) {
               </div>
 
               <div style={{ display: "flex", gap: 8, marginBottom: 13, flexWrap: "wrap" }}>
-                <Badge label={`${stats.totalDeploys} deployments`} color={t.accent} />
-                {stats.port && <Badge label={`port ${stats.port}`} color={t.success} />}
+                <Badge label={tr("projects.deploymentsCount", { n: stats.totalDeploys })} color={t.accent} />
+                {stats.port && <Badge label={tr("projects.portLabel", { port: stats.port })} color={t.success} />}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, color: t.muted }}>
-                <Clock3 size={13} /> Last deployment: {stats.lastDeploy}
+                <Clock3 size={13} /> {tr("projects.lastDeployment", { value: stats.lastDeploy })}
               </div>
             </Card>
           );
@@ -283,23 +291,23 @@ export function ProjectsModule({ t }: { t: Theme }) {
       </div>
 
       {showCreate && (
-        <Modal t={t} title="Add GitHub project" onClose={() => setShowCreate(false)}>
+        <Modal t={t} title={tr("projects.modalTitle")} onClose={() => setShowCreate(false)}>
           <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
             <label style={{ fontSize: 12, color: t.muted }}>
-              Project name
-              <TextInput t={t} value={form.name} onChange={(value) => setForm((current) => ({ ...current, name: value }))} placeholder="Example: customer-portal" style={{ marginTop: 6 }} />
+              {tr("projects.form.name")}
+              <TextInput t={t} value={form.name} onChange={(value) => setForm((current) => ({ ...current, name: value }))} placeholder={tr("projects.form.namePlaceholder")} style={{ marginTop: 6 }} />
             </label>
             <label style={{ fontSize: 12, color: t.muted }}>
-              GitHub repository URL
-              <TextInput t={t} value={form.repoUrl} onChange={(value) => setForm((current) => ({ ...current, repoUrl: value }))} placeholder="https://github.com/organization/repository" style={{ marginTop: 6 }} />
+              {tr("projects.form.repoUrl")}
+              <TextInput t={t} value={form.repoUrl} onChange={(value) => setForm((current) => ({ ...current, repoUrl: value }))} placeholder={tr("projects.form.repoUrlPlaceholder")} style={{ marginTop: 6 }} />
             </label>
             <label style={{ fontSize: 12, color: t.muted }}>
-              Default branch
+              {tr("projects.form.branch")}
               <TextInput t={t} value={form.defaultBranch} onChange={(value) => setForm((current) => ({ ...current, defaultBranch: value }))} placeholder="main" style={{ marginTop: 6 }} />
             </label>
             <label style={{ fontSize: 12, color: t.muted }}>
-              Description
-              <TextInput t={t} value={form.description} onChange={(value) => setForm((current) => ({ ...current, description: value }))} placeholder="What does this project deploy?" style={{ marginTop: 6 }} />
+              {tr("projects.form.description")}
+              <TextInput t={t} value={form.description} onChange={(value) => setForm((current) => ({ ...current, description: value }))} placeholder={tr("projects.form.descriptionPlaceholder")} style={{ marginTop: 6 }} />
             </label>
 
             {formError && (
@@ -309,10 +317,10 @@ export function ProjectsModule({ t }: { t: Theme }) {
             )}
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 4 }}>
-              <Btn t={t} variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Btn>
+              <Btn t={t} variant="ghost" onClick={() => setShowCreate(false)}>{tr("common.cancel")}</Btn>
               <Btn t={t} onClick={handleCreate} disabled={!form.name.trim() || !form.repoUrl.trim()}>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
-                  <Plus size={15} /> Add project
+                  <Plus size={15} /> {tr("projects.addProject")}
                 </span>
               </Btn>
             </div>
@@ -323,12 +331,12 @@ export function ProjectsModule({ t }: { t: Theme }) {
       {selected && (
         <Modal t={t} title={selected.name} onClose={() => setSelected(null)}>
           {([
-            ["Repository", selected.repoUrl],
-            ["Project ID", selected.id],
-            ["Default branch", selected.defaultBranch],
-            ["Status", statsByProject[selected.id]?.status ?? "idle"],
-            ["Total deployments", String(statsByProject[selected.id]?.totalDeploys ?? 0)],
-            ["Last deployment", statsByProject[selected.id]?.lastDeploy ?? "Never"],
+            [tr("projects.detail.repository"), selected.repoUrl],
+            [tr("projects.detail.projectId"), selected.id],
+            [tr("projects.detail.defaultBranch"), selected.defaultBranch],
+            [tr("projects.detail.status"), tr(FILTER_KEYS[statsByProject[selected.id]?.status ?? "idle"])],
+            [tr("projects.detail.totalDeployments"), String(statsByProject[selected.id]?.totalDeploys ?? 0)],
+            [tr("projects.detail.lastDeployment"), statsByProject[selected.id]?.lastDeploy ?? tr("common.time.never")],
           ] as [string, string][]).map(([key, value]) => (
             <div key={key} style={{ display: "flex", justifyContent: "space-between", gap: 18, padding: "9px 0", borderBottom: `1px solid ${t.border}` }}>
               <span style={{ fontSize: 12, color: t.muted }}>{key}</span>
@@ -339,13 +347,13 @@ export function ProjectsModule({ t }: { t: Theme }) {
             <a href={selected.repoUrl} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: "none" }}>
               <Btn t={t} variant="secondary" style={{ width: "100%" }}>
                 <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-                  <ExternalLink size={14} /> Open GitHub
+                  <ExternalLink size={14} /> {tr("projects.openGithub")}
                 </span>
               </Btn>
             </a>
             <Btn t={t} style={{ flex: 1 }} onClick={() => setSelected(null)}>
               <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-                <PackageCheck size={14} /> Ready to deploy
+                <PackageCheck size={14} /> {tr("projects.readyToDeploy")}
               </span>
             </Btn>
           </div>

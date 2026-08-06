@@ -5,13 +5,25 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        if [ ! -s /certs/cert.pem ] || [ ! -s /certs/key.pem ]; then
-          echo "Generating self-signed TLS certificate for localhost..."
-          openssl req -x509 -newkey rsa:2048 -keyout /certs/key.pem -out /certs/cert.pem -days 825 -nodes \
-            -subj "/CN=localhost" \
-            -addext "subjectAltName=DNS:localhost,DNS:api.localhost,DNS:auth.localhost,DNS:grafana.localhost,DNS:prometheus.localhost,IP:127.0.0.1"
-          chmod 644 /certs/cert.pem
-          chmod 600 /certs/key.pem
+        if [ ! -s /certs/ca.pem ] || [ ! -s /certs/cert.pem ] || [ ! -s /certs/key.pem ]; then
+          echo "Generating local CA and wildcard TLS certificate for *.localhost..."
+
+          # 1. Local root CA (import this once into your browser/OS trust store)
+          openssl genrsa -out /certs/ca-key.pem 4096
+          openssl req -x509 -new -nodes -key /certs/ca-key.pem -sha256 -days 3650 \
+            -out /certs/ca.pem -subj "/CN=DeployHub Local CA"
+
+          # 2. Leaf certificate covering localhost and any *.localhost subdomain
+          #    (api.localhost, auth.localhost, grafana.localhost, <deploy-id>.localhost, ...)
+          openssl genrsa -out /certs/key.pem 2048
+          openssl req -new -key /certs/key.pem -out /certs/server.csr -subj "/CN=localhost"
+          printf 'subjectAltName=DNS:localhost,DNS:*.localhost,IP:127.0.0.1\n' > /certs/server-ext.cnf
+          openssl x509 -req -in /certs/server.csr -CA /certs/ca.pem -CAkey /certs/ca-key.pem \
+            -CAcreateserial -out /certs/cert.pem -days 825 -sha256 -extfile /certs/server-ext.cnf
+
+          rm -f /certs/server.csr /certs/server-ext.cnf
+          chmod 644 /certs/cert.pem /certs/ca.pem
+          chmod 600 /certs/key.pem /certs/ca-key.pem
         else
           echo "TLS certificate already present, skipping generation."
         fi
@@ -83,6 +95,7 @@ services:
     environment:
       - PROMETHEUS_URL=${PROMETHEUS_URL}
       - PORT=3001
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres_db:5432/${DB_NAME}?schema=public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`api.localhost`)"
@@ -106,6 +119,7 @@ services:
       start_period: 40s
     networks:
       - paas_network
+      - bbdd_network
 
   db:
     build:

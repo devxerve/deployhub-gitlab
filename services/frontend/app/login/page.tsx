@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/context";
 
 /* ─── GITHUB ICON ─── */
 const GitHubIcon = ({ color }: { color: string }) => (
@@ -54,6 +55,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL;
 
 export default function LoginPage() {
+  const { t: tr } = useTranslation();
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -79,10 +81,10 @@ export default function LoginPage() {
         router.push("/dashboard");
       } else {
         const data = await res.json();
-        alert(data.message || "Usuario o contraseña incorrectos");
+        alert(data.message || tr("login.errorLogin"));
       }
     } catch (err) {
-      alert("Error al conectar con el servidor de autenticación");
+      alert(tr("login.errorConnect"));
     } finally {
       setLoading(false);
     }
@@ -114,20 +116,20 @@ async function handleRegister(e: React.FormEvent) {
 
     if (res.ok) {
       console.log("✅ Registro exitoso en el servidor");
-      alert("¡Cuenta creada con éxito! Por favor inicia sesión.");
+      alert(tr("login.registerSuccess"));
       setIsRegistering(false);
       setPassword("");
       setEmail("");
     } else {
       const data = await res.json();
       console.warn("⚠️ El backend respondió con error (HTTP 4xx/5xx):", data);
-      alert(data.message || "Error al registrar el usuario");
+      alert(data.message || tr("login.errorRegister"));
     }
   } catch (err) {
     // 3. Capturamos el error exacto de la red / fetch
     console.error("❌ ERROR EN FETCH (CAUGHT IN CATCH):");
     console.error(err);
-    alert("Error de conexión al intentar registrar la cuenta");
+    alert(tr("login.errorRegisterConnect"));
   } finally {
     console.log("🏁 [REGISTER END]\n--------------------");
     setLoading(false);
@@ -157,12 +159,12 @@ async function handleRegister(e: React.FormEvent) {
           {isDark ? (
             <>
               <Sun size={14} aria-hidden="true" />
-              Light
+              {tr("topbar.light")}
             </>
               ) : (
             <>
               <Moon size={14} aria-hidden="true" />
-              Dark
+              {tr("topbar.dark")}
             </>
           )}
         </button>
@@ -185,7 +187,7 @@ async function handleRegister(e: React.FormEvent) {
             </div>
           </div>
           <div style={{ ...styles.subtitle, color: t.subtitleColor }}>
-            {isRegistering ? "Create your account" : "Intelligent deployment monitoring platform"}
+            {isRegistering ? tr("login.subtitleRegister") : tr("login.subtitleLogin")}
           </div>
 
           {/* OAUTH — solo en login */}
@@ -218,7 +220,7 @@ async function handleRegister(e: React.FormEvent) {
               </div>
               <div style={styles.divider}>
                 <div style={{ ...styles.divLine, background: t.divLineColor }} />
-                <span style={{ ...styles.divText, color: t.divTextColor }}>or with username</span>
+                <span style={{ ...styles.divText, color: t.divTextColor }}>{tr("login.orWithUsername")}</span>
                 <div style={{ ...styles.divLine, background: t.divLineColor }} />
               </div>
             </>
@@ -226,10 +228,10 @@ async function handleRegister(e: React.FormEvent) {
 
           {/* CAMPO USERNAME — siempre visible */}
           <div style={styles.field}>
-            <label style={{ ...styles.fieldLabel, color: t.labelColor }}>Username</label>
+            <label style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.username")}</label>
             <input
               type="text"
-              placeholder="your_username"
+              placeholder={tr("login.usernamePlaceholder")}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -242,10 +244,10 @@ async function handleRegister(e: React.FormEvent) {
           {/* CAMPO EMAIL — solo en registro */}
           {isRegistering && (
             <div style={styles.field}>
-              <label style={{ ...styles.fieldLabel, color: t.labelColor }}>Email</label>
+              <label style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.email")}</label>
               <input
                 type="email"
-                placeholder="you@company.com"
+                placeholder={tr("login.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -258,7 +260,7 @@ async function handleRegister(e: React.FormEvent) {
 
           {/* CAMPO PASSWORD */}
           <div style={styles.field}>
-            <label style={{ ...styles.fieldLabel, color: t.labelColor }}>Password</label>
+            <label style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.password")}</label>
             <input
               type="password"
               placeholder="••••••••"
@@ -274,7 +276,7 @@ async function handleRegister(e: React.FormEvent) {
           {/* FORGOT — solo en login */}
           {!isRegistering && (
             <div style={styles.forgot}>
-              <a href="#" style={{ ...styles.forgotLink, color: t.accent }}>Forgot password?</a>
+              <a href="#" style={{ ...styles.forgotLink, color: t.accent }}>{tr("login.forgotPassword")}</a>
             </div>
           )}
 
@@ -298,12 +300,12 @@ async function handleRegister(e: React.FormEvent) {
               e.currentTarget.style.boxShadow = "none";
             }}
           >
-            {loading ? "Cargando..." : isRegistering ? "Create Account" : "Sign in to DeployHub"}
+            {loading ? tr("login.loading") : isRegistering ? tr("login.createAccount") : tr("login.signIn")}
           </button>
 
           {/* TOGGLE LOGIN / REGISTER */}
           <div style={{ ...styles.footerNote, color: t.footerColor }}>
-            {isRegistering ? "Already have an account? " : "No account? "}
+            {isRegistering ? tr("login.alreadyHaveAccount") : tr("login.noAccount")}{" "}
             <button
               type="button"
               onClick={() => {
@@ -322,7 +324,7 @@ async function handleRegister(e: React.FormEvent) {
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
-              {isRegistering ? "Sign in" : "Create account"}
+              {isRegistering ? tr("login.signInLink") : tr("login.createAccountLink")}
             </button>
           </div>
         </form>

@@ -5,7 +5,7 @@ import { DeploymentsService } from './deployments.service';
 import { DeploymentsProcessor } from './deployments.processor';
 import { RealtimeModule } from '../realtime/realtime.module';
 import { GitUtil } from './utils/git.utils';
-import { PrismaService } from '../prisma/prisma.service'; // mock de DB, Daniel
+import { PrismaService } from '../prisma/prisma.service';
 import { DockerUtil } from './utils/docker.utils';
 
 @Module ({
@@ -20,7 +20,7 @@ import { DockerUtil } from './utils/docker.utils';
         DeploymentsProcessor,
         GitUtil,
         DockerUtil,
-        PrismaService, // mock de DB, Daniel
+        PrismaService,
     ],
     exports: [
         DeploymentsService
