@@ -25,27 +25,29 @@ import {
   PROJECTS_UPDATED_EVENT,
   type DeployProject,
 } from "@/lib/projects";
+import { useTranslation, type TranslateFn } from "@/lib/i18n/context";
 
 const STATUS_PROGRESS: Record<string, number> = {
-  PENDING: 5,
-  CLONING: 20,
-  BUILDING: 60,
-  RUNNING: 90,
-  SUCCESS: 100,
-  FAILED: 100,
+  pending: 5,
+  cloning: 20,
+  building: 60,
+  running: 90,
+  success: 100,
+  failed: 100,
 };
 
-function timeAgo(dateStr: string) {
+function timeAgo(dateStr: string, tr: TranslateFn) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const min = Math.floor(diff / 60000);
-  if (min < 1) return "Just now";
-  if (min < 60) return `${min} min ago`;
+  if (min < 1) return tr("common.time.justNow");
+  if (min < 60) return tr("common.time.minAgo", { n: min });
   const h = Math.floor(min / 60);
-  if (h < 24) return `${h} hr ago`;
-  return `${Math.floor(h / 24)} days ago`;
+  if (h < 24) return tr("common.time.hrAgo", { n: h });
+  return tr("common.time.daysAgo", { n: Math.floor(h / 24) });
 }
 
 export function DeploymentsModule({ t }: { t: Theme }) {
+  const { t: tr } = useTranslation();
   const [deploys, setDeploys] = useState<Deploy[]>([]);
   const [projects, setProjects] = useState<DeployProject[]>([]);
   const [selected, setSelected] = useState<Deploy | null>(null);
@@ -78,11 +80,11 @@ export function DeploymentsModule({ t }: { t: Theme }) {
   useEffect(() => {
     getDeployments()
       .then(setDeploys)
-      .catch(() => setError("Unable to connect to the deployment API."));
+      .catch(() => setError(tr("deployments.apiError")));
   }, []);
 
   useEffect(() => {
-    const active = deploys.some((deploy) => ["PENDING", "CLONING", "BUILDING", "RUNNING"].includes(deploy.status));
+    const active = deploys.some((deploy) => ["pending", "cloning", "building", "running"].includes(deploy.status.toLowerCase()));
     if (!active) return;
 
     const interval = window.setInterval(() => {
@@ -137,7 +139,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
       setShowForm(false);
       setCommitHash("");
     } catch {
-      setError("The deployment could not be created. Verify that the backend is running.");
+      setError(tr("deployments.createError"));
     } finally {
       setLoading(false);
     }
@@ -145,14 +147,14 @@ export function DeploymentsModule({ t }: { t: Theme }) {
 
   async function handleDelete(id: string, event: React.MouseEvent) {
     event.stopPropagation();
-    if (!window.confirm("Delete this deployment record?")) return;
+    if (!window.confirm(tr("deployments.confirmDelete"))) return;
 
     try {
       await deleteDeployment(id);
       setDeploys((previous) => previous.filter((deployment) => deployment.id !== id));
       if (selected?.id === id) setSelected(null);
     } catch {
-      setError("The deployment record could not be deleted.");
+      setError(tr("deployments.deleteError"));
     }
   }
 
@@ -161,14 +163,14 @@ export function DeploymentsModule({ t }: { t: Theme }) {
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
           <div>
-            <h3 style={{ margin: 0, color: t.text, fontSize: 16, fontWeight: 650 }}>Deployment history</h3>
+            <h3 style={{ margin: 0, color: t.text, fontSize: 16, fontWeight: 650 }}>{tr("deployments.history")}</h3>
             <p style={{ margin: "4px 0 0", color: t.muted, fontSize: 12 }}>
-              Execute a project previously registered in Projects.
+              {tr("deployments.historySubtitle")}
             </p>
           </div>
           <Btn t={t} onClick={() => setShowForm((current) => !current)} disabled={projects.length === 0}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
-              <Rocket size={15} /> New deployment
+              <Rocket size={15} /> {tr("deployments.newDeployment")}
             </span>
           </Btn>
         </div>
@@ -178,9 +180,9 @@ export function DeploymentsModule({ t }: { t: Theme }) {
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
               <GitBranch size={22} color={t.accent} />
               <div>
-                <div style={{ color: t.text, fontSize: 13, fontWeight: 650 }}>Register a GitHub project first</div>
+                <div style={{ color: t.text, fontSize: 13, fontWeight: 650 }}>{tr("deployments.registerFirst")}</div>
                 <div style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>
-                  Open Projects, add a public GitHub repository, then return here to deploy it.
+                  {tr("deployments.registerFirstBody")}
                 </div>
               </div>
             </div>
@@ -196,57 +198,79 @@ export function DeploymentsModule({ t }: { t: Theme }) {
         {showForm && projects.length > 0 && (
           <Card t={t} style={{ marginBottom: 16 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <label style={{ fontSize: 12, color: t.muted }}>
-                Project
-                <select
-                  value={projectId}
-                  onChange={(e) => setProjectId(e.target.value)}
-                  style={{ display: "block", width: "100%", marginTop: 6, padding: "8px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.inputBg, color: t.text, fontSize: 13, fontFamily: "inherit" }}
-                >
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>{project.name}</option>
-                  ))}
-                </select>
-              </label>
+              <div style={{ fontSize: 12, color: t.muted, marginBottom: 2 }}>{tr("deployments.project")}</div>
+              <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
+                {projects.map((project) => {
+                  const active = project.id === projectId;
+                  return (
+                    <button
+                      key={project.id}
+                      type="button"
+                      onClick={() => setProjectId(project.id)}
+                      aria-pressed={active}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 8,
+                        flexShrink: 0,
+                        padding: "9px 14px",
+                        borderRadius: 10,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        fontFamily: "inherit",
+                        whiteSpace: "nowrap",
+                        transition: "all 0.2s",
+                        background: active ? t.accentSoft : "transparent",
+                        border: active ? `1px solid ${t.accentBorder}` : `1px solid ${t.border}`,
+                        color: active ? t.accent : t.text,
+                      }}
+                    >
+                      <GitBranch size={14} />
+                      {project.name}
+                    </button>
+                  );
+                })}
+              </div>
 
               {selectedProject && (
                 <div style={{ display: "grid", gap: 7, padding: 12, borderRadius: 10, border: `1px solid ${t.border}`, background: t.hover }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, color: t.text, fontSize: 12 }}>
                     <GitBranch size={14} color={t.accent} />
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedProject.repoUrl}</span>
-                    <a href={selectedProject.repoUrl} target="_blank" rel="noreferrer" aria-label="Open GitHub repository" style={{ color: t.accent, display: "inline-flex", marginLeft: "auto" }}>
+                    <a href={selectedProject.repoUrl} target="_blank" rel="noreferrer" aria-label={tr("deployments.openGithubRepoAria")} style={{ color: t.accent, display: "inline-flex", marginLeft: "auto" }}>
                       <ExternalLink size={14} />
                     </a>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, color: t.muted, fontSize: 12 }}>
-                    <GitBranch size={14} /> Configured branch: {selectedProject.defaultBranch}
+                    <GitBranch size={14} /> {tr("deployments.configuredBranch", { branch: selectedProject.defaultBranch })}
                   </div>
                 </div>
               )}
 
               <label style={{ fontSize: 12, color: t.muted }}>
-                Commit hash (optional)
+                {tr("deployments.commitHashLabel")}
                 <TextInput
                   t={t}
                   value={commitHash}
                   onChange={setCommitHash}
-                  placeholder="Leave empty to deploy the configured project branch"
+                  placeholder={tr("deployments.commitHashPlaceholder")}
                   style={{ marginTop: 6 }}
                 />
               </label>
 
               <div style={{ fontSize: 11, color: t.muted, lineHeight: 1.5 }}>
-                The current backend supports public GitHub repositories containing a Dockerfile. A commit hash can pin an exact revision.
+                {tr("deployments.commitHashHelp")}
               </div>
 
               <div style={{ display: "flex", gap: 8 }}>
                 <Btn t={t} onClick={handleCreate} disabled={loading || !selectedProject} style={{ flex: 1 }}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
                     {loading ? <LoaderCircle size={15} className="icon-spin" /> : <Play size={15} />}
-                    {loading ? "Starting..." : "Deploy project"}
+                    {loading ? tr("deployments.starting") : tr("deployments.deployProject")}
                   </span>
                 </Btn>
-                <Btn t={t} variant="ghost" onClick={() => setShowForm(false)}>Cancel</Btn>
+                <Btn t={t} variant="ghost" onClick={() => setShowForm(false)}>{tr("common.cancel")}</Btn>
               </div>
             </div>
           </Card>
@@ -255,16 +279,18 @@ export function DeploymentsModule({ t }: { t: Theme }) {
         {deploys.length === 0 && !error && (
           <Card t={t} style={{ textAlign: "center", padding: 34 }}>
             <Rocket size={30} color={t.muted} style={{ marginBottom: 10 }} />
-            <div style={{ color: t.text, fontSize: 13, fontWeight: 600 }}>No deployments yet</div>
-            <div style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>Your execution history will appear here.</div>
+            <div style={{ color: t.text, fontSize: 13, fontWeight: 600 }}>{tr("deployments.noDeployments")}</div>
+            <div style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>{tr("deployments.noDeploymentsBody")}</div>
           </Card>
         )}
 
         {deploys.map((deployment) => {
           const color = statusColor(t, deployment.status);
           const isActive = selected?.id === deployment.id;
-          const progress = STATUS_PROGRESS[deployment.status] ?? 0;
-          const isBuilding = ["PENDING", "CLONING", "BUILDING", "RUNNING"].includes(deployment.status);
+          const statusLower = deployment.status.toLowerCase();
+          const progress = STATUS_PROGRESS[statusLower] ?? 0;
+          const isBuilding = ["pending", "cloning", "building", "running"].includes(statusLower);
+          const statusLabel = tr(`status.${statusLower}`).toUpperCase();
 
           return (
             <Card
@@ -280,11 +306,24 @@ export function DeploymentsModule({ t }: { t: Theme }) {
                     {deployment.commitHash?.slice(0, 7) ?? deployment.branch ?? "default"} · {deployment.repoUrl.split("/").slice(-1)[0]}
                   </div>
                 </div>
-                <Badge label={deployment.status} color={color} />
-                <span style={{ fontSize: 11, color: t.muted }}>{timeAgo(deployment.createdAt)}</span>
+                <Badge label={statusLabel} color={color} />
+                <span style={{ fontSize: 11, color: t.muted }}>{timeAgo(deployment.createdAt, tr)}</span>
+                {statusLower === "success" && (
+                  <a
+                    href={`https://${deployment.id}.localhost`}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(event) => event.stopPropagation()}
+                    aria-label={tr("deployments.openSiteAria", { project: deployment.projectId })}
+                    title={tr("deployments.openSiteTitle")}
+                    style={{ width: 30, height: 30, borderRadius: 7, background: "transparent", border: `1px solid ${t.border}`, color: t.accent, display: "flex", alignItems: "center", justifyContent: "center" }}
+                  >
+                    <ExternalLink size={14} />
+                  </a>
+                )}
                 <button
-                  aria-label={`Delete deployment ${deployment.id}`}
-                  title="Delete deployment record"
+                  aria-label={tr("deployments.deleteAria", { id: deployment.id })}
+                  title={tr("deployments.deleteTitle")}
                   onClick={(event) => handleDelete(deployment.id, event)}
                   style={{ width: 30, height: 30, borderRadius: 7, background: "transparent", border: `1px solid ${t.border}`, color: t.muted, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
                 >
@@ -294,7 +333,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
               {isBuilding && (
                 <div style={{ marginTop: 10 }}>
                   <Bar pct={progress} color={t.accent} h={4} />
-                  <div style={{ fontSize: 10, color: t.muted, marginTop: 4 }}>{deployment.status} · {progress}%</div>
+                  <div style={{ fontSize: 10, color: t.muted, marginTop: 4 }}>{statusLabel} · {progress}%</div>
                 </div>
               )}
             </Card>
@@ -306,22 +345,38 @@ export function DeploymentsModule({ t }: { t: Theme }) {
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 16 }}>
             <div>
-              <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>Live logs</h3>
+              <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>{tr("deployments.liveLogs")}</h3>
               <p style={{ margin: "3px 0 0", color: t.muted, fontSize: 11 }}>{selected.projectId}</p>
             </div>
-            <Btn t={t} variant="ghost" onClick={() => setSelected(null)}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><X size={14} /> Close</span>
-            </Btn>
+            <div style={{ display: "flex", gap: 8 }}>
+              {selected.status.toLowerCase() === "success" && (
+                <Btn t={t} onClick={() => window.open(`https://${selected.id}.localhost`, "_blank", "noreferrer")}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><ExternalLink size={14} /> {tr("deployments.openSite")}</span>
+                </Btn>
+              )}
+              <Btn t={t} variant="ghost" onClick={() => setSelected(null)}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><X size={14} /> {tr("common.close")}</span>
+              </Btn>
+            </div>
           </div>
           <Card t={t}>
             <div
               ref={logRef}
               aria-live="polite"
-              style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, lineHeight: 1.8, height: 420, overflowY: "auto", background: "rgba(0,0,0,0.3)", borderRadius: 10, padding: 16 }}
+              style={{
+                fontFamily: "'JetBrains Mono',monospace",
+                fontSize: 12,
+                lineHeight: 1.8,
+                height: 420,
+                overflowY: "auto",
+                background: "#0b1220",
+                borderRadius: 10,
+                padding: 16,
+              }}
             >
               {liveLogs.length === 0 && (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 8, color: t.muted }}>
-                  <LoaderCircle size={14} className="icon-spin" /> Waiting for deployment events...
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#94a3b8" }}>
+                  <LoaderCircle size={14} className="icon-spin" /> {tr("deployments.waitingForEvents")}
                 </span>
               )}
               {liveLogs.map((log, index) => (
@@ -329,17 +384,17 @@ export function DeploymentsModule({ t }: { t: Theme }) {
                   key={`${index}-${log}`}
                   style={{
                     color: /success|completed|running on port/i.test(log)
-                      ? t.success
+                      ? "#4ade80"
                       : /failed|error/i.test(log)
-                        ? t.danger
+                        ? "#f87171"
                         : "#94a3b8",
                   }}
                 >
                   {log}
                 </div>
               ))}
-              {["PENDING", "CLONING", "BUILDING", "RUNNING"].includes(selected.status) && (
-                <span style={{ display: "inline-flex", color: t.accent, marginTop: 4 }}>
+              {["pending", "cloning", "building", "running"].includes(selected.status.toLowerCase()) && (
+                <span style={{ display: "inline-flex", color: "#60a5fa", marginTop: 4 }}>
                   <LoaderCircle size={14} className="icon-spin" />
                 </span>
               )}

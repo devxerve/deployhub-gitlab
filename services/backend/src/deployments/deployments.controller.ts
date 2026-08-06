@@ -12,6 +12,7 @@ import {
 import { CreateDeployDto } from "./dto/create-deploy.dto";
 import { DeploymentsService } from "./deployments.service";
 import { DeploymentsProcessor } from "./deployments.processor";
+import { DockerUtil } from "./utils/docker.utils";
 
 @Controller("deploy")
 @UsePipes(
@@ -25,6 +26,7 @@ export class DeploymentsController {
   constructor(
     private readonly deploymentsService: DeploymentsService,
     private readonly deploymentsProcessor: DeploymentsProcessor,
+    private readonly dockerUtil: DockerUtil,
   ) {}
 
   @Post()
@@ -37,6 +39,11 @@ export class DeploymentsController {
   @Get()
   findAll() {
     return this.deploymentsService.getAllDeploys();
+  }
+
+  @Get("logs")
+  getRecentLogs() {
+    return this.dockerUtil.getRecentDeploymentLogs();
   }
 
   @Delete(":id")

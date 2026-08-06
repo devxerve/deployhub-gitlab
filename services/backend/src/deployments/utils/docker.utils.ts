@@ -28,13 +28,15 @@ export class DockerUtil {
         this.logger.log(`Build stdout: ${data}`);
       });
 
-      child.on("close", (code) => {
-        clearTimeout(timeout);
+      child.on("error", (error: Error) => {
+        reject(error);
+      });
 
+      child.on("close", (code) => {
         if (code === 0) {
           resolve();
         } else {
-          reject(new Error(`Docker build failed with code: ${code}`));
+          reject(new Error(`Docker run failed with code: ${String(code)}`));
         }
       });
 
@@ -46,15 +48,16 @@ export class DockerUtil {
   }
 
   async runContainer(id: string, port: number): Promise<void> {
+    void port;
+
     return new Promise((resolve, reject) => {
       const netWorkName = process.env.DOCKER_NETWORK_NAME || "deploy-network";
+
       const workDir = path.join(process.env.DEPLOY_TMP_DIR || "/app/tmp", id);
 
       const child = spawn("docker", [
         "run",
         "-d",
-        "-p",
-        `${port}:3000`,
         "--network",
         netWorkName,
         "--name",
@@ -63,6 +66,10 @@ export class DockerUtil {
         "traefik.enable=true",
         "--label",
         `traefik.http.routers.deploy-${id}.rule=Host(\`${id}.localhost\`)`,
+        "--label",
+        `traefik.http.routers.deploy-${id}.entrypoints=websecure`,
+        "--label",
+        `traefik.http.routers.deploy-${id}.tls=true`,
         "--label",
         `traefik.http.services.deploy-${id}.loadbalancer.server.port=3000`,
         "--env-file",
@@ -73,13 +80,116 @@ export class DockerUtil {
       child.on("error", (error: Error) => {
         reject(error);
       });
+
       child.on("close", (code) => {
         if (code === 0) {
           resolve();
-        } else {
-          reject(new Error(`Docker run failed with code: ${code}`));
+          return;
         }
+
+        reject(new Error(`Docker run failed with code: ${String(code)}`));
       });
     });
+  }
+
+  private getContainerLogLines(
+    containerName: string,
+    tail: number,
+  ): Promise<{ ts: string; stream: "stdout" | "stderr"; text: string }[]> {
+    return new Promise((resolve) => {
+      const child = spawn("docker", [
+        "logs",
+        "--timestamps",
+        "--tail",
+        String(tail),
+        containerName,
+      ]);
+      const lines: { ts: string; stream: "stdout" | "stderr"; text: string }[] =
+        [];
+
+      const parse = (buffer: Buffer, stream: "stdout" | "stderr") => {
+        for (const raw of buffer.toString().split("\n")) {
+          if (!raw.trim()) {
+            continue;
+          }
+
+          const spaceIdx = raw.indexOf(" ");
+
+          const ts =
+            spaceIdx > -1 ? raw.slice(0, spaceIdx) : new Date().toISOString();
+
+          const text = spaceIdx > -1 ? raw.slice(spaceIdx + 1) : raw;
+
+          lines.push({
+            ts,
+            stream,
+            text,
+          });
+        }
+      };
+
+      child.stdout.on("data", (data: Buffer) => {
+        parse(data, "stdout");
+      });
+
+      child.stderr.on("data", (data: Buffer) => {
+        parse(data, "stderr");
+      });
+
+      child.stdout.on("data", (data: Buffer) => {
+        parse(data, "stdout");
+      });
+      child.stderr.on("data", (data: Buffer) => {
+        parse(data, "stderr");
+      });
+      child.on("close", () => resolve(lines));
+      child.on("error", () => resolve(lines));
+    });
+  }
+
+  async getRecentDeploymentLogs(tailPerContainer = 40): Promise<
+    Array<{
+      ts: string;
+      level: "INFO" | "WARN" | "ERROR";
+      app: string;
+      msg: string;
+    }>
+  > {
+    const deploys = await this.deploymentsService.getAllDeploys();
+    const relevant = deploys.filter((deploy) =>
+      ["running", "success"].includes(String(deploy.status).toLowerCase()),
+    );
+
+    const entries: Array<{
+      ts: string;
+      level: "INFO" | "WARN" | "ERROR";
+      app: string;
+      msg: string;
+    }> = [];
+
+    for (const deploy of relevant) {
+      const lines = await this.getContainerLogLines(
+        `container-${deploy.id}`,
+        tailPerContainer,
+      );
+      for (const line of lines) {
+        const lower = line.text.toLowerCase();
+        const level: "INFO" | "WARN" | "ERROR" =
+          line.stream === "stderr" || lower.includes("error")
+            ? "ERROR"
+            : lower.includes("warn")
+              ? "WARN"
+              : "INFO";
+        entries.push({
+          ts: line.ts,
+          level,
+          app: deploy.projectId,
+          msg: line.text,
+        });
+      }
+    }
+
+    entries.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
+    return entries;
   }
 }

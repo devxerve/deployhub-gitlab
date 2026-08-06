@@ -1,9 +1,11 @@
 "use client";
 
 import type { Theme } from "@/lib/themes";
-import { METRICS_HISTORY } from "@/lib/data";
+import type { Deploy } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n/context";
+import type { Language } from "@/lib/i18n/translations";
 
-
+/* ─── MINI SPARKLINE WITH AREA FILL ─────────────────────────────────────── */
 export function SparklineArea({
   data, color, h = 36, w = 120,
 }: { data: number[]; color: string; h?: number; w?: number }) {
@@ -24,7 +26,7 @@ export function SparklineArea({
   );
 }
 
-
+/* ─── DONUT CHART ────────────────────────────────────────────────────────── */
 export function DonutChart({
   value, max = 100, color, size = 80, stroke = 7,
 }: { value: number; max?: number; color: string; size?: number; stroke?: number }) {
@@ -44,7 +46,7 @@ export function DonutChart({
   );
 }
 
-
+/* ─── RADAR / PENTAGON CHART ─────────────────────────────────────────────── */
 export function RadarChart({
   t, dims,
 }: { t: Theme; dims: { label: string; val: number; color: string }[] }) {
@@ -85,11 +87,11 @@ export function RadarChart({
   );
 }
 
-
+/* ─── 24H METRICS TIME SERIES ────────────────────────────────────────────── */
 import { HistoryPoint } from "@/lib/api";
 
 export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {
-  const chartData = data && data.length > 0 ? data : METRICS_HISTORY;
+  const chartData = data ?? [];
   const svgW = 600, svgH = 160, pad = { l: 30, r: 10, t: 10, b: 20 };
   const w = svgW - pad.l - pad.r, h = svgH - pad.t - pad.b;
 
@@ -123,19 +125,33 @@ export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {
   );
 }
 
+/* ─── DEPLOY ACTIVITY BAR CHART ──────────────────────────────────────────── */
+const LOCALE_BY_LANGUAGE: Record<Language, string> = {
+  en: "en-US",
+  es: "es-ES",
+  fr: "fr-FR",
+};
 
-export function DeployActivityChart({ t }: { t: Theme }) {
-  const labels = METRICS_HISTORY.slice(0, 12).map((m) => m.hour);
-  const success = [2, 3, 1, 2, 2, 1, 3, 2, 1, 2, 3, 2];
-  const fail    = [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0];
+export function DeployActivityChart({ t, deploys }: { t: Theme; deploys: Deploy[] }) {
+  const { language } = useLanguage();
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d;
+  });
+
+  const labels = days.map((d) => new Intl.DateTimeFormat(LOCALE_BY_LANGUAGE[language], { weekday: "short" }).format(d));
+  const success = days.map((day) => deploys.filter((dep) => dep.status.toLowerCase() === "success" && new Date(dep.createdAt).toDateString() === day.toDateString()).length);
+  const fail = days.map((day) => deploys.filter((dep) => dep.status.toLowerCase() === "failed" && new Date(dep.createdAt).toDateString() === day.toDateString()).length);
+
   const barW = 28, gap = 10, h = 140, pad = 10;
-  const maxVal = 4;
+  const maxVal = Math.max(1, ...success, ...fail);
   const x = (i: number) => pad + i * (barW + gap);
 
   return (
-    <svg width="100%" viewBox={`0 0 ${pad * 2 + 12 * (barW + gap)} ${h + 30}`} style={{ overflow: "visible" }}>
+    <svg width="100%" viewBox={`0 0 ${pad * 2 + days.length * (barW + gap)} ${h + 30}`} style={{ overflow: "visible" }}>
       {[0, 1, 2, 3, 4].map((i) => (
-        <line key={i} x1={0} x2={pad * 2 + 12 * (barW + gap)} y1={h - (i / 4) * (h - pad)} y2={h - (i / 4) * (h - pad)} stroke={t.border} strokeWidth="1" />
+        <line key={i} x1={0} x2={pad * 2 + days.length * (barW + gap)} y1={h - (i / 4) * (h - pad)} y2={h - (i / 4) * (h - pad)} stroke={t.border} strokeWidth="1" />
       ))}
       {success.map((v, i) => (
         <rect key={`s${i}`} x={x(i)} y={h - (v / maxVal) * (h - pad)} width={barW * 0.5} height={(v / maxVal) * (h - pad)} fill={t.success} opacity="0.7" rx="3" />

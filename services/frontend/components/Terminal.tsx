@@ -7,8 +7,10 @@ import {
   CircleX,
   SquareTerminal,
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/context";
 
 export default function Terminal() {
+  const { t: tr } = useTranslation();
   const [input, setInput] = useState("");
 
   const [logs, setLogs] = useState<string[]>([
@@ -126,7 +128,7 @@ export default function Terminal() {
             letterSpacing: "0.4px"
           }}
         >
-          production-terminal
+          {tr("terminal.title")}
         </span>
 
         { }
@@ -150,7 +152,7 @@ export default function Terminal() {
     color="#22c55e"
     aria-hidden="true"
   />
-  ONLINE
+  {tr("terminal.online")}
 </span>
         </div>
       </div>
@@ -237,7 +239,7 @@ export default function Terminal() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a command..."
+            placeholder={tr("terminal.placeholder")}
 
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -343,7 +345,7 @@ export default function Terminal() {
             `
           }}
         >
-          Run
+          {tr("terminal.run")}
         </button>
       </div>
     </div>

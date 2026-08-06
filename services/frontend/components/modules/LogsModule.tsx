@@ -1,22 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Theme } from "@/lib/themes";
 import { logColor } from "@/lib/themes";
-import { LOGS } from "@/lib/data";
+import { getLogs, type LogEntry } from "@/lib/api";
 import { Card } from "@/components/ui";
 import { Download, Search } from "lucide-react";
-
- 
-const ALL_LOGS = [...LOGS, ...LOGS, ...LOGS].map((l, i) => ({ ...l, id: i }));
+import { useTranslation } from "@/lib/i18n/context";
 
 export function LogsModule({ t }: { t: Theme }) {
+  const { t: tr } = useTranslation();
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch]  = useState("");
   const [filter, setFilter]  = useState("ALL");
   const [page, setPage]      = useState(1);
   const PER_PAGE = 8;
 
-  const filtered = ALL_LOGS.filter((l) => {
+  useEffect(() => {
+    let cancelled = false;
+
+    function load() {
+      getLogs()
+        .then((fresh) => { if (!cancelled) setLogs(fresh); })
+        .catch(() => undefined)
+        .finally(() => { if (!cancelled) setLoading(false); });
+    }
+
+    load();
+    const interval = window.setInterval(load, 8000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  const allLogs = logs.map((l, i) => ({ ...l, id: i }));
+
+  const filtered = allLogs.filter((l) => {
     const q = search.toLowerCase();
     return (l.msg.toLowerCase().includes(q) || l.app.toLowerCase().includes(q))
       && (filter === "ALL" || l.level === filter);
@@ -36,7 +57,7 @@ export function LogsModule({ t }: { t: Theme }) {
 
   return (
     <div>
-      { }
+      {/* TOOLBAR */}
       <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
         <div
           style={{
@@ -64,8 +85,8 @@ export function LogsModule({ t }: { t: Theme }) {
               setSearch(event.target.value);
               setPage(1);
             }}
-            placeholder="Search logs..."
-            aria-label="Search logs"
+            placeholder={tr("logs.searchPlaceholder")}
+            aria-label={tr("logs.searchAriaLabel")}
             style={{
               width: "100%",
               boxSizing: "border-box",
@@ -88,7 +109,7 @@ export function LogsModule({ t }: { t: Theme }) {
             color: filter === lv ? (lv === "ERROR" ? t.danger : lv === "WARN" ? t.warning : t.accent) : t.muted,
             transition: "all 0.2s",
           }}>
-            {lv}
+            {lv === "ALL" ? tr("logs.filterAll") : lv}
           </button>
         ))}
         <button
@@ -108,11 +129,17 @@ export function LogsModule({ t }: { t: Theme }) {
           }}
         >
           <Download size={14} aria-hidden="true" />
-          Export CSV
+          {tr("logs.exportCsv")}
         </button>
               </div>
         
               <Card t={t}>
+                {loading && (
+                  <div style={{ padding: 24, textAlign: "center", color: t.muted, fontSize: 13 }}>{tr("logs.loading")}</div>
+                )}
+                {!loading && filtered.length === 0 && (
+                  <div style={{ padding: 24, textAlign: "center", color: t.muted, fontSize: 13 }}>{tr("logs.empty")}</div>
+                )}
                 <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12 }}>
                   {paginated.map((l) => {
                     const c = logColor(t, l.level);
@@ -130,10 +157,10 @@ export function LogsModule({ t }: { t: Theme }) {
                   })}
         </div>
 
-        { }
+        {/* PAGINATION */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${t.border}` }}>
           <span style={{ fontSize: 12, color: t.muted }}>
-            Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, filtered.length)} of {filtered.length}
+            {tr("logs.showing", { from: (page - 1) * PER_PAGE + 1, to: Math.min(page * PER_PAGE, filtered.length), total: filtered.length })}
           </span>
           <div style={{ display: "flex", gap: 6 }}>
             {Array.from({ length: Math.min(total, 5) }, (_, i) => i + 1).map((p) => (
