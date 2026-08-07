@@ -1,4 +1,4 @@
-// app/settings/page.tsx
+
 "use client";
 import { useTheme } from "@/hooks/useTheme";
 import { SettingsModule } from "@/components/modules/SettingsModule";

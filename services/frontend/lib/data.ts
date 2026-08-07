@@ -1,5 +1,4 @@
-// ─── MOCK DATA ─────────────────────────────────────────────────────────────────
-// Single source of truth for all modules
+
 
 export const PROJECTS = [
   { id: 1, name: "deployhub-web",    desc: "Main frontend portal",        framework: "Next.js", repo: "github.com/org/deployhub-web",    branch: "main",         status: "live",     envs: 3, score: "A+", lastDeploy: "2 min ago" },

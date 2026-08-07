@@ -35,3 +35,7 @@ db.sqlite
 
 # TLS certificates (generated locally)
 services/infra/traefik/certs/
+services/auth-service/src/**/*.js
+services/auth-service/src/**/*.js.map
+services/auth-service/src/**/*.d.ts
+services/auth-service/src/**/*.d.ts.map

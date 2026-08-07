@@ -1,5 +1,4 @@
-// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
-// Matches the login page palette exactly — both DARK and LIGHT
+
 
 export const DARK = {
   pageBg: "#020617",
@@ -63,7 +62,7 @@ export const LIGHT = {
 
 export type Theme = typeof DARK;
 
-// Helper: pick a status colour from any theme
+
 export function statusColor(t: Theme, s: string): string {
   const map: Record<string, string> = {
     SUCCESS: "#22c55e",

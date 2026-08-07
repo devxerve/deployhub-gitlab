@@ -38,7 +38,7 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-/* ─── NAV ITEMS ──────────────────────────────────────────────────────────── */
+ 
 export const NAV: ReadonlyArray<{ id: PageId; icon: LucideIcon }> = [
   { id: "dashboard", icon: Gauge },
   { id: "projects", icon: FolderGit2 },
@@ -62,7 +62,7 @@ export type PageId =
   | "evaluation"
   | "settings";
 
-/* ─── SIDEBAR ────────────────────────────────────────────────────────────── */
+ 
 export function Sidebar({
   t,
   active,
@@ -125,7 +125,6 @@ export function Sidebar({
           )}
         </div>
 
-        {/* NAV ITEMS */}
         <nav aria-label={tr("sidebar.mainNav")} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <nav
             style={{
@@ -176,7 +175,6 @@ export function Sidebar({
         </nav>
       </div>
 
-      {/* USER CARD */}
       <div
         style={{
           background: t.card,
@@ -314,7 +312,7 @@ export function Sidebar({
 }
 
 
-/* ─── TOPBAR ─────────────────────────────────────────────────────────────── */
+ 
 const PAGE_TITLE_KEYS: Record<PageId, string> = {
   dashboard: "pageTitle.dashboard",
   projects: "pageTitle.projects",
@@ -441,7 +439,7 @@ export function TopBar({
   );
 }
 
-/* ─── NOTIFICATION PANEL ─────────────────────────────────────────────────── */
+ 
 export interface AppNotification {
   id: string | number;
   type: "success" | "error" | "warn" | "info";
@@ -534,7 +532,7 @@ export function NotifPanel({
   );
 }
 
-/* modal cerrar*/
+ 
 function LogoutDialog({
   t,
   open,
@@ -742,7 +740,7 @@ function LogoutDialog({
 } 
 
 
-/* ─── DASHBOARD SHELL (shared layout wrapper) ────────────────────────────── */
+ 
 export function DashboardShell({
   t,
   isDark,
@@ -799,7 +797,7 @@ export function DashboardShell({
           setNotifications((current) => [...newNotifications, ...current]);
         }
       } catch {
-        // Ignore network errors during background polling.
+         
       }
     }
 
@@ -829,15 +827,11 @@ export function DashboardShell({
       method: "POST",
       credentials: "include",
     });
-  } catch (error) {
-    console.error(
-      "Unable to close session:",
-      error,
-    );
-  } finally {
-    router.replace("/login");
-    router.refresh();
-  }
+  } catch {
+} finally {
+  router.replace("/login");
+  router.refresh();
+}
 }
 
 

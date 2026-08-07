@@ -65,7 +65,6 @@ export default function Terminal() {
         animation: "fadeIn 0.5s ease"
       }}
     >
-      {/* TOP BAR */}
       <div
         style={{
           height: "52px",
@@ -83,7 +82,6 @@ export default function Terminal() {
           padding: "0 18px"
         }}
       >
-        {/* LEFT */}
         <div
           style={{
             display: "flex",
@@ -119,7 +117,6 @@ export default function Terminal() {
           />
         </div>
 
-        {/* TITLE */}
         <span
           style={{
             color: "var(--muted)",
@@ -131,7 +128,6 @@ export default function Terminal() {
           {tr("terminal.title")}
         </span>
 
-        {/* STATUS */}
         <div
           style={{
             color: "#22c55e",
@@ -157,7 +153,6 @@ export default function Terminal() {
         </div>
       </div>
 
-      {/* TERMINAL BODY */}
       <div
         style={{
           padding: "20px",
@@ -218,7 +213,6 @@ export default function Terminal() {
           );
         })}
 
-        {/* INPUT LINE */}
         <div
           style={{
             display: "flex",
@@ -266,7 +260,6 @@ export default function Terminal() {
         </div>
       </div>
 
-      {/* FOOTER */}
       <div
         style={{
           borderTop: "1px solid var(--border)",

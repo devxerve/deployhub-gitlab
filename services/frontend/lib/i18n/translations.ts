@@ -3,7 +3,7 @@ export type Language = "en" | "es" | "fr";
 type Entry = [key: string, en: string, es: string, fr: string];
 
 const ENTRIES: Entry[] = [
-  // ── SIDEBAR ──────────────────────────────────────────────────────────────
+   
   ["sidebar.dashboard", "Dashboard", "Panel", "Tableau de bord"],
   ["sidebar.projects", "Projects", "Proyectos", "Projets"],
   ["sidebar.deployments", "Deployments", "Despliegues", "Déploiements"],
@@ -19,7 +19,7 @@ const ENTRIES: Entry[] = [
   ["sidebar.online", "Online", "En línea", "En ligne"],
   ["sidebar.signOut", "Sign out", "Cerrar sesión", "Se déconnecter"],
 
-  // ── TOPBAR ───────────────────────────────────────────────────────────────
+   
   ["topbar.toggleSidebar", "Toggle sidebar", "Alternar barra lateral", "Basculer la barre latérale"],
   ["topbar.platformTag", "DeployHub Platform · v1.0.1", "Plataforma DeployHub · v1.0.1", "Plateforme DeployHub · v1.0.1"],
   ["topbar.systemsOperational", "All systems operational", "Todos los sistemas operativos", "Tous les systèmes sont opérationnels"],
@@ -31,7 +31,7 @@ const ENTRIES: Entry[] = [
   ["topbar.switchToDark", "Switch to dark mode", "Cambiar a modo oscuro", "Passer en mode sombre"],
   ["topbar.selectLanguage", "Select language", "Seleccionar idioma", "Choisir la langue"],
 
-  // ── PAGE TITLES ──────────────────────────────────────────────────────────
+   
   ["pageTitle.dashboard", "Dashboard", "Panel", "Tableau de bord"],
   ["pageTitle.projects", "Projects", "Proyectos", "Projets"],
   ["pageTitle.deployments", "Deployments", "Despliegues", "Déploiements"],
@@ -41,7 +41,7 @@ const ENTRIES: Entry[] = [
   ["pageTitle.evaluation", "Project Evaluation", "Evaluación del proyecto", "Évaluation du projet"],
   ["pageTitle.settings", "Settings", "Configuración", "Paramètres"],
 
-  // ── NOTIFICATIONS PANEL ──────────────────────────────────────────────────
+   
   ["notif.title", "Notifications", "Notificaciones", "Notifications"],
   ["notif.close", "Close notifications", "Cerrar notificaciones", "Fermer les notifications"],
   ["notif.empty", "No notifications yet", "Aún no hay notificaciones", "Aucune notification pour le moment"],
@@ -51,7 +51,7 @@ const ENTRIES: Entry[] = [
   ["notif.deploySuccessBody", "{project} deployed successfully", "{project} se desplegó correctamente", "{project} a été déployé avec succès"],
   ["notif.deployFailedBody", "{project} failed to deploy", "El despliegue de {project} ha fallado", "Le déploiement de {project} a échoué"],
 
-  // ── LOGOUT DIALOG ────────────────────────────────────────────────────────
+   
   ["logout.title", "Sign out of DeployHub?", "¿Cerrar sesión en DeployHub?", "Se déconnecter de DeployHub ?"],
   [
     "logout.description",
@@ -62,7 +62,7 @@ const ENTRIES: Entry[] = [
   ["logout.signOut", "Sign out", "Cerrar sesión", "Se déconnecter"],
   ["logout.signingOut", "Signing out", "Cerrando sesión", "Déconnexion en cours"],
 
-  // ── COMMON ───────────────────────────────────────────────────────────────
+   
   ["common.cancel", "Cancel", "Cancelar", "Annuler"],
   ["common.close", "Close", "Cerrar", "Fermer"],
   ["common.save", "Save", "Guardar", "Enregistrer"],
@@ -74,7 +74,7 @@ const ENTRIES: Entry[] = [
   ["common.time.hrAgo", "{n} hr ago", "hace {n} h", "il y a {n} h"],
   ["common.time.daysAgo", "{n} days ago", "hace {n} días", "il y a {n} jours"],
 
-  // ── DASHBOARD ────────────────────────────────────────────────────────────
+   
   ["dashboard.kpi.totalProjects", "Total Projects", "Proyectos totales", "Projets au total"],
   ["dashboard.kpi.totalProjectsSub", "unique projects", "proyectos únicos", "projets uniques"],
   ["dashboard.kpi.deploymentsToday", "Deployments Today", "Despliegues hoy", "Déploiements aujourd'hui"],
@@ -89,7 +89,7 @@ const ENTRIES: Entry[] = [
   ["dashboard.live", "Live", "En vivo", "En direct"],
   ["dashboard.noDeployments", "No deployments yet", "Aún no hay despliegues", "Aucun déploiement pour le moment"],
 
-  // ── PROJECTS ─────────────────────────────────────────────────────────────
+   
   ["projects.title", "Projects", "Proyectos", "Projets"],
   [
     "projects.subtitle",
@@ -170,7 +170,7 @@ const ENTRIES: Entry[] = [
   ["projects.openGithub", "Open GitHub", "Abrir GitHub", "Ouvrir GitHub"],
   ["projects.readyToDeploy", "Ready to deploy", "Listo para desplegar", "Prêt à déployer"],
 
-  // ── DEPLOYMENTS ──────────────────────────────────────────────────────────
+   
   ["deployments.history", "Deployment history", "Historial de despliegues", "Historique des déploiements"],
   [
     "deployments.historySubtitle",
@@ -258,7 +258,7 @@ const ENTRIES: Entry[] = [
   ],
   ["deployments.openGithubRepoAria", "Open GitHub repository", "Abrir repositorio de GitHub", "Ouvrir le dépôt GitHub"],
 
-  // ── PIPELINE ─────────────────────────────────────────────────────────────
+   
   ["pipeline.title", "CI/CD Pipeline", "Pipeline CI/CD", "Pipeline CI/CD"],
   ["pipeline.commit", "Commit", "Commit", "Commit"],
   ["pipeline.branch", "branch", "rama", "branche"],
@@ -267,7 +267,7 @@ const ENTRIES: Entry[] = [
   ["pipeline.running", "Running...", "Ejecutando...", "Exécution en cours..."],
   ["pipeline.duration", "Duration:", "Duración:", "Durée :"],
 
-  // ── MONITORING ───────────────────────────────────────────────────────────
+   
   ["monitoring.cpuUsage", "CPU Usage", "Uso de CPU", "Utilisation du CPU"],
   ["monitoring.systemAvg", "System avg", "Promedio del sistema", "Moyenne système"],
   ["monitoring.memory", "Memory", "Memoria", "Mémoire"],
@@ -300,7 +300,7 @@ const ENTRIES: Entry[] = [
     "deployhub-api — Boucle de redémarrage détectée suite à un dépassement de mémoire (OOM)",
   ],
 
-  // ── LOGS ─────────────────────────────────────────────────────────────────
+   
   ["logs.searchPlaceholder", "Search logs...", "Buscar registros...", "Rechercher dans les journaux..."],
   ["logs.searchAriaLabel", "Search logs", "Buscar registros", "Rechercher dans les journaux"],
   ["logs.exportCsv", "Export CSV", "Exportar CSV", "Exporter en CSV"],
@@ -309,7 +309,7 @@ const ENTRIES: Entry[] = [
   ["logs.empty", "No logs yet — logs from your running deployments will appear here", "Aún no hay registros — aquí aparecerán los logs de tus despliegues en ejecución", "Aucun journal pour l'instant — les journaux de vos déploiements actifs apparaîtront ici"],
   ["logs.loading", "Loading logs...", "Cargando registros...", "Chargement des journaux..."],
 
-  // ── EVALUATION ───────────────────────────────────────────────────────────
+   
   ["evaluation.globalScore", "Global Score", "Puntuación global", "Score global"],
   ["evaluation.scoreBreakdown", "Score Breakdown", "Desglose de la puntuación", "Détail du score"],
   ["evaluation.recommendations", "Recommendations", "Recomendaciones", "Recommandations"],
@@ -319,7 +319,7 @@ const ENTRIES: Entry[] = [
   ["evaluation.dims.performance", "Performance", "Rendimiento", "Performance"],
   ["evaluation.dims.maintainability", "Maintainability", "Mantenibilidad", "Maintenabilité"],
 
-  // ── SETTINGS ─────────────────────────────────────────────────────────────
+   
   ["settings.tabs.users", "Users", "Usuarios", "Utilisateurs"],
   ["settings.tabs.tokens", "API Tokens", "Tokens de API", "Jetons API"],
   ["settings.tabs.notifs", "Notifications", "Notificaciones", "Notifications"],
@@ -477,7 +477,7 @@ const ENTRIES: Entry[] = [
     "Pour toute autre demande concernant vos données, contactez l'administrateur de votre espace de travail.",
   ],
 
-  // ── LOGIN ────────────────────────────────────────────────────────────────
+   
   [
     "login.subtitleLogin",
     "Intelligent deployment monitoring platform",
@@ -530,13 +530,13 @@ const ENTRIES: Entry[] = [
     "Erreur de connexion lors de la tentative d'inscription du compte",
   ],
 
-  // ── TERMINAL ─────────────────────────────────────────────────────────────
+   
   ["terminal.title", "production-terminal", "production-terminal", "production-terminal"],
   ["terminal.online", "ONLINE", "EN LÍNEA", "EN LIGNE"],
   ["terminal.placeholder", "Type a command...", "Escribe un comando...", "Tapez une commande..."],
   ["terminal.run", "Run", "Ejecutar", "Exécuter"],
 
-  // ── DEPLOY / PIPELINE STATUS LABELS ─────────────────────────────────────
+   
   ["status.pending", "Pending", "Pendiente", "En attente"],
   ["status.cloning", "Cloning", "Clonando", "Clonage"],
   ["status.building", "Building", "Compilando", "Compilation"],
@@ -546,7 +546,7 @@ const ENTRIES: Entry[] = [
   ["status.cancelled", "Cancelled", "Cancelado", "Annulé"],
   ["status.warning", "Warning", "Advertencia", "Avertissement"],
 
-  // ── PIPELINE STAGES ──────────────────────────────────────────────────────
+   
   ["pipeline.stage.build.name", "Build", "Compilación", "Construction"],
   ["pipeline.stage.build.step1", "Install deps", "Instalar dependencias", "Installer les dépendances"],
   ["pipeline.stage.build.step2", "Compile TypeScript", "Compilar TypeScript", "Compiler TypeScript"],
@@ -571,7 +571,7 @@ const ENTRIES: Entry[] = [
   ["pipeline.stage.deploy.step3", "Health check", "Comprobación de estado", "Vérification de l'état"],
   ["pipeline.stage.deploy.step4", "DNS propagation", "Propagación de DNS", "Propagation DNS"],
 
-  // ── EVALUATION RECOMMENDATIONS ───────────────────────────────────────────
+   
   ["evaluation.recs.deployhubWeb.1", "Add E2E tests for checkout flow", "Añadir pruebas E2E para el flujo de compra", "Ajouter des tests E2E pour le parcours de paiement"],
   ["evaluation.recs.deployhubWeb.2", "Upgrade axios to 1.6+", "Actualizar axios a la versión 1.6 o superior", "Mettre à jour axios vers la version 1.6 ou supérieure"],
   ["evaluation.recs.deployhubWeb.3", "Enable strict TypeScript mode", "Activar el modo estricto de TypeScript", "Activer le mode strict de TypeScript"],

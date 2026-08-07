@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 :root {
-	/* BASE */
+	
 	--bg: #020617;
 	--card: #0b1220;
 	--sidebar: rgba(2,6,23,0.9);
 
-	/* TEXT */
+	
 	--text: #f1f5f9;
   	--muted: #64748b;
 
-	/* BRAND (AZUL PRO) */
-	--primary: #3b82f6;      /* azul principal */
-	--secondary: #2563eb;    /* azul más fuerte */
+	
+	--primary: #3b82f6;      
+	--secondary: #2563eb;    
 
-	/* BORDERS */
+	
 	--border: rgba(148,163,184,0.15);
 
-	/* INTERACTION */
+	
 	--hover: rgba(59,130,246,0.08);
 	--active: rgba(59,130,246,0.18);
 	
@@ -25,16 +25,16 @@
 	--menu-active: #f8fafc;
 
 	--glow: 0 0 15px rgba(168,85,247,0.35);
-	/* UI */
+	
 	--input-bg: rgba(15,23,42,0.6);
 
-	/* STATUS */
+	
 	--danger: #ef4444;
 	--success: #22c55e;
 	--warning: #facc15;
 	--info: #3b82f6;
 
-	/* CHART */
+	
 	--chart-grid: rgba(148,163,184,0.12);
 	 
   --primary-soft: rgba(59,130,246,0.1);
@@ -87,32 +87,32 @@ body {
 
 
 
-/* LIGHT MODE */
+
 .light {
-	/* BACKGROUNDS */
+	
 	--bg: #f8fafc;
 	--card: rgba(255,255,255,0.8);
 	--sidebar: rgba(255,255,255,0.9);
 
-	/* TEXT */
+	
 	--text: #0f172a;
 	--muted: #64748b;
 
-	/* COLORS */
+	
 	--primary: #2563eb;
 	--secondary: #3b82f6;
 
-	/* PASTEL COLORS */
+	
 	--blue-soft: #dbeafe;
 	--purple-soft: #ede9fe;
 	--green-soft: #dcfce7;
 	--yellow-soft: #fef9c3;
 	--red-soft: #fee2e2;
 
-	/* BORDERS */
+	
 	--border: rgba(226,232,240,0.8);
 
-	/* SHADOW */
+	
 	--shadow: 0 10px 30px rgba(15,23,42,0.2);
 	--shadow-soft: 0 6px 20px rgba(15,23,42,0.12);
 

@@ -10,15 +10,15 @@ import {
 
 const router = Router();
 
-// ---- Google ----
+
 router.get('/google', googleRedirect);
 router.get('/google/callback', googleCallback);
 
-// ---- GitHub ----
+
 router.get('/github', githubRedirect);
 router.get('/github/callback', githubCallback);
 
-// ---- 42 Intra ----
+
 router.get('/42', intraRedirect);
 router.get('/42/callback', intraCallback);
 

@@ -19,22 +19,98 @@ export interface HistoryPoint {
   mem: number;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isUnknownArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
+function errorToString(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+}
+
+async function parseJsonResponse(response: Response): Promise<unknown> {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  return JSON.parse(text) as unknown;
+}
+
 @Injectable()
 export class MonitoringService {
   private readonly logger = new Logger(MonitoringService.name);
 
   private async instantQuery(promql: string): Promise<number | null> {
+    if (!PROM_URL) {
+      this.logger.warn("PROMETHEUS_URL is not configured");
+
+      return null;
+    }
+
     try {
-      const url = `${PROM_URL}/api/v1/query?${new URLSearchParams({ query: promql })}`;
-      const res = await fetch(url);
-      if (!res.ok) return null;
-      const body = await res.json();
-      const result = body?.data?.result;
-      if (!result || result.length === 0) return null;
-      const value = parseFloat(result[0].value[1]);
-      return Number.isFinite(value) ? value : null;
-    } catch (err) {
-      this.logger.warn(`Prometheus query failed: "${promql}" — ${err}`);
+      const params = new URLSearchParams({
+        query: promql,
+      });
+
+      const response = await fetch(`${PROM_URL}/api/v1/query?${params}`);
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const body = await parseJsonResponse(response);
+
+      if (!isRecord(body)) {
+        return null;
+      }
+
+      const data = body.data;
+
+      if (!isRecord(data)) {
+        return null;
+      }
+
+      const result = data.result;
+
+      if (!isUnknownArray(result) || result.length === 0) {
+        return null;
+      }
+
+      const firstResult = result[0];
+
+      if (!isRecord(firstResult)) {
+        return null;
+      }
+
+      const value = firstResult.value;
+
+      if (!isUnknownArray(value) || value.length < 2) {
+        return null;
+      }
+
+      const rawValue = value[1];
+
+      if (typeof rawValue !== "string" && typeof rawValue !== "number") {
+        return null;
+      }
+
+      const numericValue = Number.parseFloat(String(rawValue));
+
+      return Number.isFinite(numericValue) ? numericValue : null;
+    } catch (error: unknown) {
+      this.logger.warn(
+        `Prometheus query failed: "${promql}" — ${errorToString(error)}`,
+      );
+
       return null;
     }
   }
@@ -45,6 +121,12 @@ export class MonitoringService {
     endSec: number,
     stepSec: number,
   ): Promise<[number, number][]> {
+    if (!PROM_URL) {
+      this.logger.warn("PROMETHEUS_URL is not configured");
+
+      return [];
+    }
+
     try {
       const params = new URLSearchParams({
         query: promql,
@@ -52,17 +134,79 @@ export class MonitoringService {
         end: String(endSec),
         step: String(stepSec),
       });
-      const res = await fetch(`${PROM_URL}/api/v1/query_range?${params}`);
-      if (!res.ok) return [];
-      const body = await res.json();
-      const result = body?.data?.result;
-      if (!result || result.length === 0) return [];
-      return result[0].values.map(([ts, v]: [number, string]) => [
-        ts,
-        parseFloat(v),
-      ]);
-    } catch (err) {
-      this.logger.warn(`Prometheus range query failed: "${promql}" — ${err}`);
+
+      const response = await fetch(`${PROM_URL}/api/v1/query_range?${params}`);
+
+      if (!response.ok) {
+        return [];
+      }
+
+      const body = await parseJsonResponse(response);
+
+      if (!isRecord(body)) {
+        return [];
+      }
+
+      const data = body.data;
+
+      if (!isRecord(data)) {
+        return [];
+      }
+
+      const result = data.result;
+
+      if (!isUnknownArray(result) || result.length === 0) {
+        return [];
+      }
+
+      const firstResult = result[0];
+
+      if (!isRecord(firstResult)) {
+        return [];
+      }
+
+      const values = firstResult.values;
+
+      if (!isUnknownArray(values)) {
+        return [];
+      }
+
+      const points: [number, number][] = [];
+
+      for (const point of values) {
+        if (!isUnknownArray(point) || point.length < 2) {
+          continue;
+        }
+
+        const rawTimestamp = point[0];
+
+        const rawValue = point[1];
+
+        const timestamp =
+          typeof rawTimestamp === "number"
+            ? rawTimestamp
+            : typeof rawTimestamp === "string"
+              ? Number.parseFloat(rawTimestamp)
+              : Number.NaN;
+
+        const value =
+          typeof rawValue === "number"
+            ? rawValue
+            : typeof rawValue === "string"
+              ? Number.parseFloat(rawValue)
+              : Number.NaN;
+
+        if (Number.isFinite(timestamp) && Number.isFinite(value)) {
+          points.push([timestamp, value]);
+        }
+      }
+
+      return points;
+    } catch (error: unknown) {
+      this.logger.warn(
+        `Prometheus range query failed: "${promql}" — ${errorToString(error)}`,
+      );
+
       return [];
     }
   }
@@ -79,21 +223,26 @@ export class MonitoringService {
       this.instantQuery(
         '(sum(rate(container_cpu_usage_seconds_total{id="/"}[1m])) / scalar(machine_cpu_cores)) * 100',
       ),
+
       this.instantQuery('container_memory_usage_bytes{id="/"}'),
+
       this.instantQuery("machine_memory_bytes"),
+
       this.instantQuery(
         'sum(rate(container_network_receive_bytes_total{id="/",interface="eth0"}[1m]) + rate(container_network_transmit_bytes_total{id="/",interface="eth0"}[1m]))',
       ),
+
       this.instantQuery(
         'sum(rate(http_request_duration_seconds_count{job="backend"}[1m])) * 60',
       ),
+
       this.instantQuery(
         'histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="backend"}[5m])) by (le)) * 1000',
       ),
     ]);
 
     const memPct =
-      memUsedBytes != null && memLimitBytes
+      memUsedBytes !== null && memLimitBytes !== null && memLimitBytes > 0
         ? (memUsedBytes / memLimitBytes) * 100
         : null;
 
@@ -111,7 +260,9 @@ export class MonitoringService {
 
   async getHistory(hours = 24): Promise<HistoryPoint[]> {
     const end = Math.floor(Date.now() / 1000);
+
     const start = end - hours * 3600;
+
     const step = Math.max(60, Math.floor((hours * 3600) / 48));
 
     const [cpuSeries, memSeries] = await Promise.all([
@@ -121,6 +272,7 @@ export class MonitoringService {
         end,
         step,
       ),
+
       this.rangeQuery(
         '(container_memory_usage_bytes{id="/"} / scalar(machine_memory_bytes)) * 100',
         start,
@@ -129,17 +281,21 @@ export class MonitoringService {
       ),
     ]);
 
-    const memByTs = new Map(memSeries.map(([ts, v]) => [ts, v]));
+    const memByTs = new Map(
+      memSeries.map(([timestamp, value]) => [timestamp, value]),
+    );
 
     return cpuSeries
       .filter(([, cpu]) => Number.isFinite(cpu))
-      .map(([ts, cpu]) => ({
-        hour: new Date(ts * 1000).toLocaleTimeString([], {
+      .map(([timestamp, cpu]) => ({
+        hour: new Date(timestamp * 1000).toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
+
         cpu: Math.round(cpu * 10) / 10,
-        mem: Math.round((memByTs.get(ts) ?? 0) * 10) / 10,
+
+        mem: Math.round((memByTs.get(timestamp) ?? 0) * 10) / 10,
       }));
   }
 }

@@ -53,7 +53,6 @@ export default function ComparisonCard({
           "translateY(0px)";
       }}
     >
-      {/* GLOW */}
       <div
         style={{
           position: "absolute",
@@ -72,7 +71,6 @@ export default function ComparisonCard({
         }}
       />
 
-      {/* TITLE */}
       <div
         style={{
           display: "flex",
@@ -102,7 +100,6 @@ export default function ComparisonCard({
         </span>
       </div>
 
-      {/* VALUES */}
       <div
         style={{
           marginTop: "18px",
@@ -146,7 +143,6 @@ export default function ComparisonCard({
         </span>
       </div>
 
-      {/* PROGRESS */}
       <div
         style={{
           marginTop: "18px"

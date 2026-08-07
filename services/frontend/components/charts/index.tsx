@@ -5,12 +5,19 @@ import type { Deploy } from "@/lib/api";
 import { useLanguage } from "@/lib/i18n/context";
 import type { Language } from "@/lib/i18n/translations";
 
-/* ─── MINI SPARKLINE WITH AREA FILL ─────────────────────────────────────── */
+ 
 export function SparklineArea({
   data, color, h = 36, w = 120,
 }: { data: number[]; color: string; h?: number; w?: number }) {
   const min = Math.min(...data), max = Math.max(...data), rng = max - min || 1;
-  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / rng) * (h - 4) - 2}`).join(" ");
+  const divisor = Math.max(1, data.length - 1);
+
+const pts = data
+  .map(
+    (v, i) =>
+      `${(i / divisor) * w},${h - ((v - min) / rng) * (h - 4) - 2}`,
+  )
+  .join(" ");
   const id = `sa-${color.replace(/[^a-z0-9]/gi, "")}`;
   return (
     <svg width={w} height={h} style={{ display: "block", overflow: "visible" }}>
@@ -26,7 +33,7 @@ export function SparklineArea({
   );
 }
 
-/* ─── DONUT CHART ────────────────────────────────────────────────────────── */
+ 
 export function DonutChart({
   value, max = 100, color, size = 80, stroke = 7,
 }: { value: number; max?: number; color: string; size?: number; stroke?: number }) {
@@ -46,7 +53,7 @@ export function DonutChart({
   );
 }
 
-/* ─── RADAR / PENTAGON CHART ─────────────────────────────────────────────── */
+ 
 export function RadarChart({
   t, dims,
 }: { t: Theme; dims: { label: string; val: number; color: string }[] }) {
@@ -87,7 +94,7 @@ export function RadarChart({
   );
 }
 
-/* ─── 24H METRICS TIME SERIES ────────────────────────────────────────────── */
+ 
 import { HistoryPoint } from "@/lib/api";
 
 export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {
@@ -95,15 +102,20 @@ export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {
   const svgW = 600, svgH = 160, pad = { l: 30, r: 10, t: 10, b: 20 };
   const w = svgW - pad.l - pad.r, h = svgH - pad.t - pad.b;
 
-  const mkPath = (key: keyof typeof chartData[0], min: number, max: number) => {
-    const pts = chartData.map((d, i) => {
-      const divisor = Math.max(1, chartData.length - 1);
-      const x = pad.l + (i / divisor) * w;
-      const y = pad.t + h - ((Number(d[key]) - min) / (max - min)) * h;
-      return `${x},${y}`;
-    });
-    return `M${pts.join("L")}`;
-  };
+  const mkPath = (key: keyof HistoryPoint, min: number, max: number) => {
+  if (chartData.length === 0) {
+    return "";
+  }
+
+  const pts = chartData.map((d, i) => {
+    const divisor = Math.max(1, chartData.length - 1);
+    const x = pad.l + (i / divisor) * w;
+    const y = pad.t + h - ((Number(d[key]) - min) / (max - min)) * h;
+    return `${x},${y}`;
+  });
+
+  return `M${pts.join("L")}`;
+};
 
   return (
     <svg viewBox={`0 0 ${svgW} ${svgH}`} width="100%" style={{ overflow: "visible" }}>
@@ -116,8 +128,27 @@ export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {
           </g>
         );
       })}
-      <path d={mkPath("cpu", 0, 100)} fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d={mkPath("mem", 0, 100)} fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5,3" />
+      {chartData.length > 0 && (
+        <>
+          <path
+            d={mkPath("cpu", 0, 100)}
+            fill="none"
+            stroke="#3b82f6"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d={mkPath("mem", 0, 100)}
+            fill="none"
+            stroke="#a855f7"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="5,3"
+          />
+        </>
+      )}
       {chartData.filter((_, i) => i % Math.max(1, Math.floor(chartData.length / 6)) === 0).map((d, i) => (
         <text key={i} x={pad.l + (i * Math.max(1, Math.floor(chartData.length / 6)) / Math.max(1, chartData.length - 1)) * w} y={svgH - 4} textAnchor="middle" fontSize="9" fill={t.muted}>{d.hour}</text>
       ))}
@@ -125,7 +156,7 @@ export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {
   );
 }
 
-/* ─── DEPLOY ACTIVITY BAR CHART ──────────────────────────────────────────── */
+ 
 const LOCALE_BY_LANGUAGE: Record<Language, string> = {
   en: "en-US",
   es: "es-ES",

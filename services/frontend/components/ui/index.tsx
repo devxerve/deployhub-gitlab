@@ -4,7 +4,7 @@ import React from "react";
 import { X } from "lucide-react";
 import type { Theme } from "@/lib/themes";
 
-/* ─── SPARKLINE ──────────────────────────────────────────────────────────── */
+
 export function Sparkline({
   data, color, h = 28, w = 80,
 }: { data: number[]; color: string; h?: number; w?: number }) {
@@ -19,7 +19,7 @@ export function Sparkline({
   );
 }
 
-/* ─── PROGRESS BAR ───────────────────────────────────────────────────────── */
+
 export function Bar({ pct, color, h = 6 }: { pct: number; color: string; h?: number }) {
   return (
     <div style={{ background: "rgba(148,163,184,0.12)", borderRadius: 999, height: h, overflow: "hidden", width: "100%" }}>
@@ -28,7 +28,7 @@ export function Bar({ pct, color, h = 6 }: { pct: number; color: string; h?: num
   );
 }
 
-/* ─── BADGE ──────────────────────────────────────────────────────────────── */
+
 export function Badge({ label, color }: { label: string; color: string }) {
   return (
     <span style={{
@@ -41,7 +41,7 @@ export function Badge({ label, color }: { label: string; color: string }) {
   );
 }
 
-/* ─── CARD ───────────────────────────────────────────────────────────────── */
+
 export function Card({
   t, children, style, onClick, onMouseEnter, onMouseLeave,
 }: {
@@ -67,7 +67,7 @@ export function Card({
   );
 }
 
-/* ─── MODAL ──────────────────────────────────────────────────────────────── */
+
 export function Modal({
   t, title, onClose, children,
 }: { t: Theme; title: string; onClose: () => void; children: React.ReactNode }) {
@@ -104,7 +104,7 @@ export function Modal({
   );
 }
 
-/* ─── BUTTON ─────────────────────────────────────────────────────────────── */
+
 type BtnVariant = "primary" | "secondary" | "danger" | "ghost";
 export function Btn({
   t, children, onClick, variant = "primary", style = {}, disabled = false,
@@ -134,7 +134,7 @@ export function Btn({
   );
 }
 
-/* ─── TEXT INPUT ─────────────────────────────────────────────────────────── */
+
 export function TextInput({
   t, value, onChange, placeholder, type = "text", style = {},
 }: {
@@ -159,7 +159,7 @@ export function TextInput({
   );
 }
 
-/* ─── SECTION HEADER ─────────────────────────────────────────────────────── */
+
 export function SectionHeader({
   t, title, subtitle, action,
 }: { t: Theme; title: string; subtitle?: string; action?: React.ReactNode }) {
@@ -174,7 +174,7 @@ export function SectionHeader({
   );
 }
 
-/* ─── STATUS DOT BADGE ───────────────────────────────────────────────────── */
+
 export function StatusBadge({ label, color }: { label: string; color: string }) {
   return (
     <span style={{

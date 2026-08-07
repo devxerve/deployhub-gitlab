@@ -104,7 +104,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
 
         setProjects(mergeProjects(imported));
       } catch {
-        // Projects remain usable from browser storage when the API is offline.
+         
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -114,7 +114,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tr]);
 
   const statsByProject = useMemo(() => {
     const grouped = deploys.reduce<Record<string, Deploy[]>>((acc, deploy) => {
@@ -137,7 +137,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
         ];
       }),
     ) as Record<string, ProjectStats>;
-  }, [deploys, projects]);
+  }, [deploys, projects, tr]);
 
   const filtered = projects.filter((project) => {
     const query = search.toLowerCase();

@@ -41,9 +41,12 @@ export class LogsService {
 
   constructor(private readonly gateway: LogsGateway) {}
 
-  async getLogs(options: GetLogsOptions): Promise<LogPage> {
+  getLogs(options: GetLogsOptions): Promise<LogPage> {
     const page = options.page && options.page > 0 ? options.page : DEFAULT_PAGE;
-    const perPage = options.perPage && options.perPage > 0 ? options.perPage : DEFAULT_PER_PAGE;
+    const perPage =
+      options.perPage && options.perPage > 0
+        ? options.perPage
+        : DEFAULT_PER_PAGE;
 
     let filtered = this.logs;
 
@@ -53,14 +56,21 @@ export class LogsService {
 
     if (options.search) {
       const search = options.search.toLowerCase();
-      filtered = filtered.filter((entry) => entry.message.toLowerCase().includes(search));
+      filtered = filtered.filter((entry) =>
+        entry.message.toLowerCase().includes(search),
+      );
     }
 
     const total = filtered.length;
     const start = (page - 1) * perPage;
     const items = filtered.slice(start, start + perPage);
 
-    return { items, total, page, perPage };
+    return Promise.resolve({
+      items,
+      total,
+      page,
+      perPage,
+    });
   }
 
   sendLog(deployId: string, log: string) {

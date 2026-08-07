@@ -17,7 +17,7 @@ const data = [
   { time: "00:00", before: 20, after: 30 },
   { time: "04:00", before: 25, after: 40 },
   { time: "08:00", before: 30, after: 50 },
-  { time: "12:00", before: 35, after: 75 }, //  Momento del deployment
+  { time: "12:00", before: 35, after: 75 }, 
   { time: "16:00", before: 40, after: 70 },
   { time: "20:00", before: 45, after: 80 },
   { time: "24:00", before: 50, after: 90 }
@@ -46,12 +46,10 @@ return (
         <ResponsiveContainer  width="100%" height={350}>
         <ComposedChart data={data} margin={{ top: 30, right: 10, left: -20, bottom: 0 }}>
           <defs>
-            {/* GRADIENTE AZUL NEÓN (Cian Eléctrico) */}
             <linearGradient id="neonBlue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.5}/>
               <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
             </linearGradient>
-            {/* GRADIENTE ROSA NEÓN (Fucsia Eléctrico) */}
             <linearGradient id="neonPink" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#ff007f" stopOpacity={0.5}/>
               <stop offset="95%" stopColor="#ff007f" stopOpacity={0}/>
@@ -91,13 +89,12 @@ return (
   }}
 />
           
-          {/* FRANJAS NEÓN (Áreas) */}
           <Area
             type="monotone"
             dataKey="before"
             stroke="none"
             fill="url(#neonBlue)"
-            tooltipType="none" // Evita duplicar en el tooltip
+            tooltipType="none"  
             activeDot={false}
           />
           <Area
@@ -105,11 +102,10 @@ return (
             dataKey="after"
             stroke="none"
             fill="url(#neonPink)"
-            tooltipType="none" // Evita duplicar en el tooltip
+            tooltipType="none"  
             activeDot={false}
           />
 
-          {/* LÍNEAS DE CONTORNO NEÓN */}
           <Line 
             name="Before" 
             type="monotone" 
@@ -135,7 +131,6 @@ return (
             }}
           />
 
-          {/* MARCADOR DE DEPLOY */}
           <ReferenceLine
             x="12:00"
             stroke="#a855f7"

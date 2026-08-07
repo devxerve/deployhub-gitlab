@@ -78,10 +78,10 @@ export function DeploymentsModule({ t }: { t: Theme }) {
   }, []);
 
   useEffect(() => {
-    getDeployments()
-      .then(setDeploys)
-      .catch(() => setError(tr("deployments.apiError")));
-  }, []);
+  getDeployments()
+    .then(setDeploys)
+    .catch(() => setError(tr("deployments.apiError")));
+}, [tr]);
 
   useEffect(() => {
     const active = deploys.some((deploy) => ["pending", "cloning", "building", "running"].includes(deploy.status.toLowerCase()));
@@ -97,10 +97,11 @@ export function DeploymentsModule({ t }: { t: Theme }) {
     return () => window.clearInterval(interval);
   }, [deploys]);
 
+  const selectedId = selected?.id;
   useEffect(() => {
-    if (!selected) return;
+    if (!selectedId) return;
 
-    joinDeployRoom(selected.id);
+    joinDeployRoom(selectedId);
 
     const offLog = onDeployLog((log) => {
       setLiveLogs((previous) => [...previous, log]);
@@ -110,7 +111,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
     });
 
     const offStatus = onDeployStatus(({ deployId, status }) => {
-      if (deployId !== selected.id) return;
+      if (deployId !== selectedId) return;
       setDeploys((previous) => previous.map((deploy) => deploy.id === deployId ? { ...deploy, status } : deploy));
       setSelected((previous) => previous?.id === deployId ? { ...previous, status } : previous);
     });
@@ -119,7 +120,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
       offLog();
       offStatus();
     };
-  }, [selected?.id]);
+  }, [selectedId]);
 
   async function handleCreate() {
     if (!selectedProject) return;

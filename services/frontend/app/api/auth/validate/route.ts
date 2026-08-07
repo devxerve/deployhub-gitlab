@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-/**
- * GET /api/auth/validate
- *
- * Proxy côté serveur : lit le cookie auth_token (posé en HTTPS, même origin)
- * et valide le JWT auprès du auth-service via le réseau Docker interne.
- * Le navigateur n'a jamais besoin de contacter le auth-service directement.
- */
+
 export async function GET(req: NextRequest) {
   const token = req.cookies.get('auth_token')?.value;
 
@@ -15,7 +9,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // AUTH_SERVICE_URL côté serveur = http://auth_service:3001 (Docker internal)
+    
     const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://auth_service:3001';
 
     const res = await fetch(`${authServiceUrl}/auth/validate`, {
@@ -34,7 +28,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(data);
-  } catch (err) {
+  } catch {
     return NextResponse.json({ message: 'Error validando sesión' }, { status: 500 });
   }
 }
