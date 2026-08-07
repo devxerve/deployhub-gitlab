@@ -21,7 +21,7 @@ export interface CreateDeployDto {
 }
 
 export async function getDeployments(): Promise<Deploy[]> {
-  const res = await fetch(`${API_URL}/deploy`);
+  const res = await fetch(`${API_URL}/deploy`, { credentials: "include" });
   if (!res.ok) throw new Error("Error al obtener deployments");
   return res.json();
 }
@@ -30,6 +30,7 @@ export async function createDeployment(dto: CreateDeployDto): Promise<Deploy> {
   const res = await fetch(`${API_URL}/deploy`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(dto),
   });
   if (!res.ok) throw new Error("Error al crear deployment");
@@ -37,19 +38,28 @@ export async function createDeployment(dto: CreateDeployDto): Promise<Deploy> {
 }
 
 export async function getDeployment(id: string): Promise<Deploy> {
-  const res = await fetch(`${API_URL}/deploy/${id}`);
+  const res = await fetch(`${API_URL}/deploy/${id}`, { credentials: "include" });
   if (!res.ok) throw new Error("Error al obtener deployment");
   return res.json();
 }
 
 export async function deleteDeployment(id: string): Promise<void> {
-  const res = await fetch(`${API_URL}/deploy/${id}`, { method: "DELETE" });
+  const res = await fetch(`${API_URL}/deploy/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
   if (!res.ok) throw new Error("Error al eliminar deployment");
 }
 
 export async function getDeploymentStatus(id: string): Promise<{ id: string; status: string }> {
-  const res = await fetch(`${API_URL}/deploy/${id}/status`);
+  const res = await fetch(`${API_URL}/deploy/${id}/status`, { credentials: "include" });
   if (!res.ok) throw new Error("Error al obtener estado");
+  return res.json();
+}
+
+export async function getDeploymentLogs(id: string): Promise<string[]> {
+  const res = await fetch(`${API_URL}/deploy/${id}/logs`, { credentials: "include" });
+  if (!res.ok) throw new Error("Error al obtener los logs");
   return res.json();
 }
 
@@ -82,6 +92,82 @@ export async function getMonitoringHistory(hours: number = 24): Promise<HistoryP
   return res.json();
 }
 
+export interface ActiveAlert {
+  id: string;
+  severity: string;
+  message: string;
+  startsAt: string;
+}
+
+export async function getActiveAlerts(): Promise<ActiveAlert[]> {
+  const res = await fetch(`${API_URL}/monitoring/alerts`);
+  if (!res.ok) throw new Error("Error fetching active alerts");
+  return res.json();
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  repoUrl: string;
+  defaultBranch: string;
+  description?: string;
+  createdAt: string;
+}
+
+export interface CreateProjectInput {
+  name: string;
+  repoUrl: string;
+  defaultBranch?: string;
+  description?: string;
+}
+
+export async function getProjects(): Promise<Project[]> {
+  const res = await fetch(`${API_URL}/projects`, { credentials: "include" });
+  if (!res.ok) throw new Error("Error al obtener proyectos");
+  return res.json();
+}
+
+export async function createProject(input: CreateProjectInput): Promise<Project> {
+  const res = await fetch(`${API_URL}/projects`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const body: { message?: string } | null = await res.json().catch(() => null);
+    throw new Error(body?.message || "Error al crear el proyecto");
+  }
+  return res.json();
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  const res = await fetch(`${API_URL}/projects/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Error al eliminar el proyecto");
+}
+
+export interface RegisterUserInput {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export async function registerUser(input: RegisterUserInput): Promise<void> {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const body: { message?: string } | null = await res.json().catch(() => null);
+    throw new Error(body?.message || "Error al crear el usuario");
+  }
+}
+
 export interface LogEntry {
   ts: string;
   level: "INFO" | "WARN" | "ERROR";
@@ -90,7 +176,7 @@ export interface LogEntry {
 }
 
 export async function getLogs(): Promise<LogEntry[]> {
-  const res = await fetch(`${API_URL}/deploy/logs`);
+  const res = await fetch(`${API_URL}/deploy/logs`, { credentials: "include" });
   if (!res.ok) throw new Error("Error fetching logs");
   return res.json();
 }

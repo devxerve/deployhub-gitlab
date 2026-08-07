@@ -8,6 +8,7 @@ import {
 import type { Theme } from "@/lib/themes";
 import Image from "next/image";
 import { getDeployments } from "@/lib/api";
+import { API_URL } from "@/lib/config";
 import { useRouter } from "next/navigation";
 import { useTranslation, useLanguage } from "@/lib/i18n/context";
 import type { Language } from "@/lib/i18n/translations";
@@ -28,7 +29,6 @@ import {
   Moon,
   Rocket,
   Settings,
-  ShieldCheck,
   Sun,
   X,
   XCircle,
@@ -36,9 +36,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
- 
 export const NAV: ReadonlyArray<{ id: PageId; icon: LucideIcon }> = [
   { id: "dashboard", icon: Gauge },
   { id: "projects", icon: FolderGit2 },
@@ -46,7 +43,6 @@ export const NAV: ReadonlyArray<{ id: PageId; icon: LucideIcon }> = [
   { id: "pipeline", icon: GitPullRequestArrow },
   { id: "monitoring", icon: CircleGauge },
   { id: "logs", icon: FileClock },
-  { id: "evaluation", icon: ShieldCheck },
   { id: "settings", icon: Settings },
 ];
 
@@ -59,7 +55,6 @@ export type PageId =
   | "pipeline"
   | "monitoring"
   | "logs"
-  | "evaluation"
   | "settings";
 
  
@@ -70,6 +65,8 @@ export function Sidebar({
   collapsed,
   onLogout,
   logoutLoading,
+  username,
+  isAdmin,
 }: {
   t: Theme;
   active: PageId;
@@ -77,6 +74,8 @@ export function Sidebar({
   collapsed: boolean;
   onLogout: () => void;
   logoutLoading: boolean;
+  username?: string | null;
+  isAdmin?: boolean;
 }) {
   const { t: tr } = useTranslation();
   return (
@@ -189,7 +188,7 @@ export function Sidebar({
         }}
       >
         <Image
-          src="/avatars/giselle.png"
+          src="/avatars/image.jpg"
           width={32}
           height={32}
           alt={tr("sidebar.userAvatarAlt")}
@@ -219,18 +218,20 @@ export function Sidebar({
                 whiteSpace: "nowrap",
               }}
             >
-              {tr("sidebar.user")}
+              {username || tr("sidebar.user")}
             </p>
 
-            <p
-              style={{
-                margin: 0,
-                fontSize: 11,
-                color: t.muted,
-              }}
-            >
-              {tr("sidebar.role")}
-            </p>
+            {isAdmin && (
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 11,
+                  color: t.muted,
+                }}
+              >
+                {tr("sidebar.role")}
+              </p>
+            )}
           </div>
         )}
         <div
@@ -320,7 +321,6 @@ const PAGE_TITLE_KEYS: Record<PageId, string> = {
   pipeline: "pageTitle.pipeline",
   monitoring: "pageTitle.monitoring",
   logs: "pageTitle.logs",
-  evaluation: "pageTitle.evaluation",
   settings: "pageTitle.settings",
 };
 
@@ -745,11 +745,15 @@ export function DashboardShell({
   t,
   isDark,
   toggle,
+  username,
+  isAdmin,
   children,
 }: {
   t: Theme;
   isDark: boolean;
   toggle: () => void;
+  username?: string | null;
+  isAdmin?: boolean;
   children: (props: { page: PageId }) => React.ReactNode;
 }) {
   const router = useRouter();
@@ -823,10 +827,16 @@ export function DashboardShell({
       "deployhub-demo-session",
     );
 
-    await fetch(`${API_URL}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
+    await Promise.all([
+      fetch(`${API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      }),
+      fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      }),
+    ]);
   } catch {
 } finally {
   router.replace("/login");
@@ -855,6 +865,8 @@ export function DashboardShell({
         collapsed={collapsed}
         onLogout={() => setShowLogout(true)}
         logoutLoading={logoutLoading}
+        username={username}
+        isAdmin={isAdmin}
       />
 
       <main style={{ flex: 1, padding: 20, minWidth: 0, overflowX: "hidden" }}>

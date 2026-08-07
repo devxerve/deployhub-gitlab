@@ -1,41 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Theme } from "@/lib/themes";
-import { Card, Badge, Btn } from "@/components/ui";
-import Image from "next/image";
+import { Card, Badge, Btn, Modal, TextInput } from "@/components/ui";
+import { registerUser } from "@/lib/api";
 import { useTranslation, type TranslateFn } from "@/lib/i18n/context";
 
 import {
-  Activity,
-  AlertTriangle,
-  Bell,
-  Box,
-  Check,
-  Cloud,
-  GitBranch,
-  KeyRound,
-  Link2,
-  MessageSquare,
+  Info,
   Plus,
-  Settings2,
   ShieldCheck,
+  Trash2,
   Users,
   type LucideIcon,
 } from "lucide-react";
 
-
-
-
-
-
-type TabId =
-  | "users"
-  | "tokens"
-  | "notifs"
-  | "integrations"
-  | "env"
-  | "privacy";
+type TabId = "users" | "about" | "privacy";
 
 const SETTINGS_TABS: Array<{
   id: TabId;
@@ -48,24 +28,9 @@ const SETTINGS_TABS: Array<{
     icon: Users,
   },
   {
-    id: "tokens",
-    labelKey: "settings.tabs.tokens",
-    icon: KeyRound,
-  },
-  {
-    id: "notifs",
-    labelKey: "settings.tabs.notifs",
-    icon: Bell,
-  },
-  {
-    id: "integrations",
-    labelKey: "settings.tabs.integrations",
-    icon: Link2,
-  },
-  {
-    id: "env",
-    labelKey: "settings.tabs.env",
-    icon: Settings2,
+    id: "about",
+    labelKey: "settings.tabs.about",
+    icon: Info,
   },
   {
     id: "privacy",
@@ -73,6 +38,23 @@ const SETTINGS_TABS: Array<{
     icon: ShieldCheck,
   },
 ];
+
+const NON_ADMIN_TAB_IDS: TabId[] = ["about", "privacy"];
+
+const EMPTY_FORM = { username: "", email: "", password: "" };
+
+interface TeamMember {
+  user_id: string;
+  username: string;
+  email: string;
+  provider: string | null;
+  role: string | null;
+  created_at: string;
+}
+
+function initials(name: string): string {
+  return name.slice(0, 2).toUpperCase();
+}
 
 function getPrivacySections(tr: TranslateFn): Array<{ title: string; body: string[] }> {
   return [
@@ -118,67 +100,83 @@ function getPrivacySections(tr: TranslateFn): Array<{ title: string; body: strin
   ];
 }
 
-const INTEGRATIONS: Array<{
-  name: string;
-  icon: LucideIcon;
-  status: "connected" | "disconnected";
-  descKey: string;
-}> = [
-  {
-    name: "GitHub",
-    icon: GitBranch,
-    status: "connected",
-    descKey: "settings.integrations.desc.github",
-  },
-  {
-    name: "Slack",
-    icon: MessageSquare,
-    status: "connected",
-    descKey: "settings.integrations.desc.slack",
-  },
-  {
-    name: "Datadog",
-    icon: Activity,
-    status: "disconnected",
-    descKey: "settings.integrations.desc.datadog",
-  },
-  {
-    name: "PagerDuty",
-    icon: AlertTriangle,
-    status: "disconnected",
-    descKey: "settings.integrations.desc.pagerduty",
-  },
-  {
-    name: "Docker Hub",
-    icon: Box,
-    status: "connected",
-    descKey: "settings.integrations.desc.dockerhub",
-  },
-  {
-    name: "AWS S3",
-    icon: Cloud,
-    status: "connected",
-    descKey: "settings.integrations.desc.awss3",
-  },
-];
-
-export function SettingsModule({ t }: { t: Theme }) {
+export function SettingsModule({
+  t,
+  isAdmin = false,
+  currentUserId,
+}: {
+  t: Theme;
+  isAdmin?: boolean;
+  currentUserId?: string | null;
+}) {
   const { t: tr } = useTranslation();
-  const [tab, setTab] = useState<TabId>("users");
+  const visibleTabs = isAdmin
+    ? SETTINGS_TABS
+    : SETTINGS_TABS.filter((tabItem) => NON_ADMIN_TAB_IDS.includes(tabItem.id));
+  const [tab, setTab] = useState<TabId>(isAdmin ? "users" : "about");
   const privacySections = getPrivacySections(tr);
 
-  const users = [
-    { name: "Giselle Maccha",  email: "giselle@deployhub.com", role: "Admin",  avatar: "/avatars/giselle.png" },
-    { name: "Loreto Uzquiano", email: "loreto@deployhub.com",  role: "Dev",    avatar: "/avatars/lore.png" },
-    { name: "Claudia Gil",     email: "claudia@deployhub.com", role: "Dev",    avatar: "/avatars/clau.png" },
-    { name: "Daniel",          email: "daniel@deployhub.com",  role: "Dev",    avatar: "/avatars/daniel.png" },
-    { name: "Sam",             email: "sam@deployhub.com",     role: "Viewer", avatar: "/avatars/sam.png" },
-  ];
+  const [members, setMembers] = useState<TeamMember[] | null>(null);
+  const [membersError, setMembersError] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  async function loadMembers() {
+    try {
+      const res = await fetch("/api/auth/users", { credentials: "include" });
+      if (!res.ok) throw new Error("failed");
+      const data: { users: TeamMember[] } = await res.json();
+      setMembers(data.users);
+      setMembersError(false);
+    } catch {
+      setMembersError(true);
+    }
+  }
+
+  useEffect(() => {
+    if (!isAdmin || tab !== "users") return;
+    loadMembers();
+  }, [isAdmin, tab]);
+
+  async function handleCreate() {
+    setFormError(null);
+    setCreating(true);
+    try {
+      await registerUser(form);
+      setForm(EMPTY_FORM);
+      setShowCreate(false);
+      await loadMembers();
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : tr("settings.users.form.error"));
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function handleDelete(member: TeamMember) {
+    if (!window.confirm(tr("settings.users.deleteConfirm", { name: member.username }))) return;
+
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/auth/users/${member.user_id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("failed");
+      setMembers((current) => current?.filter((item) => item.user_id !== member.user_id) ?? null);
+    } catch {
+      setDeleteError(tr("settings.users.deleteError"));
+    }
+  }
 
   return (
     <div>
       <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
-        {SETTINGS_TABS.map((tabItem) => {
+        {visibleTabs.map((tabItem) => {
             const Icon = tabItem.icon;
             return (
               <button
@@ -220,246 +218,110 @@ export function SettingsModule({ t }: { t: Theme }) {
         <Card t={t}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
             <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>{tr("settings.users.title")}</h3>
-            <Btn t={t}>
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 7,
-                }}
-              >
+            <Btn t={t} onClick={() => { setFormError(null); setForm(EMPTY_FORM); setShowCreate(true); }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
                 <Plus size={14} aria-hidden="true" />
                 {tr("settings.users.invite")}
               </span>
             </Btn>
-
           </div>
-          {users.map((u) => (
-            <div key={u.email} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid ${t.border}` }}>
-              <Image
-                src={u.avatar}
-                width={36}
-                height={36}
-                alt={`${u.name} profile`}
-                style={{
-                  borderRadius: 8,
-                  objectFit: "cover",
-                }}
-              />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{u.name}</div>
-                <div style={{ fontSize: 12, color: t.muted }}>{u.email}</div>
-              </div>
-              <Badge label={tr(`settings.users.role.${u.role.toLowerCase()}`)} color={u.role === "Admin" ? t.accent : u.role === "Dev" ? t.success : t.muted} />
-              <button style={{ padding: "6px 10px", borderRadius: 8, background: "transparent", border: `1px solid ${t.border}`, color: t.muted, fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>{tr("common.edit")}</button>
+
+          {deleteError && (
+            <div role="alert" style={{ color: t.danger, fontSize: 13, marginBottom: 12, padding: "9px 12px", background: `${t.danger}12`, border: `1px solid ${t.danger}35`, borderRadius: 8 }}>
+              {deleteError}
             </div>
-          ))}
-        </Card>
-      )}
+          )}
 
-      {tab === "tokens" && (
-        <Card t={t}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>{tr("settings.tokens.title")}</h3>
-            <Btn t={t}>
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 7,
-                }}
-              >
-                <Plus size={14} aria-hidden="true" />
-                {tr("settings.tokens.generate")}
-              </span>
-            </Btn>
+          {members === null && !membersError && (
+            <div style={{ color: t.muted, fontSize: 13, padding: "8px 0" }}>{tr("settings.users.loading")}</div>
+          )}
 
-          </div>
-          {[
-            { name: tr("settings.tokens.ciCdName"), prefix: "dhk_ci_••••••••••••8f3a",  created: "2026-01-15", expires: "2026-12-31", scopes: "deploy:write,logs:read" },
-            { name: tr("settings.tokens.monitoringName"),     prefix: "dhk_mn_••••••••••••2e9b",  created: "2026-03-01", expires: tr("common.time.never"),      scopes: "metrics:read,logs:read" },
-            { name: tr("settings.tokens.webhookName"),       prefix: "dhk_wh_••••••••••••7c12",  created: "2026-05-10", expires: tr("common.time.never"),      scopes: "webhooks:receive" },
-          ].map((tk, i) => (
-            <div key={i} style={{ padding: "14px", borderRadius: 12, border: `1px solid ${t.border}`, marginBottom: 10, background: t.hover }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{tk.name}</span>
-                <button style={{ padding: "4px 10px", borderRadius: 6, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: t.danger, fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>{tr("settings.tokens.revoke")}</button>
-              </div>
-              <div style={{ fontFamily: "monospace", fontSize: 12, color: t.muted, marginBottom: 6 }}>{tk.prefix}</div>
-              <div style={{ display: "flex", gap: 12, fontSize: 11, color: t.muted, flexWrap: "wrap" }}>
-                <span>{tr("settings.tokens.created")}: {tk.created}</span>
-                <span>{tr("settings.tokens.expires")}: {tk.expires}</span>
-                <Badge label={tk.scopes} color={t.accent} />
-              </div>
-            </div>
-          ))}
-        </Card>
-      )}
+          {membersError && (
+            <div style={{ color: t.danger, fontSize: 13, padding: "8px 0" }}>{tr("settings.users.error")}</div>
+          )}
 
-      {tab === "notifs" && (
-        <Card t={t}>
-          <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>{tr("settings.notifs.title")}</h3>
-          {[
-            { labelKey: "settings.notifs.deploySuccess",     email: true,  slack: true,  sms: false },
-            { labelKey: "settings.notifs.deployFailed",      email: true,  slack: true,  sms: true  },
-            { labelKey: "settings.notifs.criticalErrors",    email: true,  slack: true,  sms: true  },
-            { labelKey: "settings.notifs.performanceAlerts", email: false, slack: true,  sms: false },
-            { labelKey: "settings.notifs.securityWarnings",  email: true,  slack: false, sms: false },
-          ].map((n, i) => (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", alignItems: "center", padding: "10px 0", borderBottom: `1px solid ${t.border}`, gap: 8 }}>
-              <span style={{ fontSize: 13, color: t.text }}>{tr(n.labelKey)}</span>
-              {(["email", "slack", "sms"] as const).map((ch) => (
-                <div key={ch} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
-                  <div style={{ width: 18, height: 18, borderRadius: 4, border: `1.5px solid ${n[ch] ? t.accent : t.border}`, background: n[ch] ? t.accentSoft : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                   {n[ch] && (
-                      <Check
-                        size={11}
-                        color={t.accent}
-                        aria-hidden="true"
-                      />
-                    )}
-                  </div>
-                  <span style={{ color: t.muted }}>{tr(`settings.notifs.channel.${ch}`)}</span>
+          {members !== null && members.length === 0 && (
+            <div style={{ color: t.muted, fontSize: 13, padding: "8px 0" }}>{tr("settings.users.empty")}</div>
+          )}
+
+          {members?.map((member) => {
+            const isMemberAdmin = member.role === "admin";
+            const isSelf = member.user_id === currentUserId;
+            return (
+              <div key={member.user_id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid ${t.border}` }}>
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 8,
+                    background: t.accentSoft,
+                    color: t.accent,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    flexShrink: 0,
+                  }}
+                >
+                  {initials(member.username)}
                 </div>
-              ))}
-            </div>
-          ))}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{member.username}</div>
+                  <div style={{ fontSize: 12, color: t.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{member.email}</div>
+                </div>
+                {member.provider && (
+                  <Badge label={member.provider} color={t.muted} />
+                )}
+                <Badge
+                  label={tr(`settings.users.role.${isMemberAdmin ? "admin" : "dev"}`)}
+                  color={isMemberAdmin ? t.accent : t.success}
+                />
+                <button
+                  onClick={() => handleDelete(member)}
+                  disabled={isSelf}
+                  title={isSelf ? tr("settings.users.selfDeleteTitle") : tr("settings.users.delete")}
+                  aria-label={tr("settings.users.deleteConfirm", { name: member.username })}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 8,
+                    background: "transparent",
+                    border: `1px solid ${t.border}`,
+                    color: isSelf ? t.border : t.danger,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: isSelf ? "not-allowed" : "pointer",
+                    opacity: isSelf ? 0.5 : 1,
+                    flexShrink: 0,
+                  }}
+                >
+                  <Trash2 size={14} aria-hidden="true" />
+                </button>
+              </div>
+            );
+          })}
         </Card>
       )}
 
-{tab === "integrations" && (
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-      gap: 14,
-    }}
-  >
-    {INTEGRATIONS.map((integration) => {
-      const Icon = integration.icon;
-
-      return (
-        <Card
-          key={integration.name}
-          t={t}
-          style={{ padding: 18 }}
-        >
-          <div
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: 12,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: t.accentSoft,
-              border: `1px solid ${t.accentBorder}`,
-              color: t.accent,
-              marginBottom: 10,
-            }}
-          >
-            <Icon size={21} aria-hidden="true" />
-          </div>
-
-          <div
-            style={{
-              fontSize: 14,
-              fontWeight: 700,
-              color: t.text,
-              marginBottom: 4,
-            }}
-          >
-            {integration.name}
-          </div>
-
-          <div
-            style={{
-              fontSize: 12,
-              color: t.muted,
-              marginBottom: 12,
-            }}
-          >
-            {tr(integration.descKey)}
-          </div>
-
-          <Badge
-            label={tr(`settings.integrations.status.${integration.status}`)}
-            color={
-              integration.status === "connected"
-                ? t.success
-                : t.muted
-            }
-          />
-
-          <button
-            type="button"
-            style={{
-              display: "block",
-              width: "100%",
-              marginTop: 10,
-              padding: 7,
-              borderRadius: 8,
-              background:
-                integration.status === "connected"
-                  ? t.hover
-                  : t.accentSoft,
-              border: `1px solid ${
-                integration.status === "connected"
-                  ? t.border
-                  : t.accentBorder
-              }`,
-              color:
-                integration.status === "connected"
-                  ? t.muted
-                  : t.accent,
-              fontSize: 12,
-              cursor: "pointer",
-              fontFamily: "inherit",
-            }}
-          >
-            {integration.status === "connected"
-              ? tr("settings.integrations.configure")
-              : tr("settings.integrations.connect")}
-          </button>
-        </Card>
-      );
-    })}
-  </div>
-)}
-
-      {tab === "env" && (
+      {tab === "about" && (
         <Card t={t}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>{tr("settings.env.title")}</h3>
-            <Btn t={t}>
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 7,
-                }}
-              >
-                <Plus size={14} aria-hidden="true" />
-                {tr("settings.env.addVariable")}
-              </span>
-            </Btn>
+          <h3 style={{ margin: "0 0 6px", color: t.text, fontSize: 15, fontWeight: 600 }}>{tr("settings.about.title")}</h3>
+          <p style={{ margin: "0 0 18px", color: t.muted, fontSize: 12.5 }}>{tr("settings.about.subtitle")}</p>
+
+          <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 10 }}>
+            {["settings.about.f1", "settings.about.f2", "settings.about.f3", "settings.about.f4"].map((key) => (
+              <li key={key} style={{ color: t.text, fontSize: 13, lineHeight: 1.6 }}>{tr(key)}</li>
+            ))}
+          </ul>
+
+          <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${t.border}`, color: t.muted, fontSize: 12 }}>
+            {tr("settings.about.stack")}
           </div>
-          {[
-            { key: "DEPLOYHUB_API_URL", val: "https://api.deployhub.io",   scopeKey: "settings.env.scope.global"       },
-            { key: "REGISTRY_URL",      val: "registry.deployhub.io",      scopeKey: "settings.env.scope.global"       },
-            { key: "LOG_LEVEL",         val: "info",                       scopeKey: "settings.env.scope.global"       },
-            { key: "MAX_BUILD_TIME",    val: "600",                        scopeKey: "settings.env.scope.global"       },
-            { key: "SLACK_WEBHOOK",     val: "••••••••••••••••••••••••",   scopeKey: "settings.env.scope.notification" },
-          ].map((e, i) => (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1fr 60px", gap: 8, alignItems: "center", padding: "10px 0", borderBottom: `1px solid ${t.border}` }}>
-              <span style={{ fontFamily: "monospace", fontSize: 12, color: t.accent }}>{e.key}</span>
-              <span style={{ fontFamily: "monospace", fontSize: 12, color: t.text }}>{e.val}</span>
-              <Badge label={tr(e.scopeKey)} color={t.muted} />
-              <button style={{ padding: "5px 8px", borderRadius: 6, background: "transparent", border: `1px solid ${t.border}`, color: t.muted, fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>{tr("common.edit")}</button>
-            </div>
-          ))}
         </Card>
       )}
+
       {tab === "privacy" && (
         <Card t={t}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18, gap: 12, flexWrap: "wrap" }}>
@@ -485,6 +347,35 @@ export function SettingsModule({ t }: { t: Theme }) {
             {tr("settings.privacy.contact")}
           </div>
         </Card>
+      )}
+
+      {showCreate && (
+        <Modal t={t} title={tr("settings.users.modalTitle")} onClose={() => setShowCreate(false)}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div>
+              <label style={{ fontSize: 12, color: t.muted }}>{tr("settings.users.form.username")}</label>
+              <TextInput t={t} value={form.username} onChange={(value) => setForm((current) => ({ ...current, username: value }))} style={{ marginTop: 6 }} />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, color: t.muted }}>{tr("settings.users.form.email")}</label>
+              <TextInput t={t} value={form.email} onChange={(value) => setForm((current) => ({ ...current, email: value }))} type="email" style={{ marginTop: 6 }} />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, color: t.muted }}>{tr("settings.users.form.password")}</label>
+              <TextInput t={t} value={form.password} onChange={(value) => setForm((current) => ({ ...current, password: value }))} type="password" style={{ marginTop: 6 }} />
+            </div>
+
+            {formError && (
+              <div role="alert" style={{ color: t.danger, fontSize: 12.5 }}>
+                {formError}
+              </div>
+            )}
+
+            <Btn t={t} onClick={handleCreate} disabled={creating || !form.username || !form.email || !form.password}>
+              {tr("settings.users.form.submit")}
+            </Btn>
+          </div>
+        </Modal>
       )}
     </div>
   );

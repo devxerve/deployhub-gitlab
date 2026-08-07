@@ -105,6 +105,16 @@ services:
       - "traefik.http.middlewares.waf.plugin.modsecurity.modSecurityUrl=http://waf:8080"
       - "traefik.http.middlewares.waf.plugin.modsecurity.maxBodySize=10485760"
       - "traefik.http.services.backend.loadbalancer.server.port=3001"
+      # Same-origin path under the app's own host, so the session cookie
+      # never has to cross a site boundary (api.localhost is a different
+      # "site" than localhost as far as browsers are concerned).
+      - "traefik.http.routers.backend-local.rule=Host(`localhost`) && PathPrefix(`/api/backend`)"
+      - "traefik.http.routers.backend-local.entrypoints=websecure"
+      - "traefik.http.routers.backend-local.tls=true"
+      - "traefik.http.routers.backend-local.priority=100"
+      - "traefik.http.routers.backend-local.service=backend"
+      - "traefik.http.routers.backend-local.middlewares=strip-api-backend,waf@docker"
+      - "traefik.http.middlewares.strip-api-backend.stripprefix.prefixes=/api/backend"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # DooD
       - /app/tmp:/app/tmp                          # shared with host docker daemon

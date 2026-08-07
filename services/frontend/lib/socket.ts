@@ -6,7 +6,17 @@ let socket: Socket | null = null;
 
 export function getSocket(): Socket {
   if (!socket) {
-    socket = io(API_URL, { transports: ["websocket"] });
+    // API_URL points at a same-origin path (e.g. https://localhost/api/backend)
+    // proxied through Traefik to the NestJS backend. socket.io-client treats
+    // any path in the connection URL as a namespace, not an HTTP path, so we
+    // must connect to the bare origin and pass the real path explicitly —
+    // Traefik strips the "/api/backend" prefix before it reaches the backend,
+    // where the gateway listens on the default "/socket.io" path.
+    const url = new URL(API_URL);
+    socket = io(url.origin, {
+      path: `${url.pathname.replace(/\/$/, "")}/socket.io`,
+      transports: ["websocket"],
+    });
   }
   return socket;
 }

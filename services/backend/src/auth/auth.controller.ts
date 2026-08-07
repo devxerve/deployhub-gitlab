@@ -43,7 +43,13 @@ export class AuthController {
 
   @Post("logout")
   logout(@Res() res: Response): Response {
-    res.clearCookie("auth_token");
+    // The session cookie may have been set host-only (password login,
+    // set by this API's own origin) or scoped to the whole `.localhost`
+    // site (OAuth login, set by the frontend's callback route) — clearing
+    // must match the exact domain/path it was set with or the browser
+    // silently ignores it.
+    res.clearCookie("auth_token", { path: "/" });
+    res.clearCookie("auth_token", { path: "/", domain: ".localhost" });
 
     return res.status(HttpStatus.OK).json({
       ok: true,

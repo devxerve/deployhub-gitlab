@@ -59,25 +59,25 @@ export class DeploymentsProcessor {
         id,
         DeployStatus.CLONING,
       );
-      this.deploymentsService.addLogRealtime(
+      await this.deploymentsService.addLogRealtime(
         id,
         `Step 1/3: Cloning repository...`,
       );
 
       await this.gitUtil.cloneRepository(deploy.repoUrl, workDir, id);
-      this.deploymentsService.addLogRealtime(
+      await this.deploymentsService.addLogRealtime(
         id,
         `Repository cloned successfully.`,
       );
 
       if (deploy.commitHash) {
-        this.deploymentsService.addLogRealtime(
+        await this.deploymentsService.addLogRealtime(
           id,
           `Navigating to specific commit: ${deploy.commitHash}...`,
         );
         try {
           await this.gitUtil.checkoutCommit(workDir, deploy.commitHash);
-          this.deploymentsService.addLogRealtime(
+          await this.deploymentsService.addLogRealtime(
             id,
             `✅ Successfully switched to commit ${deploy.commitHash.substring(0, 7)}.`,
           );
@@ -92,7 +92,7 @@ export class DeploymentsProcessor {
 
       const envPath = path.join(workDir, ".env");
       if (variables && Object.keys(variables).length > 0) {
-        this.deploymentsService.addLogRealtime(
+        await this.deploymentsService.addLogRealtime(
           id,
           `Configuring environment variables securely...`,
         );
@@ -102,7 +102,7 @@ export class DeploymentsProcessor {
           .join("\n");
 
         fs.writeFileSync(envPath, envContent, "utf-8");
-        this.deploymentsService.addLogRealtime(
+        await this.deploymentsService.addLogRealtime(
           id,
           `✅ Environment variables injected successfully.`,
         );
@@ -119,13 +119,13 @@ export class DeploymentsProcessor {
         id,
         DeployStatus.BUILDING,
       );
-      this.deploymentsService.addLogRealtime(
+      await this.deploymentsService.addLogRealtime(
         id,
         `Step 2/3: Building Docker image (this may take a while)...`,
       );
 
       await this.dockerUtil.buildImage(id, workDir);
-      this.deploymentsService.addLogRealtime(
+      await this.deploymentsService.addLogRealtime(
         id,
         `Docker image built successfully.`,
       );
@@ -134,7 +134,7 @@ export class DeploymentsProcessor {
         id,
         DeployStatus.RUNNING,
       );
-      this.deploymentsService.addLogRealtime(
+      await this.deploymentsService.addLogRealtime(
         id,
         `Step 3/3: Starting container...`,
       );
@@ -147,7 +147,7 @@ export class DeploymentsProcessor {
         id,
         DeployStatus.SUCCESS,
       );
-      this.deploymentsService.addLogRealtime(
+      await this.deploymentsService.addLogRealtime(
         id,
         `Deployment completed! Running correctly.`,
       );
@@ -173,7 +173,7 @@ export class DeploymentsProcessor {
           "Docker Error: Build failed or container could not be started.";
       }
 
-      this.deploymentsService.addLogRealtime(id, `PROCESS FAILED: ${errorMsg}`);
+      await this.deploymentsService.addLogRealtime(id, `PROCESS FAILED: ${errorMsg}`);
     } finally {
       if (fs.existsSync(workDir)) {
         try {

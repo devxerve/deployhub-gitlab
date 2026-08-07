@@ -19,6 +19,13 @@ export interface HistoryPoint {
   mem: number;
 }
 
+export interface ActiveAlert {
+  id: string;
+  severity: string;
+  message: string;
+  startsAt: string;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -48,6 +55,50 @@ async function parseJsonResponse(response: Response): Promise<unknown> {
 @Injectable()
 export class MonitoringService {
   private readonly logger = new Logger(MonitoringService.name);
+  private readonly activeAlerts = new Map<string, ActiveAlert>();
+
+  /** Handles the webhook Alertmanager posts on every firing/resolved alert group. */
+  receiveAlertWebhook(payload: unknown): void {
+    if (!isRecord(payload) || !isUnknownArray(payload.alerts)) {
+      return;
+    }
+
+    for (const raw of payload.alerts) {
+      if (!isRecord(raw)) continue;
+
+      const labels = isRecord(raw.labels) ? raw.labels : {};
+      const annotations = isRecord(raw.annotations) ? raw.annotations : {};
+      const alertname =
+        typeof labels.alertname === "string" ? labels.alertname : "alert";
+      const fingerprint =
+        typeof raw.fingerprint === "string" ? raw.fingerprint : alertname;
+
+      if (raw.status === "resolved") {
+        this.activeAlerts.delete(fingerprint);
+        continue;
+      }
+
+      this.activeAlerts.set(fingerprint, {
+        id: fingerprint,
+        severity:
+          typeof labels.severity === "string" ? labels.severity : "warning",
+        message:
+          typeof annotations.summary === "string"
+            ? annotations.summary
+            : alertname,
+        startsAt:
+          typeof raw.startsAt === "string"
+            ? raw.startsAt
+            : new Date().toISOString(),
+      });
+    }
+  }
+
+  getActiveAlerts(): ActiveAlert[] {
+    return Array.from(this.activeAlerts.values()).sort(
+      (a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime(),
+    );
+  }
 
   private async instantQuery(promql: string): Promise<number | null> {
     if (!PROM_URL) {

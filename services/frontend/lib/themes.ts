@@ -86,13 +86,6 @@ export function statusColor(t: Theme, s: string): string {
   return map[s] || t.muted;
 }
 
-export function scoreColor(t: Theme, sc: string): string {
-  if (sc === "A+" || sc === "A") return t.success;
-  if (sc === "B") return t.accent;
-  if (sc === "C") return t.warning;
-  return t.danger;
-}
-
 export function logColor(t: Theme, lv: string): string {
   if (lv === "ERROR") return t.danger;
   if (lv === "WARN") return t.warning;

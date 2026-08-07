@@ -16,15 +16,13 @@ import { Badge, Bar, Btn, Card, TextInput } from "@/components/ui";
 import {
   createDeployment,
   deleteDeployment,
+  getDeploymentLogs,
   getDeployments,
+  getProjects,
   type Deploy,
+  type Project,
 } from "@/lib/api";
 import { joinDeployRoom, onDeployLog, onDeployStatus } from "@/lib/socket";
-import {
-  getStoredProjects,
-  PROJECTS_UPDATED_EVENT,
-  type DeployProject,
-} from "@/lib/projects";
 import { useTranslation, type TranslateFn } from "@/lib/i18n/context";
 
 const STATUS_PROGRESS: Record<string, number> = {
@@ -49,7 +47,7 @@ function timeAgo(dateStr: string, tr: TranslateFn) {
 export function DeploymentsModule({ t }: { t: Theme }) {
   const { t: tr } = useTranslation();
   const [deploys, setDeploys] = useState<Deploy[]>([]);
-  const [projects, setProjects] = useState<DeployProject[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [selected, setSelected] = useState<Deploy | null>(null);
   const [liveLogs, setLiveLogs] = useState<string[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -62,18 +60,16 @@ export function DeploymentsModule({ t }: { t: Theme }) {
   const selectedProject = projects.find((project) => project.id === projectId);
 
   useEffect(() => {
-    const syncProjects = () => {
-      const stored = getStoredProjects();
-      setProjects(stored);
-      setProjectId((current) => current || stored[0]?.id || "");
-    };
-
-    syncProjects();
-    window.addEventListener(PROJECTS_UPDATED_EVENT, syncProjects);
-    window.addEventListener("storage", syncProjects);
+    let cancelled = false;
+    getProjects()
+      .then((fetched) => {
+        if (cancelled) return;
+        setProjects(fetched);
+        setProjectId((current) => current || fetched[0]?.id || "");
+      })
+      .catch(() => undefined);
     return () => {
-      window.removeEventListener(PROJECTS_UPDATED_EVENT, syncProjects);
-      window.removeEventListener("storage", syncProjects);
+      cancelled = true;
     };
   }, []);
 
@@ -98,6 +94,22 @@ export function DeploymentsModule({ t }: { t: Theme }) {
   }, [deploys]);
 
   const selectedId = selected?.id;
+
+  useEffect(() => {
+    if (!selectedId) return;
+    let cancelled = false;
+    setLiveLogs([]);
+    getDeploymentLogs(selectedId)
+      .then((history) => {
+        if (cancelled) return;
+        setLiveLogs((previous) => [...history, ...previous]);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedId]);
+
   useEffect(() => {
     if (!selectedId) return;
 
@@ -136,7 +148,6 @@ export function DeploymentsModule({ t }: { t: Theme }) {
       });
       setDeploys((previous) => [deployment, ...previous]);
       setSelected(deployment);
-      setLiveLogs([]);
       setShowForm(false);
       setCommitHash("");
     } catch {
@@ -298,7 +309,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
               key={deployment.id}
               t={t}
               style={{ marginBottom: 12, cursor: "pointer", border: isActive ? `1px solid ${t.accent}` : undefined, transition: "all 0.2s" }}
-              onClick={() => { setSelected(deployment); setLiveLogs([]); }}
+              onClick={() => setSelected(deployment)}
             >
               <div className="deployment-row">
                 <div style={{ minWidth: 0 }}>

@@ -10,7 +10,6 @@ const ENTRIES: Entry[] = [
   ["sidebar.pipeline", "CI/CD Pipeline", "Pipeline CI/CD", "Pipeline CI/CD"],
   ["sidebar.monitoring", "Monitoring", "Monitorización", "Supervision"],
   ["sidebar.logs", "Logs", "Registros", "Journaux"],
-  ["sidebar.evaluation", "Evaluation", "Evaluación", "Évaluation"],
   ["sidebar.settings", "Settings", "Configuración", "Paramètres"],
   ["sidebar.mainNav", "Main navigation", "Navegación principal", "Navigation principale"],
   ["sidebar.userAvatarAlt", "User profile", "Perfil de usuario", "Profil utilisateur"],
@@ -38,7 +37,6 @@ const ENTRIES: Entry[] = [
   ["pageTitle.pipeline", "CI/CD Pipeline", "Pipeline CI/CD", "Pipeline CI/CD"],
   ["pageTitle.monitoring", "Monitoring", "Monitorización", "Supervision"],
   ["pageTitle.logs", "Logs", "Registros", "Journaux"],
-  ["pageTitle.evaluation", "Project Evaluation", "Evaluación del proyecto", "Évaluation du projet"],
   ["pageTitle.settings", "Settings", "Configuración", "Paramètres"],
 
    
@@ -121,12 +119,6 @@ const ENTRIES: Entry[] = [
     "Proyecto de GitHub listo para desplegar.",
     "Projet GitHub prêt à être déployé.",
   ],
-  [
-    "projects.importedDescription",
-    "Imported from deployment history",
-    "Importado del historial de despliegues",
-    "Importé depuis l'historique des déploiements",
-  ],
   ["projects.deploymentsCount", "{n} deployments", "{n} despliegues", "{n} déploiements"],
   ["projects.portLabel", "port {port}", "puerto {port}", "port {port}"],
   ["projects.lastDeployment", "Last deployment: {value}", "Último despliegue: {value}", "Dernier déploiement : {value}"],
@@ -149,6 +141,18 @@ const ENTRIES: Entry[] = [
     "Que déploie ce projet ?",
   ],
   ["projects.form.error", "Unable to add project.", "No se pudo añadir el proyecto.", "Impossible d'ajouter le projet."],
+  [
+    "projects.loadError",
+    "Unable to load projects from the server.",
+    "No se pudieron cargar los proyectos del servidor.",
+    "Impossible de charger les projets depuis le serveur.",
+  ],
+  [
+    "projects.deleteError",
+    "The project could not be removed.",
+    "No se pudo eliminar el proyecto.",
+    "Le projet n'a pas pu être supprimé.",
+  ],
   [
     "projects.confirmRemoveWithDeploys",
     "Remove {name} from Projects? Deployment history will not be deleted.",
@@ -260,12 +264,12 @@ const ENTRIES: Entry[] = [
 
    
   ["pipeline.title", "CI/CD Pipeline", "Pipeline CI/CD", "Pipeline CI/CD"],
-  ["pipeline.commit", "Commit", "Commit", "Commit"],
-  ["pipeline.branch", "branch", "rama", "branche"],
-  ["pipeline.triggeredBy", "triggered by", "iniciado por", "déclenché par"],
-  ["pipeline.run", "Run Pipeline", "Ejecutar pipeline", "Lancer le pipeline"],
-  ["pipeline.running", "Running...", "Ejecutando...", "Exécution en cours..."],
-  ["pipeline.duration", "Duration:", "Duración:", "Durée :"],
+  ["pipeline.subtitle", "Pick a registered project and watch its real clone → build → run pipeline.", "Elige un proyecto registrado y observa su pipeline real de clonado → build → arranque.", "Choisissez un projet enregistré et suivez son vrai pipeline clonage → build → démarrage."],
+  ["pipeline.duration", "Elapsed:", "Transcurrido:", "Écoulé :"],
+  ["pipeline.noProjects", "Register a project first", "Registra un proyecto primero", "Enregistrez d'abord un projet"],
+  ["pipeline.noProjectsBody", "Open Projects and add a public GitHub repository, then come back here to see its pipeline.", "Abre Proyectos, añade un repositorio público de GitHub y vuelve aquí para ver su pipeline.", "Ouvrez Projets, ajoutez un dépôt GitHub public, puis revenez ici pour voir son pipeline."],
+  ["pipeline.idle", "This project hasn't been deployed yet. Start a deployment from the Deployments tab to see its pipeline here.", "Este proyecto todavía no se ha desplegado. Inicia un despliegue desde la pestaña Deployments para ver aquí su pipeline.", "Ce projet n'a pas encore été déployé. Lancez un déploiement depuis l'onglet Deployments pour voir son pipeline ici."],
+  ["pipeline.unknownFailure", "This run failed. Reopen it while it's running to see exactly which stage broke — past runs only show the final outcome.", "Este pipeline falló. Ábrelo mientras se ejecuta para ver en qué etapa falló exactamente — las ejecuciones pasadas solo muestran el resultado final.", "Cette exécution a échoué. Rouvrez-la pendant son exécution pour voir précisément quelle étape a échoué — les exécutions passées n'affichent que le résultat final."],
 
    
   ["monitoring.cpuUsage", "CPU Usage", "Uso de CPU", "Utilisation du CPU"],
@@ -281,24 +285,8 @@ const ENTRIES: Entry[] = [
   ["monitoring.resourceUsage", "Resource Usage (24h)", "Uso de recursos (24 h)", "Utilisation des ressources (24 h)"],
   ["monitoring.cpuLegend", "CPU", "CPU", "CPU"],
   ["monitoring.activeAlerts", "Active Alerts", "Alertas activas", "Alertes actives"],
-  [
-    "monitoring.alert1",
-    "deployhub-api — Memory usage above 85% for 10min",
-    "deployhub-api — Uso de memoria por encima del 85% durante 10 min",
-    "deployhub-api — Utilisation de la mémoire supérieure à 85 % pendant 10 min",
-  ],
-  [
-    "monitoring.alert2",
-    "analytics-svc — Auto-scaling triggered (2 to 4 pods)",
-    "analytics-svc — Autoescalado activado (de 2 a 4 pods)",
-    "analytics-svc — Mise à l'échelle automatique déclenchée (2 à 4 pods)",
-  ],
-  [
-    "monitoring.alert3",
-    "deployhub-api — Container OOM restart loop detected",
-    "deployhub-api — Bucle de reinicios por falta de memoria (OOM) detectado en el contenedor",
-    "deployhub-api — Boucle de redémarrage détectée suite à un dépassement de mémoire (OOM)",
-  ],
+  ["monitoring.noAlerts", "No active alerts — everything looks healthy.", "Sin alertas activas — todo funciona correctamente.", "Aucune alerte active — tout fonctionne normalement."],
+  ["monitoring.openGrafana", "Open in Grafana", "Abrir en Grafana", "Ouvrir dans Grafana"],
 
    
   ["logs.searchPlaceholder", "Search logs...", "Buscar registros...", "Rechercher dans les journaux..."],
@@ -309,22 +297,9 @@ const ENTRIES: Entry[] = [
   ["logs.empty", "No logs yet — logs from your running deployments will appear here", "Aún no hay registros — aquí aparecerán los logs de tus despliegues en ejecución", "Aucun journal pour l'instant — les journaux de vos déploiements actifs apparaîtront ici"],
   ["logs.loading", "Loading logs...", "Cargando registros...", "Chargement des journaux..."],
 
-   
-  ["evaluation.globalScore", "Global Score", "Puntuación global", "Score global"],
-  ["evaluation.scoreBreakdown", "Score Breakdown", "Desglose de la puntuación", "Détail du score"],
-  ["evaluation.recommendations", "Recommendations", "Recomendaciones", "Recommandations"],
-  ["evaluation.dims.codeQuality", "Code Quality", "Calidad del código", "Qualité du code"],
-  ["evaluation.dims.testCoverage", "Test Coverage", "Cobertura de pruebas", "Couverture de tests"],
-  ["evaluation.dims.security", "Security", "Seguridad", "Sécurité"],
-  ["evaluation.dims.performance", "Performance", "Rendimiento", "Performance"],
-  ["evaluation.dims.maintainability", "Maintainability", "Mantenibilidad", "Maintenabilité"],
 
-   
   ["settings.tabs.users", "Users", "Usuarios", "Utilisateurs"],
-  ["settings.tabs.tokens", "API Tokens", "Tokens de API", "Jetons API"],
-  ["settings.tabs.notifs", "Notifications", "Notificaciones", "Notifications"],
-  ["settings.tabs.integrations", "Integrations", "Integraciones", "Intégrations"],
-  ["settings.tabs.env", "Env Variables", "Variables de entorno", "Variables d'environnement"],
+  ["settings.tabs.about", "About", "Acerca de", "À propos"],
   ["settings.tabs.privacy", "Privacy Policy", "Política de privacidad", "Politique de confidentialité"],
 
   ["settings.users.title", "Team Members", "Miembros del equipo", "Membres de l'équipe"],
@@ -332,41 +307,63 @@ const ENTRIES: Entry[] = [
   ["settings.users.role.admin", "Admin", "Administrador", "Administrateur"],
   ["settings.users.role.dev", "Dev", "Desarrollador", "Développeur"],
   ["settings.users.role.viewer", "Viewer", "Visualizador", "Observateur"],
+  ["settings.users.loading", "Loading team members…", "Cargando miembros del equipo…", "Chargement des membres…"],
+  ["settings.users.error", "Unable to load team members.", "No se pudieron cargar los miembros del equipo.", "Impossible de charger les membres de l'équipe."],
+  ["settings.users.empty", "No team members yet.", "Todavía no hay miembros del equipo.", "Aucun membre pour le moment."],
+  ["settings.users.joined", "Joined", "Se unió", "A rejoint"],
+  ["settings.users.delete", "Delete", "Eliminar", "Supprimer"],
+  ["settings.users.deleteConfirm", "Delete {name}? This cannot be undone.", "¿Eliminar a {name}? Esta acción no se puede deshacer.", "Supprimer {name} ? Cette action est irréversible."],
+  ["settings.users.deleteError", "Unable to delete this user.", "No se pudo eliminar este usuario.", "Impossible de supprimer cet utilisateur."],
+  ["settings.users.selfDeleteTitle", "You can't delete your own account", "No puedes eliminar tu propia cuenta", "Vous ne pouvez pas supprimer votre propre compte"],
+  ["settings.users.modalTitle", "Add team member", "Añadir miembro", "Ajouter un membre"],
+  ["settings.users.form.username", "Username", "Nombre de usuario", "Nom d'utilisateur"],
+  ["settings.users.form.email", "Email", "Correo electrónico", "E-mail"],
+  ["settings.users.form.password", "Password", "Contraseña", "Mot de passe"],
+  ["settings.users.form.submit", "Create user", "Crear usuario", "Créer l'utilisateur"],
+  ["settings.users.form.error", "Unable to create user.", "No se pudo crear el usuario.", "Impossible de créer l'utilisateur."],
 
-  ["settings.tokens.title", "API Tokens", "Tokens de API", "Jetons API"],
-  ["settings.tokens.generate", "Generate", "Generar", "Générer"],
-  ["settings.tokens.revoke", "Revoke", "Revocar", "Révoquer"],
-  ["settings.tokens.created", "Created", "Creado", "Créé"],
-  ["settings.tokens.expires", "Expires", "Expira", "Expire"],
-  ["settings.tokens.ciCdName", "CI/CD Pipeline Token", "Token del pipeline CI/CD", "Jeton du pipeline CI/CD"],
-  ["settings.tokens.monitoringName", "Monitoring Token", "Token de monitorización", "Jeton de supervision"],
-  ["settings.tokens.webhookName", "Webhook Secret", "Secreto del webhook", "Secret du webhook"],
-
-  ["settings.notifs.title", "Notification Preferences", "Preferencias de notificaciones", "Préférences de notification"],
-  ["settings.notifs.deploySuccess", "Deploy Success", "Despliegue correcto", "Déploiement réussi"],
-  ["settings.notifs.deployFailed", "Deploy Failed", "Despliegue fallido", "Échec du déploiement"],
-  ["settings.notifs.criticalErrors", "Critical Errors", "Errores críticos", "Erreurs critiques"],
-  ["settings.notifs.performanceAlerts", "Performance Alerts", "Alertas de rendimiento", "Alertes de performance"],
-  ["settings.notifs.securityWarnings", "Security Warnings", "Avisos de seguridad", "Avertissements de sécurité"],
-  ["settings.notifs.channel.email", "Email", "Correo electrónico", "E-mail"],
-  ["settings.notifs.channel.slack", "Slack", "Slack", "Slack"],
-  ["settings.notifs.channel.sms", "SMS", "SMS", "SMS"],
-
-  ["settings.integrations.configure", "Configure", "Configurar", "Configurer"],
-  ["settings.integrations.connect", "Connect", "Conectar", "Connecter"],
-  ["settings.integrations.status.connected", "connected", "conectado", "connecté"],
-  ["settings.integrations.status.disconnected", "disconnected", "desconectado", "déconnecté"],
-  ["settings.integrations.desc.github", "Source control and webhooks", "Control de versiones y webhooks", "Contrôle de version et webhooks"],
-  ["settings.integrations.desc.slack", "Deployment notifications", "Notificaciones de despliegue", "Notifications de déploiement"],
-  ["settings.integrations.desc.datadog", "Metrics and APM", "Métricas y APM", "Métriques et APM"],
-  ["settings.integrations.desc.pagerduty", "Incident management", "Gestión de incidentes", "Gestion des incidents"],
-  ["settings.integrations.desc.dockerhub", "Container registry", "Registro de contenedores", "Registre de conteneurs"],
-  ["settings.integrations.desc.awss3", "Artifact storage", "Almacenamiento de artefactos", "Stockage des artefacts"],
-
-  ["settings.env.title", "Global Environment Variables", "Variables de entorno globales", "Variables d'environnement globales"],
-  ["settings.env.addVariable", "Add Variable", "Añadir variable", "Ajouter une variable"],
-  ["settings.env.scope.global", "Global", "Global", "Globale"],
-  ["settings.env.scope.notification", "Notification", "Notificación", "Notification"],
+  [
+    "settings.about.title",
+    "About DeployHub",
+    "Acerca de DeployHub",
+    "À propos de DeployHub",
+  ],
+  [
+    "settings.about.subtitle",
+    "A lightweight platform to register, deploy and monitor your own projects.",
+    "Una plataforma ligera para registrar, desplegar y monitorizar tus propios proyectos.",
+    "Une plateforme légère pour enregistrer, déployer et surveiller vos propres projets.",
+  ],
+  [
+    "settings.about.f1",
+    "Register any public GitHub repository as a Project, with your own branch and description.",
+    "Registra cualquier repositorio público de GitHub como un Proyecto, con tu propia rama y descripción.",
+    "Enregistrez n'importe quel dépôt GitHub public comme Projet, avec votre propre branche et description.",
+  ],
+  [
+    "settings.about.f2",
+    "Trigger one-click Docker deployments and follow the build in real time: cloning, building, and starting the container.",
+    "Lanza despliegues Docker con un clic y sigue la compilación en tiempo real: clonado, build y arranque del contenedor.",
+    "Lancez des déploiements Docker en un clic et suivez le build en temps réel : clonage, build et démarrage du conteneur.",
+  ],
+  [
+    "settings.about.f3",
+    "Every account only ever sees its own projects and deployments — Google, GitHub and 42 Intra logins are kept fully separate.",
+    "Cada cuenta solo ve sus propios proyectos y despliegues — los inicios de sesión con Google, GitHub y 42 Intra se mantienen totalmente separados.",
+    "Chaque compte ne voit que ses propres projets et déploiements — les connexions Google, GitHub et 42 Intra restent totalement séparées.",
+  ],
+  [
+    "settings.about.f4",
+    "Live logs and status streamed over WebSockets, plus a monitoring dashboard backed by Prometheus and Grafana.",
+    "Logs y estado en vivo por WebSockets, además de un panel de monitorización respaldado por Prometheus y Grafana.",
+    "Journaux et statut en direct via WebSockets, ainsi qu'un tableau de bord de supervision basé sur Prometheus et Grafana.",
+  ],
+  [
+    "settings.about.stack",
+    "Built with Next.js, NestJS, PostgreSQL and Docker, served behind Traefik with a ModSecurity WAF.",
+    "Construido con Next.js, NestJS, PostgreSQL y Docker, servido detrás de Traefik con un WAF ModSecurity.",
+    "Construit avec Next.js, NestJS, PostgreSQL et Docker, servi derrière Traefik avec un WAF ModSecurity.",
+  ],
 
   ["settings.privacy.title", "Privacy Policy", "Política de privacidad", "Politique de confidentialité"],
   [
@@ -547,51 +544,17 @@ const ENTRIES: Entry[] = [
   ["status.warning", "Warning", "Advertencia", "Avertissement"],
 
    
-  ["pipeline.stage.build.name", "Build", "Compilación", "Construction"],
-  ["pipeline.stage.build.step1", "Install deps", "Instalar dependencias", "Installer les dépendances"],
-  ["pipeline.stage.build.step2", "Compile TypeScript", "Compilar TypeScript", "Compiler TypeScript"],
-  ["pipeline.stage.build.step3", "Bundle assets", "Empaquetar recursos", "Empaqueter les ressources"],
-  ["pipeline.stage.build.step4", "Optimize images", "Optimizar imágenes", "Optimiser les images"],
+  ["pipeline.stage.cloning.name", "Clone", "Clonado", "Clonage"],
+  ["pipeline.stage.cloning.step1", "Cloning repository…", "Clonando repositorio…", "Clonage du dépôt…"],
+  ["pipeline.stage.cloning.step2", "Checking out the requested commit, if any", "Cambiando al commit solicitado, si se indicó", "Basculement vers le commit demandé, le cas échéant"],
 
-  ["pipeline.stage.test.name", "Test", "Pruebas", "Tests"],
-  ["pipeline.stage.test.step1", "Unit tests (148/148)", "Pruebas unitarias (148/148)", "Tests unitaires (148/148)"],
-  ["pipeline.stage.test.step2", "Integration tests", "Pruebas de integración", "Tests d'intégration"],
-  ["pipeline.stage.test.step3", "Coverage: 89%", "Cobertura: 89%", "Couverture : 89 %"],
-  ["pipeline.stage.test.step4", "Lint checks", "Verificaciones de lint", "Vérifications de lint"],
+  ["pipeline.stage.building.name", "Build", "Build", "Build"],
+  ["pipeline.stage.building.step1", "Injecting environment variables", "Inyectando variables de entorno", "Injection des variables d'environnement"],
+  ["pipeline.stage.building.step2", "Building the Docker image", "Compilando la imagen Docker", "Construction de l'image Docker"],
 
-  ["pipeline.stage.security.name", "Security", "Seguridad", "Sécurité"],
-  ["pipeline.stage.security.step1", "SAST scan", "Análisis SAST", "Analyse SAST"],
-  ["pipeline.stage.security.step2", "Dependency audit", "Auditoría de dependencias", "Audit des dépendances"],
-  ["pipeline.stage.security.step3", "2 low severity", "2 de gravedad baja", "2 de faible gravité"],
-  ["pipeline.stage.security.step4", "Container scan", "Análisis del contenedor", "Analyse du conteneur"],
-
-  ["pipeline.stage.deploy.name", "Deploy", "Despliegue", "Déploiement"],
-  ["pipeline.stage.deploy.step1", "Push to registry", "Subir al registro", "Publier dans le registre"],
-  ["pipeline.stage.deploy.step2", "Update deployment", "Actualizar despliegue", "Mettre à jour le déploiement"],
-  ["pipeline.stage.deploy.step3", "Health check", "Comprobación de estado", "Vérification de l'état"],
-  ["pipeline.stage.deploy.step4", "DNS propagation", "Propagación de DNS", "Propagation DNS"],
-
-   
-  ["evaluation.recs.deployhubWeb.1", "Add E2E tests for checkout flow", "Añadir pruebas E2E para el flujo de compra", "Ajouter des tests E2E pour le parcours de paiement"],
-  ["evaluation.recs.deployhubWeb.2", "Upgrade axios to 1.6+", "Actualizar axios a la versión 1.6 o superior", "Mettre à jour axios vers la version 1.6 ou supérieure"],
-  ["evaluation.recs.deployhubWeb.3", "Enable strict TypeScript mode", "Activar el modo estricto de TypeScript", "Activer le mode strict de TypeScript"],
-
-  ["evaluation.recs.deployhubApi.1", "Fix OOM issue: optimize Redis queries", "Corregir el problema de OOM: optimizar las consultas a Redis", "Corriger le problème d'OOM : optimiser les requêtes Redis"],
-  ["evaluation.recs.deployhubApi.2", "Increase test coverage to 80%+", "Aumentar la cobertura de pruebas al 80% o más", "Augmenter la couverture de tests à 80 % ou plus"],
-  ["evaluation.recs.deployhubApi.3", "Patch lodash vulnerability (CVE-2024-1234)", "Aplicar el parche de la vulnerabilidad de lodash (CVE-2024-1234)", "Corriger la vulnérabilité de lodash (CVE-2024-1234)"],
-
-  ["evaluation.recs.deployhubWorker.1", "Refactor job queue abstraction", "Refactorizar la abstracción de la cola de trabajos", "Refactoriser l'abstraction de la file d'attente des tâches"],
-  ["evaluation.recs.deployhubWorker.2", "Add circuit breaker pattern", "Añadir el patrón circuit breaker", "Ajouter un pattern circuit breaker"],
-  ["evaluation.recs.deployhubWorker.3", "Document public API methods", "Documentar los métodos públicos de la API", "Documenter les méthodes publiques de l'API"],
-
-  ["evaluation.recs.analyticsSvc.1", "Consider Go 1.22 migration", "Considerar la migración a Go 1.22", "Envisager la migration vers Go 1.22"],
-  ["evaluation.recs.analyticsSvc.2", "Add OpenTelemetry tracing", "Añadir trazabilidad con OpenTelemetry", "Ajouter le traçage OpenTelemetry"],
-  ["evaluation.recs.analyticsSvc.3", "Improve error handling in ingestion", "Mejorar el manejo de errores en la ingesta", "Améliorer la gestion des erreurs lors de l'ingestion"],
-
-  ["evaluation.recs.mlPipeline.1", "Critical: add unit tests (32% coverage)", "Crítico: añadir pruebas unitarias (cobertura del 32%)", "Critique : ajouter des tests unitaires (couverture de 32 %)"],
-  ["evaluation.recs.mlPipeline.2", "Upgrade Python 3.9 to 3.12", "Actualizar Python de la versión 3.9 a la 3.12", "Mettre à jour Python de la version 3.9 vers la 3.12"],
-  ["evaluation.recs.mlPipeline.3", "Add type annotations throughout codebase", "Añadir anotaciones de tipo en todo el código", "Ajouter des annotations de type dans tout le code"],
-  ["evaluation.recs.mlPipeline.4", "Remove hardcoded credentials from config.py", "Eliminar las credenciales embebidas en config.py", "Supprimer les identifiants codés en dur dans config.py"],
+  ["pipeline.stage.running.name", "Run", "Arranque", "Démarrage"],
+  ["pipeline.stage.running.step1", "Assigning an available port", "Asignando un puerto disponible", "Attribution d'un port disponible"],
+  ["pipeline.stage.running.step2", "Starting the container", "Iniciando el contenedor", "Démarrage du conteneur"],
 ];
 
 export const translations: Record<Language, Record<string, string>> = {

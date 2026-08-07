@@ -2,15 +2,19 @@
 
 import { useEffect, useState } from "react";
 import type { Theme } from "@/lib/themes";
-import { Card, Bar } from "@/components/ui";
+import { Card, Bar, Btn } from "@/components/ui";
 import { MetricsChart } from "@/components/charts";
-import { getMonitoringOverview, getMonitoringHistory, OverviewMetrics, HistoryPoint } from "@/lib/api";
+import { getMonitoringOverview, getMonitoringHistory, getActiveAlerts, OverviewMetrics, HistoryPoint, ActiveAlert } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n/context";
 import {
   AlertCircle,
   AlertTriangle,
+  ExternalLink,
   Info,
+  ShieldCheck,
 } from "lucide-react";
+
+const GRAFANA_URL = "https://grafana.localhost";
 
 function formatBytes(bytes: number | null): string {
   if (bytes == null || bytes === 0) return "0 B";
@@ -33,15 +37,17 @@ export function MonitoringModule({ t }: { t: Theme }) {
   const { t: tr } = useTranslation();
   const [overview, setOverview] = useState<OverviewMetrics | null>(null);
   const [history, setHistory] = useState<HistoryPoint[]>([]);
+  const [alerts, setAlerts] = useState<ActiveAlert[]>([]);
 
   useEffect(() => {
     let active = true;
     const fetchMetrics = async () => {
       try {
-        const [o, h] = await Promise.all([getMonitoringOverview(), getMonitoringHistory(24)]);
+        const [o, h, a] = await Promise.all([getMonitoringOverview(), getMonitoringHistory(24), getActiveAlerts()]);
         if (active) {
           setOverview(o);
           setHistory(h);
+          setAlerts(a);
         }
       } catch {
   return;
@@ -74,6 +80,14 @@ export function MonitoringModule({ t }: { t: Theme }) {
 
   return (
     <div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+        <Btn t={t} variant="secondary" onClick={() => window.open(GRAFANA_URL, "_blank", "noreferrer")}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+            <ExternalLink size={14} /> {tr("monitoring.openGrafana")}
+          </span>
+        </Btn>
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16, marginBottom: 20 }}>
         {metrics.map((m) => (
           <Card key={m.label} t={t} style={{ padding: 18 }}>
@@ -100,14 +114,18 @@ export function MonitoringModule({ t }: { t: Theme }) {
 
       <Card t={t}>
         <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>{tr("monitoring.activeAlerts")}</h3>
-        {[
-          { sev: "warn",  msg: tr("monitoring.alert1"),         ts: "14:12" },
-          { sev: "info",  msg: tr("monitoring.alert2"),         ts: "14:08" },
-          { sev: "error", msg: tr("monitoring.alert3"),        ts: "13:55" },
-        ].map((a, i) => {
-          const c = a.sev === "error" ? t.danger : a.sev === "warn" ? t.warning : t.info;
+
+        {alerts.length === 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, color: t.muted, fontSize: 13, padding: "8px 0" }}>
+            <ShieldCheck size={16} color={t.success} /> {tr("monitoring.noAlerts")}
+          </div>
+        )}
+
+        {alerts.map((a) => {
+          const c = a.severity === "critical" ? t.danger : a.severity === "warning" ? t.warning : t.info;
+          const ts = new Date(a.startsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
           return (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 10, background: `${c}0d`, border: `1px solid ${c}33`, marginBottom: 8 }}>
+            <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 10, background: `${c}0d`, border: `1px solid ${c}33`, marginBottom: 8 }}>
               <span
                 style={{
                   display: "inline-flex",
@@ -115,16 +133,16 @@ export function MonitoringModule({ t }: { t: Theme }) {
                   flexShrink: 0,
                 }}
               >
-                {a.sev === "error" ? (
+                {a.severity === "critical" ? (
                   <AlertCircle size={17} aria-hidden="true" />
-                ) : a.sev === "warn" ? (
+                ) : a.severity === "warning" ? (
                   <AlertTriangle size={17} aria-hidden="true" />
                 ) : (
                   <Info size={17} aria-hidden="true" />
                 )}
               </span>
-              <span style={{ flex: 1, fontSize: 13, color: t.text }}>{a.msg}</span>
-              <span style={{ fontSize: 11, color: t.muted, flexShrink: 0 }}>{a.ts}</span>
+              <span style={{ flex: 1, fontSize: 13, color: t.text }}>{a.message}</span>
+              <span style={{ fontSize: 11, color: t.muted, flexShrink: 0 }}>{ts}</span>
             </div>
           );
         })}

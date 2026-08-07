@@ -11,6 +11,7 @@ datasource db {
 
 model Deploy {
   id           String   @id @default(cuid())
+  userId       String
   repoUrl      String
   projectId    String
   status       String
@@ -19,6 +20,28 @@ model Deploy {
   branch       String?
   envVariables String?
   createdAt    DateTime @default(now())
+
+  @@schema("backend")
+}
+
+model DeployLog {
+  id        String   @id @default(cuid())
+  deployId  String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([deployId])
+  @@schema("backend")
+}
+
+model Project {
+  id            String   @id
+  userId        String
+  name          String
+  repoUrl       String
+  defaultBranch String   @default("main")
+  description   String?
+  createdAt     DateTime @default(now())
 
   @@schema("backend")
 }

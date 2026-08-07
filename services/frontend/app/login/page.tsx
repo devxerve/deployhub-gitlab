@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/context";
+import { API_URL, AUTH_SERVICE_URL } from "@/lib/config";
 
 
 const GitHubIcon = ({ color }: { color: string }) => (
@@ -49,9 +50,6 @@ const BoltIcon = () => (
     <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
   </svg>
 );
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL;
 
 export default function LoginPage() {
   const { t: tr } = useTranslation();

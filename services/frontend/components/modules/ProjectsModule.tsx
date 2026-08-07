@@ -14,14 +14,14 @@ import {
 import type { Theme } from "@/lib/themes";
 import { statusColor } from "@/lib/themes";
 import { Badge, Btn, Card, Modal, TextInput } from "@/components/ui";
-import { getDeployments, type Deploy } from "@/lib/api";
 import {
-  addStoredProject,
-  getStoredProjects,
-  mergeProjects,
-  removeStoredProject,
-  type DeployProject,
-} from "@/lib/projects";
+  createProject,
+  deleteProject,
+  getDeployments,
+  getProjects,
+  type Deploy,
+  type Project,
+} from "@/lib/api";
 import { useTranslation, type TranslateFn } from "@/lib/i18n/context";
 
 interface ProjectStats {
@@ -69,42 +69,28 @@ const FILTER_KEYS: Record<string, string> = {
 
 export function ProjectsModule({ t }: { t: Theme }) {
   const { t: tr } = useTranslation();
-  const [projects, setProjects] = useState<DeployProject[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [deploys, setDeploys] = useState<Deploy[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
-  const [selected, setSelected] = useState<DeployProject | null>(null);
+  const [selected, setSelected] = useState<Project | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      const stored = getStoredProjects();
-      if (!cancelled) setProjects(stored);
-
       try {
-        const history = await getDeployments();
+        const [projectList, history] = await Promise.all([getProjects(), getDeployments()]);
         if (cancelled) return;
+        setProjects(projectList);
         setDeploys(history);
-
-        const imported = Array.from(
-          new Map(history.map((deploy) => [deploy.projectId, deploy])).values(),
-        ).map((deploy) => ({
-          id: deploy.projectId,
-          name: deploy.projectId,
-          repoUrl: deploy.repoUrl,
-          defaultBranch: deploy.branch || "main",
-          description: tr("projects.importedDescription"),
-          createdAt: deploy.createdAt,
-        }));
-
-        setProjects(mergeProjects(imported));
       } catch {
-         
+        if (!cancelled) setListError(tr("projects.loadError"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -145,10 +131,10 @@ export function ProjectsModule({ t }: { t: Theme }) {
     return project.name.toLowerCase().includes(query) && (filter === "all" || stats?.status === filter);
   });
 
-  function handleCreate() {
+  async function handleCreate() {
     setFormError(null);
     try {
-      const project = addStoredProject(form);
+      const project = await createProject(form);
       setProjects((current) => [project, ...current]);
       setForm(EMPTY_FORM);
       setShowCreate(false);
@@ -157,16 +143,21 @@ export function ProjectsModule({ t }: { t: Theme }) {
     }
   }
 
-  function handleRemove(project: DeployProject) {
+  async function handleRemove(project: Project) {
     const hasDeployments = (statsByProject[project.id]?.totalDeploys ?? 0) > 0;
     const question = hasDeployments
       ? tr("projects.confirmRemoveWithDeploys", { name: project.name })
       : tr("projects.confirmRemove", { name: project.name });
 
     if (!window.confirm(question)) return;
-    removeStoredProject(project.id);
-    setProjects((current) => current.filter((item) => item.id !== project.id));
-    if (selected?.id === project.id) setSelected(null);
+
+    try {
+      await deleteProject(project.id);
+      setProjects((current) => current.filter((item) => item.id !== project.id));
+      if (selected?.id === project.id) setSelected(null);
+    } catch {
+      setListError(tr("projects.deleteError"));
+    }
   }
 
   return (
@@ -184,6 +175,12 @@ export function ProjectsModule({ t }: { t: Theme }) {
           </span>
         </Btn>
       </div>
+
+      {listError && (
+        <div role="alert" style={{ color: t.danger, fontSize: 13, marginBottom: 16, padding: "9px 12px", background: `${t.danger}12`, border: `1px solid ${t.danger}35`, borderRadius: 8 }}>
+          {listError}
+        </div>
+      )}
 
       <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
         <div style={{ position: "relative", flex: 1, minWidth: 220 }}>

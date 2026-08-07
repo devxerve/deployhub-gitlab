@@ -147,7 +147,10 @@ export class DockerUtil {
     });
   }
 
-  async getRecentDeploymentLogs(tailPerContainer = 40): Promise<
+  async getRecentDeploymentLogs(
+    userId: string,
+    tailPerContainer = 40,
+  ): Promise<
     Array<{
       ts: string;
       level: "INFO" | "WARN" | "ERROR";
@@ -155,9 +158,11 @@ export class DockerUtil {
       msg: string;
     }>
   > {
-    const deploys = await this.deploymentsService.getAllDeploys();
+    const deploys = await this.deploymentsService.getAllDeploys(userId);
     const relevant = deploys.filter((deploy) =>
-      ["running", "success"].includes(String(deploy.status).toLowerCase()),
+      ["running", "success", "failed"].includes(
+        String(deploy.status).toLowerCase(),
+      ),
     );
 
     const entries: Array<{
@@ -168,6 +173,33 @@ export class DockerUtil {
     }> = [];
 
     for (const deploy of relevant) {
+      const status = String(deploy.status).toLowerCase();
+
+      // Failed deploys usually never got a container running — surface why
+      // they failed from the persisted pipeline logs instead of `docker logs`.
+      if (status === "failed") {
+        const persisted = await this.deploymentsService.getDeployLogEntries(
+          deploy.id,
+          userId,
+        );
+        for (const log of persisted) {
+          const lower = log.message.toLowerCase();
+          const level: "INFO" | "WARN" | "ERROR" =
+            lower.includes("error") || lower.includes("failed")
+              ? "ERROR"
+              : lower.includes("warn")
+                ? "WARN"
+                : "INFO";
+          entries.push({
+            ts: log.createdAt.toISOString(),
+            level,
+            app: deploy.projectId,
+            msg: log.message,
+          });
+        }
+        continue;
+      }
+
       const lines = await this.getContainerLogLines(
         `container-${deploy.id}`,
         tailPerContainer,

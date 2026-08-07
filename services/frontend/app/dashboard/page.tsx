@@ -9,12 +9,11 @@ import { DeploymentsModule } from "@/components/modules/DeploymentsModule";
 import { PipelineModule } from "@/components/modules/PipelineModule";
 import { MonitoringModule } from "@/components/modules/MonitoringModule";
 import { LogsModule } from "@/components/modules/LogsModule";
-import { EvaluationModule } from "@/components/modules/EvaluationModule";
 import { SettingsModule } from "@/components/modules/SettingsModule";
 
 export default function DashboardPage() {
 	const { t, isDark, toggle } = useTheme();
-	const { isLoading, isAuthenticated } = useAuthGuard();
+	const { isLoading, isAuthenticated, username, role, userId } = useAuthGuard();
 
 	
 	if (isLoading) {
@@ -52,6 +51,8 @@ export default function DashboardPage() {
 			t={t}
 			isDark={isDark}
 			toggle={toggle}
+			username={username}
+			isAdmin={role === "admin"}
 		>
 			{({ page }) => (
 				<>
@@ -79,12 +80,8 @@ export default function DashboardPage() {
 						<LogsModule t={t} />
 					)}
 
-					{page === "evaluation" && (
-						<EvaluationModule t={t} />
-					)}
-
 					{page === "settings" && (
-						<SettingsModule t={t} />
+						<SettingsModule t={t} isAdmin={role === "admin"} currentUserId={userId} />
 					)}
 				</>
 			)}

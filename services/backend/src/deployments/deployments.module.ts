@@ -6,9 +6,10 @@ import { RealtimeModule } from "../realtime/realtime.module";
 import { GitUtil } from "./utils/git.utils";
 import { PrismaService } from "../prisma/prisma.service";
 import { DockerUtil } from "./utils/docker.utils";
+import { AuthModule } from "../auth/auth.module";
 
 @Module({
-  imports: [RealtimeModule],
+  imports: [RealtimeModule, AuthModule],
   controllers: [DeploymentsController],
   providers: [
     DeploymentsService,

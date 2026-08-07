@@ -194,3 +194,122 @@ export const logout = (_req: Request, res: Response): void => {
   res.clearCookie('auth_token');
   res.status(200).json({ message: 'Sesión cerrada con éxito' });
 };
+
+export const listUsers = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const cookies: unknown = req.cookies;
+    let token: string | undefined;
+
+    if (
+      typeof cookies === 'object' &&
+      cookies !== null &&
+      'auth_token' in cookies
+    ) {
+      const cookieToken = (cookies as Record<string, unknown>).auth_token;
+
+      if (typeof cookieToken === 'string') {
+        token = cookieToken;
+      }
+    }
+
+    const authorization = req.headers.authorization;
+
+    if (!token && authorization?.startsWith('Bearer ')) {
+      token = authorization.slice(7);
+    }
+
+    if (!token) {
+      res.status(401).json({ message: 'No hay token proporcionado' });
+      return;
+    }
+
+    const decoded = verifyToken(token);
+
+    if (!decoded) {
+      res.status(401).json({ message: 'Token inválido o expirado' });
+      return;
+    }
+
+    if (decoded.role !== 'admin') {
+      res.status(403).json({ message: 'Acceso restringido a administradores' });
+      return;
+    }
+
+    const users = await prisma.users.findMany({
+      orderBy: { created_at: 'asc' },
+      select: {
+        user_id: true,
+        username: true,
+        email: true,
+        provider: true,
+        role: true,
+        created_at: true,
+      },
+    });
+
+    res.status(200).json({ users });
+  } catch {
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+export const deleteUser = async (
+  req: Request<{ id: string }>,
+  res: Response,
+): Promise<void> => {
+  try {
+    const cookies: unknown = req.cookies;
+    let token: string | undefined;
+
+    if (
+      typeof cookies === 'object' &&
+      cookies !== null &&
+      'auth_token' in cookies
+    ) {
+      const cookieToken = (cookies as Record<string, unknown>).auth_token;
+
+      if (typeof cookieToken === 'string') {
+        token = cookieToken;
+      }
+    }
+
+    const authorization = req.headers.authorization;
+
+    if (!token && authorization?.startsWith('Bearer ')) {
+      token = authorization.slice(7);
+    }
+
+    if (!token) {
+      res.status(401).json({ message: 'No hay token proporcionado' });
+      return;
+    }
+
+    const decoded = verifyToken(token);
+
+    if (!decoded) {
+      res.status(401).json({ message: 'Token inválido o expirado' });
+      return;
+    }
+
+    if (decoded.role !== 'admin') {
+      res.status(403).json({ message: 'Acceso restringido a administradores' });
+      return;
+    }
+
+    const { id: targetId } = req.params;
+
+    if (String(decoded.user_id) === targetId) {
+      res.status(400).json({ message: 'No puedes eliminar tu propia cuenta' });
+      return;
+    }
+
+    await prisma.users.delete({ where: { user_id: targetId } });
+
+    res.status(200).json({ message: 'Usuario eliminado con éxito' });
+  } catch {
+    res.status(404).json({ message: 'Usuario no encontrado' });
+  }
+};

@@ -6,9 +6,16 @@ import { DeploymentsModule } from "./deployments/deployments.module";
 import { AuthModule } from "./auth/auth.module";
 import { MonitoringModule } from "./monitoring/monitoring.module";
 import { HttpMetricsMiddleware } from "./monitoring/http-metrics.middleware";
+import { ProjectsModule } from "./projects/projects.module";
 
 @Module({
-  imports: [RealtimeModule, DeploymentsModule, AuthModule, MonitoringModule],
+  imports: [
+    RealtimeModule,
+    DeploymentsModule,
+    AuthModule,
+    MonitoringModule,
+    ProjectsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

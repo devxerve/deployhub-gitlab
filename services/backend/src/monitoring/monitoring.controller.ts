@@ -1,8 +1,9 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Body, Controller, Get, Post, Query } from "@nestjs/common";
 import {
   MonitoringService,
   OverviewMetrics,
   HistoryPoint,
+  ActiveAlert,
 } from "./monitoring.service";
 
 @Controller("monitoring")
@@ -20,5 +21,18 @@ export class MonitoringController {
     return this.monitoringService.getHistory(
       parsed && Number.isFinite(parsed) ? parsed : undefined,
     );
+  }
+
+  @Get("alerts")
+  getAlerts(): ActiveAlert[] {
+    return this.monitoringService.getActiveAlerts();
+  }
+
+  // Called by Alertmanager (services/infra/alertmanager/alertmanager.yml), not
+  // by the browser — no user session exists for it to authenticate with.
+  @Post("alerts")
+  receiveAlerts(@Body() payload: unknown): { ok: true } {
+    this.monitoringService.receiveAlertWebhook(payload);
+    return { ok: true };
   }
 }

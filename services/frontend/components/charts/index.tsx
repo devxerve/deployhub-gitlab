@@ -53,48 +53,7 @@ export function DonutChart({
   );
 }
 
- 
-export function RadarChart({
-  t, dims,
-}: { t: Theme; dims: { label: string; val: number; color: string }[] }) {
-  const cx = 100, cy = 100, r = 70, n = dims.length;
-  const angle = (i: number) => (i / n) * Math.PI * 2 - Math.PI / 2;
-  const pt = (i: number, pct: number): [number, number] => {
-    const a = angle(i);
-    const rr = r * (pct / 100);
-    return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr];
-  };
-  const polygon = dims.map((_, i) => pt(i, dims[i].val).join(",")).join(" ");
-  const gridLevels = [25, 50, 75, 100];
 
-  return (
-    <svg viewBox="0 0 200 200" width="100%" style={{ maxWidth: 180, margin: "0 auto", display: "block" }}>
-      {gridLevels.map((lv) => (
-        <polygon
-          key={lv}
-          points={dims.map((_, i) => { const a = angle(i); return `${cx + Math.cos(a) * r * (lv / 100)},${cy + Math.sin(a) * r * (lv / 100)}`; }).join(" ")}
-          fill="none" stroke={t.border} strokeWidth="0.8"
-        />
-      ))}
-      {dims.map((_, i) => {
-        const a = angle(i);
-        return <line key={i} x1={cx} y1={cy} x2={cx + Math.cos(a) * r} y2={cy + Math.sin(a) * r} stroke={t.border} strokeWidth="0.8" />;
-      })}
-      <polygon points={polygon} fill={`${t.accent}30`} stroke={t.accent} strokeWidth="2" />
-      {dims.map((d, i) => {
-        const [x, y] = pt(i, d.val);
-        return <circle key={i} cx={x} cy={y} r="4" fill={d.color} />;
-      })}
-      {dims.map((d, i) => {
-        const a = angle(i);
-        const lx = cx + Math.cos(a) * (r + 16), ly = cy + Math.sin(a) * (r + 16);
-        return <text key={i} x={lx} y={ly + 3} textAnchor="middle" fontSize="8" fill={t.muted}>{d.label.split(" ")[0]}</text>;
-      })}
-    </svg>
-  );
-}
-
- 
 import { HistoryPoint } from "@/lib/api";
 
 export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {

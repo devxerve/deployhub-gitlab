@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Post,
+  UseGuards,
   UsePipes,
   ValidationPipe,
   Get,
@@ -13,8 +14,12 @@ import { CreateDeployDto } from "./dto/create-deploy.dto";
 import { DeploymentsService } from "./deployments.service";
 import { DeploymentsProcessor } from "./deployments.processor";
 import { DockerUtil } from "./utils/docker.utils";
+import { AuthGuard } from "../auth/auth.guard";
+import { CurrentUser } from "../auth/current-user.decorator";
+import type { AuthenticatedUser } from "../auth/auth.guard";
 
 @Controller("deploy")
+@UseGuards(AuthGuard)
 @UsePipes(
   new ValidationPipe({
     whitelist: true,
@@ -30,34 +35,42 @@ export class DeploymentsController {
   ) {}
 
   @Post()
-  async create(@Body() dto: CreateDeployDto) {
-    const deploy = await this.deploymentsService.createDeploy(dto);
+  async create(
+    @Body() dto: CreateDeployDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const deploy = await this.deploymentsService.createDeploy(dto, user.user_id);
     void this.deploymentsProcessor.process(deploy.id);
     return deploy;
   }
 
   @Get()
-  findAll() {
-    return this.deploymentsService.getAllDeploys();
+  findAll(@CurrentUser() user: AuthenticatedUser) {
+    return this.deploymentsService.getAllDeploys(user.user_id);
   }
 
   @Get("logs")
-  getRecentLogs() {
-    return this.dockerUtil.getRecentDeploymentLogs();
+  getRecentLogs(@CurrentUser() user: AuthenticatedUser) {
+    return this.dockerUtil.getRecentDeploymentLogs(user.user_id);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.deploymentsService.remove(id);
+  remove(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.deploymentsService.remove(id, user.user_id);
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.deploymentsService.getDeployById(id);
+  findOne(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.deploymentsService.getDeployByIdForUser(id, user.user_id);
   }
 
   @Get(":id/status")
-  getStatus(@Param("id") id: string) {
-    return this.deploymentsService.getDeployStatus(id);
+  getStatus(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.deploymentsService.getDeployStatus(id, user.user_id);
+  }
+
+  @Get(":id/logs")
+  getDeployLogs(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.deploymentsService.getDeployLogs(id, user.user_id);
   }
 }
