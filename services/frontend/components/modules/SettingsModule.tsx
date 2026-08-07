@@ -466,7 +466,7 @@ export function SettingsModule({ t }: { t: Theme }) {
           ))}
         </Card>
       )}
-      {/* ── PRIVACY POLICY ── */}
+      { }
       {tab === "privacy" && (
         <Card t={t}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18, gap: 12, flexWrap: "wrap" }}>

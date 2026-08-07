@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(data);
-  } catch (err) {
+  } catch {
     return NextResponse.json({ message: 'Error validando sesión' }, { status: 500 });
   }
 }

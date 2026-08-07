@@ -50,22 +50,27 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>(DEFAULT_LANGUAGE);
 
   useEffect(() => {
+  const timer = window.setTimeout(() => {
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
+
       if (isLanguage(stored)) {
         setLanguageState(stored);
       }
     } catch {
       // localStorage unavailable — keep default language.
     }
-  }, []);
+  }, 0);
+
+  return () => window.clearTimeout(timer);
+}, []);
 
   const setLanguage = useCallback((next: Language) => {
     setLanguageState(next);
     try {
       window.localStorage.setItem(STORAGE_KEY, next);
     } catch {
-      // Ignore write failures (e.g. private browsing).
+       
     }
   }, []);
 

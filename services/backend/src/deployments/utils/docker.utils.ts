@@ -51,7 +51,7 @@ export class DockerUtil {
     void port;
 
     return new Promise((resolve, reject) => {
-      const netWorkName = process.env.DOCKER_NETWORK_NAME || "deploy-network";
+      const netWorkName = process.env.DOCKER_NETWORK_NAME || "paas_network";
 
       const workDir = path.join(process.env.DEPLOY_TMP_DIR || "/app/tmp", id);
 

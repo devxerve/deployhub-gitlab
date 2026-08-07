@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/context";
 
-/* ─── GITHUB ICON ─── */
+
 const GitHubIcon = ({ color }: { color: string }) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill={color}>
     <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58
@@ -20,7 +20,7 @@ const GitHubIcon = ({ color }: { color: string }) => (
   </svg>
 );
 
-/* ─── GOOGLE ICON ─── */
+
 const GoogleIcon = () => (
   <svg width="22" height="22" viewBox="0 0 48 48">
     <path fill="#EA4335" d="M24 9.5c3.54 0 6.36 1.53 7.83 2.81l5.77-5.77C34.64 3.2 29.8 1 24 1 14.64 1 6.73 6.8 3.69 14.98l6.91 5.37C12.1 13.3 17.62 9.5 24 9.5z" />
@@ -30,7 +30,6 @@ const GoogleIcon = () => (
   </svg>
 );
 
-/* ─── 42 ICON ─── */
 const FortyTwoIcon = ({ color }: { color: string }) => (
   <Image
     src="/42_logo.png"
@@ -44,7 +43,7 @@ const FortyTwoIcon = ({ color }: { color: string }) => (
   />
 );
 
-/* ─── BOLT ICON ─── */
+
 const BoltIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
     <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
@@ -64,16 +63,16 @@ export default function LoginPage() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // ─── LOGIN HANDLER ───
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
-      // Conectamos con el backend a través del Gateway en NestJS
+      
       const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",  // ⚠️ necesario para enviar/recibir cookies HttpOnly
+        credentials: "include",  
         body: JSON.stringify({ username, password }),
       });
 
@@ -83,19 +82,19 @@ export default function LoginPage() {
         const data = await res.json();
         alert(data.message || tr("login.errorLogin"));
       }
-    } catch (err) {
+    } catch {
       alert(tr("login.errorConnect"));
     } finally {
       setLoading(false);
     }
   }
 
-  // ─── REGISTER HANDLER ───
+ 
 async function handleRegister(e: React.FormEvent) {
   e.preventDefault();
   setLoading(true);
 
-  // 1. Verificamos la URL y los datos que vamos a enviar
+ 
   console.log("🔍 [REGISTER START]");
   console.log("📍 API_URL resolvió a:", API_URL);
   console.log("🌐 URL Final de la petición:", `${API_URL}/auth/register`);
@@ -109,7 +108,7 @@ async function handleRegister(e: React.FormEvent) {
       body: JSON.stringify({ username, email, password }),
     });
 
-    // 2. Imprimimos el status HTTP y headers de la respuesta
+    
     console.log("📡 Respuesta HTTP recibida!");
     console.log("Status Code:", res.status, res.statusText);
     console.log("OK?:", res.ok);
@@ -126,7 +125,7 @@ async function handleRegister(e: React.FormEvent) {
       alert(data.message || tr("login.errorRegister"));
     }
   } catch (err) {
-    // 3. Capturamos el error exacto de la red / fetch
+    
     console.error("❌ ERROR EN FETCH (CAUGHT IN CATCH):");
     console.error(err);
     alert(tr("login.errorRegisterConnect"));
@@ -151,7 +150,7 @@ async function handleRegister(e: React.FormEvent) {
         <div style={{ ...styles.glow1, background: t.glow1 }} />
         <div style={{ ...styles.glow2, background: t.glow2 }} />
 
-        {/* THEME TOGGLE */}
+        { }
         <button
           onClick={() => setIsDark(!isDark)}
           style={{ ...styles.themeToggle, ...t.toggleStyle }}
@@ -169,15 +168,15 @@ async function handleRegister(e: React.FormEvent) {
           )}
         </button>
 
-        {/* CARD */}
+        { }
         <form
           onSubmit={isRegistering ? handleRegister : handleLogin}
           style={{ ...styles.card, ...t.cardStyle }}
         >
-          {/* VERSION TAG */}
+          { }
           <div style={{ ...styles.tag, ...t.tagStyle }}>v1.0.1</div>
 
-          {/* LOGO */}
+          { }
           <div style={styles.logoRow}>
             <div style={{ ...styles.logoIcon, background: t.logoIconBg }}>
               <BoltIcon />
@@ -190,7 +189,7 @@ async function handleRegister(e: React.FormEvent) {
             {isRegistering ? tr("login.subtitleRegister") : tr("login.subtitleLogin")}
           </div>
 
-          {/* OAUTH — solo en login */}
+          { }
           {!isRegistering && (
             <>
               <div style={styles.oauthGrid}>
@@ -226,7 +225,7 @@ async function handleRegister(e: React.FormEvent) {
             </>
           )}
 
-          {/* CAMPO USERNAME — siempre visible */}
+          { }
           <div style={styles.field}>
             <label style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.username")}</label>
             <input
@@ -241,7 +240,7 @@ async function handleRegister(e: React.FormEvent) {
             />
           </div>
 
-          {/* CAMPO EMAIL — solo en registro */}
+          { }
           {isRegistering && (
             <div style={styles.field}>
               <label style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.email")}</label>
@@ -258,7 +257,7 @@ async function handleRegister(e: React.FormEvent) {
             </div>
           )}
 
-          {/* CAMPO PASSWORD */}
+          { }
           <div style={styles.field}>
             <label style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.password")}</label>
             <input
@@ -273,14 +272,14 @@ async function handleRegister(e: React.FormEvent) {
             />
           </div>
 
-          {/* FORGOT — solo en login */}
+          { }
           {!isRegistering && (
             <div style={styles.forgot}>
               <a href="#" style={{ ...styles.forgotLink, color: t.accent }}>{tr("login.forgotPassword")}</a>
             </div>
           )}
 
-          {/* BOTÓN PRINCIPAL */}
+          { }
           <button
             type="submit"
             disabled={loading}
@@ -303,7 +302,7 @@ async function handleRegister(e: React.FormEvent) {
             {loading ? tr("login.loading") : isRegistering ? tr("login.createAccount") : tr("login.signIn")}
           </button>
 
-          {/* TOGGLE LOGIN / REGISTER */}
+          { }
           <div style={{ ...styles.footerNote, color: t.footerColor }}>
             {isRegistering ? tr("login.alreadyHaveAccount") : tr("login.noAccount")}{" "}
             <button
@@ -333,12 +332,12 @@ async function handleRegister(e: React.FormEvent) {
   );
 }
 
-/* ─── FONTS ─── */
+ 
 const fonts = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 `;
 
-/* ─── BASE STYLES ─── */
+ 
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: "100vh",
@@ -526,7 +525,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
 };
 
-/* ─── DARK THEME ─── */
+ 
 const dark = {
   pageBg: "#020617",
   gridImg: "linear-gradient(rgba(59,130,246,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.05) 1px,transparent 1px)",
@@ -579,7 +578,7 @@ const dark = {
   } as React.CSSProperties,
 };
 
-/* ─── LIGHT THEME ─── */
+ 
 const light = {
   pageBg: "linear-gradient(145deg,#e0f7f4 0%,#dbeafe 45%,#d1fae5 100%)",
   gridImg: "linear-gradient(rgba(6,182,212,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,0.07) 1px,transparent 1px)",

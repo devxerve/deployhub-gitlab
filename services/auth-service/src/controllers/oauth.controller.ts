@@ -5,9 +5,6 @@ import { generateToken } from '../utils/jwt';
 
 const prisma = new PrismaClient();
 
-// ============================================================
-//  HELPERS
-// ============================================================
 
 function requireEnv(name: string): string {
   const value = process.env[name];
