@@ -55,8 +55,12 @@ services:
       - "--experimental.plugins.modsecurity.moduleName=github.com/acouvreur/traefik-modsecurity-plugin"
       - "--experimental.plugins.modsecurity.version=v1.3.0"
     ports:
-      - "80:80"
-      - "443:443"
+      # Host-side ports are unprivileged (>1024) so `docker compose up` works
+      # without root/sudo or CAP_NET_BIND_SERVICE. Traefik still listens on
+      # the standard :80/:443 *inside* its own container (see entrypoints
+      # below) — only the host-facing mapping changes.
+      - "8000:80"
+      - "8443:443"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
@@ -257,10 +261,13 @@ services:
       args:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
         - NEXT_PUBLIC_AUTH_SERVICE_URL=${NEXT_PUBLIC_AUTH_SERVICE_URL}
+        - NEXT_PUBLIC_GRAFANA_URL=${NEXT_PUBLIC_GRAFANA_URL}
     container_name: frontend
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXT_PUBLIC_AUTH_SERVICE_URL=${NEXT_PUBLIC_AUTH_SERVICE_URL}
+      - NEXT_PUBLIC_GRAFANA_URL=${NEXT_PUBLIC_GRAFANA_URL}
+      - APP_BASE_URL=${APP_BASE_URL}
       - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
     labels:
       - "traefik.enable=true"

@@ -15,7 +15,7 @@ async function bootstrap(): Promise<void> {
   app.use(cookieParser());
 
   const allowedOrigins = (
-    process.env.CORS_ORIGINS ?? "https://localhost,http://localhost:3000"
+    process.env.CORS_ORIGINS ?? "https://localhost:8443,http://localhost:3000"
   )
     .split(",")
     .map((origin) => origin.trim())

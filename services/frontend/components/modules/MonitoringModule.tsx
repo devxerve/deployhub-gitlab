@@ -14,7 +14,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-const GRAFANA_URL = "https://grafana.localhost";
+const GRAFANA_URL = process.env.NEXT_PUBLIC_GRAFANA_URL || "https://grafana.localhost:8443";
 
 function formatBytes(bytes: number | null): string {
   if (bytes == null || bytes === 0) return "0 B";
