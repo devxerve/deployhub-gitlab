@@ -52,7 +52,6 @@ onMouseLeave={(e) => {
 	e.currentTarget.style.transform = "translateY(0px) scale(1)";
 }}
 		>
-			{ }
 			<div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
 				<div
 					style={{
@@ -82,7 +81,6 @@ onMouseLeave={(e) => {
 				</span>
 			</div>
 
-			{ }
 			<div style={{ marginTop: "10px" }}>
 				<svg width="100%" height="40">
 					<defs>
@@ -125,7 +123,6 @@ onMouseLeave={(e) => {
 				</svg>
 			</div>
 
-			{ }
 			<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
 				<svg height={90} width={90}>
 					<circle
@@ -165,7 +162,6 @@ onMouseLeave={(e) => {
 				</div>
 			</div>
 
-			{ }
 			<div style={{ marginTop: "16px", display: "flex", alignItems: "center", gap: "5px" }}>
 				{trend === "up" ? (
 					<ArrowUp size={16} color={color} />

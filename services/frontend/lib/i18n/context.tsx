@@ -58,7 +58,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         setLanguageState(stored);
       }
     } catch {
-      // localStorage unavailable — keep default language.
+
     }
   }, 0);
 
@@ -70,7 +70,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     try {
       window.localStorage.setItem(STORAGE_KEY, next);
     } catch {
-       
+
     }
   }, []);
 

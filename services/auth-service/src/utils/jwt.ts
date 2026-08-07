@@ -1,20 +1,48 @@
-import jwt from 'jsonwebtoken';
+import jwt, { type JwtPayload, type SignOptions } from 'jsonwebtoken';
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET no está definido');
 }
 
-const JWT_SECRET: string = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN: any = process.env.JWT_EXPIRES_IN;
+export interface AuthTokenPayload {
+  user_id: string | number;
+  username: string;
+  role: string | null;
+}
 
-export const generateToken = (payload: object): string => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN ?? '1d') as SignOptions['expiresIn'];
+
+const isAuthTokenPayload = (
+  value: JwtPayload,
+): value is JwtPayload & AuthTokenPayload => {
+  return (
+    (typeof value.user_id === 'string' || typeof value.user_id === 'number') &&
+    typeof value.username === 'string' &&
+    (value.role === null || typeof value.role === 'string')
+  );
 };
 
-export const verifyToken = (token: string): any => {
+export const generateToken = (payload: AuthTokenPayload): string => {
+  return jwt.sign(payload, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  });
+};
+
+export const verifyToken = (token: string): AuthTokenPayload | null => {
   try {
-    return jwt.verify(token, JWT_SECRET);
-  } catch (error) {
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    if (typeof decoded === 'string' || !isAuthTokenPayload(decoded)) {
+      return null;
+    }
+
+    return {
+      user_id: decoded.user_id,
+      username: decoded.username,
+      role: decoded.role,
+    };
+  } catch {
     return null;
   }
 };

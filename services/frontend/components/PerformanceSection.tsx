@@ -16,7 +16,6 @@ export default function PerformanceSection() {
 				overflow: "hidden"
 			}}
 		>
-			{ }
 			<div
 				style={{
 					position: "absolute",
@@ -30,7 +29,6 @@ export default function PerformanceSection() {
 				}}
 			/>
 
-			{ }
 			<div
 				style={{
 					display: "flex",
@@ -41,7 +39,6 @@ export default function PerformanceSection() {
 					zIndex: 1
 				}}
 			>
-				{ }
 				<div>
 					<h2
 						style={{
@@ -65,7 +62,6 @@ export default function PerformanceSection() {
 					</p>
 				</div>
 
-				{ }
 				<select
 					style={{
 						background: "var(--sidebar)",
@@ -86,7 +82,6 @@ export default function PerformanceSection() {
 				</select>
 			</div>
 
-			{ }
 			<div
 				style={{
 					display: "flex",
@@ -97,7 +92,6 @@ export default function PerformanceSection() {
 					zIndex: 1
 				}}
 			>
-				{ }
 				<div
 					style={{
 						display: "flex",
@@ -125,7 +119,6 @@ export default function PerformanceSection() {
 					</span>
 				</div>
 
-				{ }
 				<div
 					style={{
 						display: "flex",
@@ -154,7 +147,6 @@ export default function PerformanceSection() {
 				</div>
 			</div>
 
-			{ }
 			<div
 				style={{
 					background: "rgba(255,255,255,0.02)",
@@ -168,7 +160,6 @@ export default function PerformanceSection() {
 				<PerformanceChart />
 			</div>
 
-			{ }
 			<div
 				style={{
 					display: "grid",

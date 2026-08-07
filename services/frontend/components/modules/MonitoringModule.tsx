@@ -43,9 +43,9 @@ export function MonitoringModule({ t }: { t: Theme }) {
           setOverview(o);
           setHistory(h);
         }
-      } catch (err) {
-        console.error("Failed to load monitoring metrics", err);
-      }
+      } catch {
+  return;
+}
     };
     fetchMetrics();
     const interval = setInterval(fetchMetrics, 5000);
@@ -66,7 +66,7 @@ export function MonitoringModule({ t }: { t: Theme }) {
   const metrics = [
     { label: tr("monitoring.cpuUsage"),    value: `${Math.round(live.cpuPct || 0)}%`,    sub: tr("monitoring.systemAvg"),    color: "#3b82f6", w: live.cpuPct || 0 },
     { label: tr("monitoring.memory"),       value: `${Math.round(live.memPct || 0)}%`,    sub: `${formatBytes(live.memUsedBytes)} / ${formatBytes(live.memLimitBytes)}`, color: "#a855f7", w: live.memPct || 0 },
-    { label: tr("monitoring.networkIO"),  value: `${formatBytes(live.netIoBytesPerSec)}/s`, sub: "eth0", color: "#22c55e", w: Math.min(100, ((live.netIoBytesPerSec || 0) / (100 * 1024 * 1024)) * 100) }, // arbitrary 100MB max for bar
+    { label: tr("monitoring.networkIO"),  value: `${formatBytes(live.netIoBytesPerSec)}/s`, sub: "eth0", color: "#22c55e", w: Math.min(100, ((live.netIoBytesPerSec || 0) / (100 * 1024 * 1024)) * 100) },
     { label: tr("monitoring.requestsPerMin"), value: String(Math.round(live.requestsPerMin || 0)),  sub: tr("monitoring.apiTraffic"),   color: "#06b6d4", w: Math.min(100, (live.requestsPerMin || 0) / 20) },
     { label: tr("monitoring.latencyP95"),  value: `${Math.round(live.latencyP95Ms || 0)}ms`,   sub: tr("monitoring.sla"),    color: "#f59e0b", w: Math.min(100, (live.latencyP95Ms || 0) / 2) },
     { label: tr("monitoring.uptime"),       value: formatUptime(live.uptimeSeconds || 0), sub: tr("monitoring.hostSystem"),   color: "#22c55e", w: 100 },
@@ -74,7 +74,6 @@ export function MonitoringModule({ t }: { t: Theme }) {
 
   return (
     <div>
-      { }
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16, marginBottom: 20 }}>
         {metrics.map((m) => (
           <Card key={m.label} t={t} style={{ padding: 18 }}>
@@ -86,7 +85,6 @@ export function MonitoringModule({ t }: { t: Theme }) {
         ))}
       </div>
 
-      { }
       <Card t={t} style={{ marginBottom: 20 }}>
         <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>{tr("monitoring.resourceUsage")}</h3>
         <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
@@ -100,7 +98,6 @@ export function MonitoringModule({ t }: { t: Theme }) {
         <MetricsChart t={t} data={history} />
       </Card>
 
-      { }
       <Card t={t}>
         <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>{tr("monitoring.activeAlerts")}</h3>
         {[

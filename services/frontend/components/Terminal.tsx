@@ -65,7 +65,6 @@ export default function Terminal() {
         animation: "fadeIn 0.5s ease"
       }}
     >
-      { }
       <div
         style={{
           height: "52px",
@@ -83,7 +82,6 @@ export default function Terminal() {
           padding: "0 18px"
         }}
       >
-        { }
         <div
           style={{
             display: "flex",
@@ -119,7 +117,6 @@ export default function Terminal() {
           />
         </div>
 
-        { }
         <span
           style={{
             color: "var(--muted)",
@@ -131,7 +128,6 @@ export default function Terminal() {
           {tr("terminal.title")}
         </span>
 
-        { }
         <div
           style={{
             color: "#22c55e",
@@ -157,7 +153,6 @@ export default function Terminal() {
         </div>
       </div>
 
-      { }
       <div
         style={{
           padding: "20px",
@@ -218,7 +213,6 @@ export default function Terminal() {
           );
         })}
 
-        { }
         <div
           style={{
             display: "flex",
@@ -266,7 +260,6 @@ export default function Terminal() {
         </div>
       </div>
 
-      { }
       <div
         style={{
           borderTop: "1px solid var(--border)",

@@ -50,7 +50,6 @@ const title = titles[pathname] || "Dashboard";
         boxShadow: "var(--shadow)"
       }}
     >
-      { }
      <div
   style={{
     display: "flex",
@@ -58,7 +57,6 @@ const title = titles[pathname] || "Dashboard";
     gap: "18px"
   }}
 >
-  { }
   <div
     style={{
       width: "42px",
@@ -75,7 +73,6 @@ const title = titles[pathname] || "Dashboard";
     <Menu size={18} color="var(--text)" />
   </div>
 
-  {  }
   <div>
     <h1
       style={{
@@ -98,7 +95,6 @@ const title = titles[pathname] || "Dashboard";
     </span>
   </div>
 
-  { }
   <div
     style={{
       display: "flex",
@@ -139,7 +135,6 @@ onBlur={(e) =>
         </div>
       </div>
 
-      { }
       <div
         style={{
           display: "flex",
@@ -147,7 +142,6 @@ onBlur={(e) =>
           gap: "14px"
         }}
       >
-        { }
         <div
           style={{
             display: "flex",
@@ -179,7 +173,6 @@ onBlur={(e) =>
           </span>
         </div>
 
-        { }
         <div
           style={{
             width: "42px",
@@ -202,7 +195,6 @@ onBlur={(e) =>
         >
           <Bell size={18} color="var(--text)" />
 
-          { }
           <div
             style={{
               position: "absolute",
@@ -221,7 +213,6 @@ onBlur={(e) =>
           />
         </div>
 
-        { }
         <div
           style={{
             display: "flex",

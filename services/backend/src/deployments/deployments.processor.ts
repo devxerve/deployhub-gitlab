@@ -139,7 +139,6 @@ export class DeploymentsProcessor {
         `Step 3/3: Starting container...`,
       );
 
-     
       const port = await this.deploymentsService.getAvailablePort();
       await this.deploymentsService.savePort(id, port);
       await this.dockerUtil.runContainer(id, port);

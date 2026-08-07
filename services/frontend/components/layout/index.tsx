@@ -125,7 +125,6 @@ export function Sidebar({
           )}
         </div>
 
-        { }
         <nav aria-label={tr("sidebar.mainNav")} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <nav
             style={{
@@ -176,7 +175,6 @@ export function Sidebar({
         </nav>
       </div>
 
-      { }
       <div
         style={{
           background: t.card,
@@ -829,15 +827,11 @@ export function DashboardShell({
       method: "POST",
       credentials: "include",
     });
-  } catch (error) {
-    console.error(
-      "Unable to close session:",
-      error,
-    );
-  } finally {
-    router.replace("/login");
-    router.refresh();
-  }
+  } catch {
+} finally {
+  router.replace("/login");
+  router.refresh();
+}
 }
 
 

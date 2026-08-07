@@ -68,11 +68,11 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      
+
       const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",  
+        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
 
@@ -89,16 +89,11 @@ export default function LoginPage() {
     }
   }
 
- 
+
 async function handleRegister(e: React.FormEvent) {
   e.preventDefault();
   setLoading(true);
 
- 
-  console.log("🔍 [REGISTER START]");
-  console.log("📍 API_URL resolvió a:", API_URL);
-  console.log("🌐 URL Final de la petición:", `${API_URL}/auth/register`);
-  console.log("📦 Body enviado:", { username, email, password });
 
   try {
     const res = await fetch(`${API_URL}/auth/register`, {
@@ -108,29 +103,24 @@ async function handleRegister(e: React.FormEvent) {
       body: JSON.stringify({ username, email, password }),
     });
 
-    
-    console.log("📡 Respuesta HTTP recibida!");
-    console.log("Status Code:", res.status, res.statusText);
-    console.log("OK?:", res.ok);
+
+
 
     if (res.ok) {
-      console.log("✅ Registro exitoso en el servidor");
+
       alert(tr("login.registerSuccess"));
       setIsRegistering(false);
       setPassword("");
       setEmail("");
     } else {
       const data = await res.json();
-      console.warn("⚠️ El backend respondió con error (HTTP 4xx/5xx):", data);
+
       alert(data.message || tr("login.errorRegister"));
     }
-  } catch (err) {
-    
-    console.error("❌ ERROR EN FETCH (CAUGHT IN CATCH):");
-    console.error(err);
-    alert(tr("login.errorRegisterConnect"));
-  } finally {
-    console.log("🏁 [REGISTER END]\n--------------------");
+  } catch {
+  alert(tr("login.errorRegisterConnect"));
+} finally {
+
     setLoading(false);
   }
 }
@@ -143,14 +133,11 @@ async function handleRegister(e: React.FormEvent) {
       <style>{fonts}</style>
       <div style={{ ...styles.page, background: t.pageBg, fontFamily: "'Space Grotesk', sans-serif" }}>
 
-        {/* GRID */}
         <div style={{ ...styles.gridBg, backgroundImage: t.gridImg }} />
 
-        {/* GLOWS */}
         <div style={{ ...styles.glow1, background: t.glow1 }} />
         <div style={{ ...styles.glow2, background: t.glow2 }} />
 
-        { }
         <button
           onClick={() => setIsDark(!isDark)}
           style={{ ...styles.themeToggle, ...t.toggleStyle }}
@@ -168,15 +155,12 @@ async function handleRegister(e: React.FormEvent) {
           )}
         </button>
 
-        { }
         <form
           onSubmit={isRegistering ? handleRegister : handleLogin}
           style={{ ...styles.card, ...t.cardStyle }}
         >
-          { }
           <div style={{ ...styles.tag, ...t.tagStyle }}>v1.0.1</div>
 
-          { }
           <div style={styles.logoRow}>
             <div style={{ ...styles.logoIcon, background: t.logoIconBg }}>
               <BoltIcon />
@@ -189,7 +173,6 @@ async function handleRegister(e: React.FormEvent) {
             {isRegistering ? tr("login.subtitleRegister") : tr("login.subtitleLogin")}
           </div>
 
-          { }
           {!isRegistering && (
             <>
               <div style={styles.oauthGrid}>
@@ -225,7 +208,6 @@ async function handleRegister(e: React.FormEvent) {
             </>
           )}
 
-          { }
           <div style={styles.field}>
             <label style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.username")}</label>
             <input
@@ -240,7 +222,6 @@ async function handleRegister(e: React.FormEvent) {
             />
           </div>
 
-          { }
           {isRegistering && (
             <div style={styles.field}>
               <label style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.email")}</label>
@@ -257,7 +238,6 @@ async function handleRegister(e: React.FormEvent) {
             </div>
           )}
 
-          { }
           <div style={styles.field}>
             <label style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.password")}</label>
             <input
@@ -272,14 +252,12 @@ async function handleRegister(e: React.FormEvent) {
             />
           </div>
 
-          { }
           {!isRegistering && (
             <div style={styles.forgot}>
               <a href="#" style={{ ...styles.forgotLink, color: t.accent }}>{tr("login.forgotPassword")}</a>
             </div>
           )}
 
-          { }
           <button
             type="submit"
             disabled={loading}
@@ -302,7 +280,6 @@ async function handleRegister(e: React.FormEvent) {
             {loading ? tr("login.loading") : isRegistering ? tr("login.createAccount") : tr("login.signIn")}
           </button>
 
-          { }
           <div style={{ ...styles.footerNote, color: t.footerColor }}>
             {isRegistering ? tr("login.alreadyHaveAccount") : tr("login.noAccount")}{" "}
             <button
@@ -332,12 +309,12 @@ async function handleRegister(e: React.FormEvent) {
   );
 }
 
- 
+
 const fonts = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 `;
 
- 
+
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: "100vh",
@@ -525,7 +502,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
 };
 
- 
+
 const dark = {
   pageBg: "#020617",
   gridImg: "linear-gradient(rgba(59,130,246,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.05) 1px,transparent 1px)",
@@ -578,7 +555,7 @@ const dark = {
   } as React.CSSProperties,
 };
 
- 
+
 const light = {
   pageBg: "linear-gradient(145deg,#e0f7f4 0%,#dbeafe 45%,#d1fae5 100%)",
   gridImg: "linear-gradient(rgba(6,182,212,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,0.07) 1px,transparent 1px)",

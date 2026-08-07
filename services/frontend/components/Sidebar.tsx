@@ -25,13 +25,10 @@ interface MenuItemProps {
 function NeonLogo() {
 	return (
 		<svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org" style={{ filter: "drop-shadow(0 0 5px rgba(56, 189, 248, 0.6))" }}>
-			{ }
 			<path d="M12 21L4 16.5V7.5L12 3L20 7.5V16.5L12 21Z" fill="#3b82f6" fillOpacity="0.3" stroke="#3b82f6" strokeWidth="1"/>
 			
-			{ }
 			<path d="M12 15L6 11.5V6.5L12 3L18 6.5V11.5L12 15Z" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" style={{ filter: "drop-shadow(0 0 3px #00d9ff)" }}/>
 			
-			{ }
 			<path d="M12 3V15M6 6.5L12 10L18 6.5" stroke="#020617" strokeWidth="0.5" opacity="0.5"/>
 		</svg>
 	);
@@ -96,7 +93,6 @@ const menu = [
         backdropFilter: "blur(14px)",
 			}}
 		>
-			{ }
 <div>
 	<div style={{ 
 		display: "flex", 
@@ -130,7 +126,6 @@ const menu = [
 				</div>
 			</div>
 
-			{ }
 			<div style={{
 				display: "flex",
 				alignItems: "center",
@@ -196,7 +191,6 @@ function MenuItem({
             : "none",
       }}
     >
-      { }
       <div
         style={{
           color: active || isHovered
@@ -210,7 +204,6 @@ function MenuItem({
         {icon}
       </div>
 
-      { }
       <span
         style={{
           fontSize: "14px",

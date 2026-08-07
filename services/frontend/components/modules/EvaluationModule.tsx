@@ -25,7 +25,6 @@ export function EvaluationModule({ t }: { t: Theme }) {
 
   return (
     <div>
-      { }
       <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
         {PROJECTS.map((p) => (
           <button key={p.id} onClick={() => setSelected(p)} style={{
@@ -40,7 +39,6 @@ export function EvaluationModule({ t }: { t: Theme }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 20 }}>
-        { }
         <Card t={t} style={{ textAlign: "center" }}>
           <div style={{ fontSize: 12, color: t.muted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>{tr("evaluation.globalScore")}</div>
           <div style={{ fontSize: 80, fontWeight: 700, color: gradeColor, lineHeight: 1, marginBottom: 8 }}>{s.overall}</div>
@@ -49,7 +47,6 @@ export function EvaluationModule({ t }: { t: Theme }) {
         </Card>
 
         <div>
-          { }
           <Card t={t} style={{ marginBottom: 16 }}>
             <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>{tr("evaluation.scoreBreakdown")}</h3>
             {dims.map((d) => (
@@ -63,7 +60,6 @@ export function EvaluationModule({ t }: { t: Theme }) {
             ))}
           </Card>
 
-          { }
           <Card t={t}>
             <h3
               style={{

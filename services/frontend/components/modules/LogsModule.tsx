@@ -57,7 +57,6 @@ export function LogsModule({ t }: { t: Theme }) {
 
   return (
     <div>
-      { }
       <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
         <div
           style={{
@@ -157,7 +156,6 @@ export function LogsModule({ t }: { t: Theme }) {
                   })}
         </div>
 
-        { }
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${t.border}` }}>
           <span style={{ fontSize: 12, color: t.muted }}>
             {tr("logs.showing", { from: (page - 1) * PER_PAGE + 1, to: Math.min(page * PER_PAGE, filtered.length), total: filtered.length })}

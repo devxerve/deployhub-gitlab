@@ -118,7 +118,6 @@ export function PipelineModule({ t }: { t: Theme }) {
         </button>
       </div>
 
-      { }
       <Card t={t} style={{ marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 0, overflowX: "auto", paddingBottom: 8 }}>
           {stagesView.map((st, i) => {
@@ -180,7 +179,6 @@ export function PipelineModule({ t }: { t: Theme }) {
         </div>
       </Card>
 
-      { }
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16 }}>
         {stagesView.map((st) => {
           const c = stageColor(st.status); const StageIcon = STAGE_ICONS[st.id] ?? PackageCheck;

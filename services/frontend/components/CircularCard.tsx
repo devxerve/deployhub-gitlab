@@ -34,7 +34,6 @@ export default function CircularCard({
 
       <div style={{ position: "relative", marginTop: "10px" }}>
         <svg height={100} width={100}>
-          {/* fondo */}
           <circle
             stroke="#1e293b"
             fill="transparent"
@@ -44,7 +43,6 @@ export default function CircularCard({
             cy="50"
           />
 
-          { }
           <circle
             stroke={color}
             fill="transparent"
@@ -61,7 +59,6 @@ export default function CircularCard({
           />
         </svg>
 
-        { }
         <div
           style={{
             position: "absolute",

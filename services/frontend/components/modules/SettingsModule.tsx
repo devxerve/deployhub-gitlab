@@ -177,7 +177,6 @@ export function SettingsModule({ t }: { t: Theme }) {
 
   return (
     <div>
-      { }
       <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
         {SETTINGS_TABS.map((tabItem) => {
             const Icon = tabItem.icon;
@@ -217,7 +216,6 @@ export function SettingsModule({ t }: { t: Theme }) {
           })}
       </div>
 
-      { }
       {tab === "users" && (
         <Card t={t}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -259,7 +257,6 @@ export function SettingsModule({ t }: { t: Theme }) {
         </Card>
       )}
 
-      { }
       {tab === "tokens" && (
         <Card t={t}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -299,7 +296,6 @@ export function SettingsModule({ t }: { t: Theme }) {
         </Card>
       )}
 
-      { }
       {tab === "notifs" && (
         <Card t={t}>
           <h3 style={{ margin: "0 0 16px", color: t.text, fontSize: 15, fontWeight: 600 }}>{tr("settings.notifs.title")}</h3>
@@ -331,7 +327,6 @@ export function SettingsModule({ t }: { t: Theme }) {
         </Card>
       )}
 
-      { }
 {tab === "integrations" && (
   <div
     style={{
@@ -432,7 +427,6 @@ export function SettingsModule({ t }: { t: Theme }) {
   </div>
 )}
 
-      { }
       {tab === "env" && (
         <Card t={t}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -466,7 +460,6 @@ export function SettingsModule({ t }: { t: Theme }) {
           ))}
         </Card>
       )}
-      { }
       {tab === "privacy" && (
         <Card t={t}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18, gap: 12, flexWrap: "wrap" }}>

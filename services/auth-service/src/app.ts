@@ -23,6 +23,4 @@ app.get('/health', (req, res) => {
 
 const PORT = process.env.PORT_AUTH_SERVICE;
 
-app.listen(PORT, () => {
-  console.log(`Auth service running on port ${PORT}`);
-});
+app.listen(PORT);
