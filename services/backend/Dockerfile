@@ -21,7 +21,7 @@ COPY prisma ./prisma/
 RUN npm ci --omit=dev
 RUN npx prisma generate
 COPY --from=builder /app/dist ./dist
-RUN mkdir -p /app/tmp
+RUN mkdir -p /tmp/transcendence-deploys
 
 EXPOSE 3001
 CMD ["sh", "-c", "npx prisma db push && node dist/main.js"]

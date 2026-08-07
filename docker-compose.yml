@@ -121,7 +121,13 @@ services:
       - "traefik.http.middlewares.strip-api-backend.stripprefix.prefixes=/api/backend"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # DooD
-      - /app/tmp:/app/tmp                          # shared with host docker daemon
+      # DEPLOY_TMP_DIR (services/backend/.env) must match this path on BOTH
+      # sides: this container clones/builds here, then asks the *host*
+      # dockerd (via the socket above) to build/run from that same path, so
+      # the path has to exist for real on the host too. /tmp is used
+      # (instead of e.g. /app/tmp) because it's world-writable — no root/sudo
+      # needed to create it, unlike a path directly under /.
+      - /tmp/transcendence-deploys:/tmp/transcendence-deploys
     depends_on:
       db:
         condition: service_healthy
