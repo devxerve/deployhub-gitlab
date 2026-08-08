@@ -63,7 +63,7 @@ services:
       - "8443:443"
       - "8080:8080"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "${DOCKER_SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock:ro"
       - "./services/infra/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro"
       - "./services/infra/traefik/certs:/etc/traefik/certs:ro"
     labels: []
@@ -120,7 +120,7 @@ services:
       - "traefik.http.routers.backend-local.middlewares=strip-api-backend,waf@docker"
       - "traefik.http.middlewares.strip-api-backend.stripprefix.prefixes=/api/backend"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock  # DooD
+      - ${DOCKER_SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock  # DooD
       # DEPLOY_TMP_DIR (services/backend/.env) must match this path on BOTH
       # sides: this container clones/builds here, then asks the *host*
       # dockerd (via the socket above) to build/run from that same path, so
