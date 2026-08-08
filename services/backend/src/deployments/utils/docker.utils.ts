@@ -47,8 +47,42 @@ export class DockerUtil {
     });
   }
 
+  async detectImagePort(id: string): Promise<number> {
+    return new Promise((resolve) => {
+      const child = spawn("docker", [
+        "image",
+        "inspect",
+        `image-${id}`,
+        "--format",
+        "{{json .Config.ExposedPorts}}",
+      ]);
+      let output = "";
+      child.stdout.on("data", (data) => {
+        output += data.toString();
+      });
+      child.on("close", () => {
+        try {
+          const ports = JSON.parse(output.trim());
+          if (ports && typeof ports === "object") {
+            const keys = Object.keys(ports);
+            if (keys.length > 0) {
+              const firstPort = parseInt(keys[0].split("/")[0], 10);
+              if (Number.isFinite(firstPort) && firstPort > 0) {
+                resolve(firstPort);
+                return;
+              }
+            }
+          }
+        } catch {}
+        resolve(3000);
+      });
+      child.on("error", () => resolve(3000));
+    });
+  }
+
   async runContainer(id: string, port: number): Promise<void> {
     void port;
+    const targetPort = await this.detectImagePort(id);
 
     return new Promise((resolve, reject) => {
       const netWorkName = process.env.DOCKER_NETWORK_NAME || "paas_network";
@@ -71,7 +105,7 @@ export class DockerUtil {
         "--label",
         `traefik.http.routers.deploy-${id}.tls=true`,
         "--label",
-        `traefik.http.services.deploy-${id}.loadbalancer.server.port=3000`,
+        `traefik.http.services.deploy-${id}.loadbalancer.server.port=${targetPort}`,
         "--env-file",
         `${workDir}/.env`,
         `image-${id}`,

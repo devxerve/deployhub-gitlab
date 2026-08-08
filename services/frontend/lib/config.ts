@@ -9,8 +9,9 @@ export const AUTH_SERVICE_URL =
 // DockerUtil.runContainer), so its URL needs the same port as everything
 // else. Derived from API_URL instead of hardcoded so it stays in sync if
 // the port is ever changed again.
-const httpsPort = new URL(API_URL).port;
-
 export function deploySiteUrl(deployId: string): string {
-  return `https://${deployId}.localhost${httpsPort ? `:${httpsPort}` : ""}`;
+  if (typeof window !== "undefined" && window.location.port) {
+    return `https://${deployId}.localhost:${window.location.port}`;
+  }
+  return `https://${deployId}.localhost:8443`;
 }
