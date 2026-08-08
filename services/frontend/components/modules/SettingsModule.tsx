@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import type { Theme } from "@/lib/themes";
-import { Card, Badge, Btn, Modal, TextInput } from "@/components/ui";
+import { Card, Badge, Btn, ConfirmDialog, Modal, TextInput } from "@/components/ui";
 import { registerUser } from "@/lib/api";
+import { useNotifications } from "@/lib/notifications";
 import { useTranslation, type TranslateFn } from "@/lib/i18n/context";
 
 import {
+  FileText,
   Info,
   Plus,
   ShieldCheck,
@@ -15,7 +17,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-type TabId = "users" | "about" | "privacy";
+type TabId = "users" | "about" | "terms" | "privacy";
 
 const SETTINGS_TABS: Array<{
   id: TabId;
@@ -33,13 +35,18 @@ const SETTINGS_TABS: Array<{
     icon: Info,
   },
   {
+    id: "terms",
+    labelKey: "settings.tabs.terms",
+    icon: FileText,
+  },
+  {
     id: "privacy",
     labelKey: "settings.tabs.privacy",
     icon: ShieldCheck,
   },
 ];
 
-const NON_ADMIN_TAB_IDS: TabId[] = ["about", "privacy"];
+const NON_ADMIN_TAB_IDS: TabId[] = ["about", "terms", "privacy"];
 
 const EMPTY_FORM = { username: "", email: "", password: "" };
 
@@ -100,6 +107,48 @@ function getPrivacySections(tr: TranslateFn): Array<{ title: string; body: strin
   ];
 }
 
+function getTermsSections(tr: TranslateFn): Array<{ title: string; body: string[] }> {
+  return [
+    {
+      title: tr("settings.terms.s1.title"),
+      body: [
+        tr("settings.terms.s1.b1"),
+        tr("settings.terms.s1.b2"),
+      ],
+    },
+    {
+      title: tr("settings.terms.s2.title"),
+      body: [
+        tr("settings.terms.s2.b1"),
+        tr("settings.terms.s2.b2"),
+        tr("settings.terms.s2.b3"),
+      ],
+    },
+    {
+      title: tr("settings.terms.s3.title"),
+      body: [
+        tr("settings.terms.s3.b1"),
+        tr("settings.terms.s3.b2"),
+        tr("settings.terms.s3.b3"),
+      ],
+    },
+    {
+      title: tr("settings.terms.s4.title"),
+      body: [
+        tr("settings.terms.s4.b1"),
+        tr("settings.terms.s4.b2"),
+      ],
+    },
+    {
+      title: tr("settings.terms.s5.title"),
+      body: [
+        tr("settings.terms.s5.b1"),
+        tr("settings.terms.s5.b2"),
+      ],
+    },
+  ];
+}
+
 export function SettingsModule({
   t,
   isAdmin = false,
@@ -110,15 +159,18 @@ export function SettingsModule({
   currentUserId?: string | null;
 }) {
   const { t: tr } = useTranslation();
+  const { addNotification } = useNotifications();
   const visibleTabs = isAdmin
     ? SETTINGS_TABS
     : SETTINGS_TABS.filter((tabItem) => NON_ADMIN_TAB_IDS.includes(tabItem.id));
   const [tab, setTab] = useState<TabId>(isAdmin ? "users" : "about");
   const privacySections = getPrivacySections(tr);
+  const termsSections = getTermsSections(tr);
 
   const [members, setMembers] = useState<TeamMember[] | null>(null);
   const [membersError, setMembersError] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<TeamMember | null>(null);
 
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -147,9 +199,17 @@ export function SettingsModule({
     setCreating(true);
     try {
       await registerUser(form);
+      const username = form.username;
       setForm(EMPTY_FORM);
       setShowCreate(false);
       await loadMembers();
+      addNotification({
+        type: "success",
+        titleKey: "notif.userCreatedTitle",
+        bodyKey: "notif.userCreatedBody",
+        bodyVars: { user: username },
+        timeKey: "common.time.justNow",
+      });
     } catch (error) {
       setFormError(error instanceof Error ? error.message : tr("settings.users.form.error"));
     } finally {
@@ -157,8 +217,14 @@ export function SettingsModule({
     }
   }
 
-  async function handleDelete(member: TeamMember) {
-    if (!window.confirm(tr("settings.users.deleteConfirm", { name: member.username }))) return;
+  function requestDelete(member: TeamMember) {
+    setPendingDelete(member);
+  }
+
+  async function confirmDelete() {
+    const member = pendingDelete;
+    if (!member) return;
+    setPendingDelete(null);
 
     setDeleteError(null);
     try {
@@ -168,6 +234,13 @@ export function SettingsModule({
       });
       if (!res.ok) throw new Error("failed");
       setMembers((current) => current?.filter((item) => item.user_id !== member.user_id) ?? null);
+      addNotification({
+        type: "info",
+        titleKey: "notif.userDeletedTitle",
+        bodyKey: "notif.userDeletedBody",
+        bodyVars: { user: member.username },
+        timeKey: "common.time.justNow",
+      });
     } catch {
       setDeleteError(tr("settings.users.deleteError"));
     }
@@ -278,7 +351,7 @@ export function SettingsModule({
                   color={isMemberAdmin ? t.accent : t.success}
                 />
                 <button
-                  onClick={() => handleDelete(member)}
+                  onClick={() => requestDelete(member)}
                   disabled={isSelf}
                   title={isSelf ? tr("settings.users.selfDeleteTitle") : tr("settings.users.delete")}
                   aria-label={tr("settings.users.deleteConfirm", { name: member.username })}
@@ -318,6 +391,33 @@ export function SettingsModule({
 
           <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${t.border}`, color: t.muted, fontSize: 12 }}>
             {tr("settings.about.stack")}
+          </div>
+        </Card>
+      )}
+
+      {tab === "terms" && (
+        <Card t={t}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18, gap: 12, flexWrap: "wrap" }}>
+            <div>
+              <h3 style={{ margin: 0, color: t.text, fontSize: 15, fontWeight: 600 }}>{tr("settings.terms.title")}</h3>
+              <p style={{ margin: "4px 0 0", color: t.muted, fontSize: 12 }}>{tr("settings.terms.subtitle")}</p>
+            </div>
+            <Badge label={tr("settings.terms.lastUpdated", { date: "2026-08-08" })} color={t.muted} />
+          </div>
+
+          {termsSections.map((section) => (
+            <div key={section.title} style={{ marginBottom: 20 }}>
+              <h4 style={{ margin: "0 0 8px", color: t.text, fontSize: 13, fontWeight: 700 }}>{section.title}</h4>
+              <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
+                {section.body.map((line) => (
+                  <li key={line} style={{ color: t.muted, fontSize: 12.5, lineHeight: 1.6 }}>{line}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          <div style={{ paddingTop: 12, borderTop: `1px solid ${t.border}`, color: t.muted, fontSize: 12 }}>
+            {tr("settings.terms.contact")}
           </div>
         </Card>
       )}
@@ -376,6 +476,18 @@ export function SettingsModule({
             </Btn>
           </div>
         </Modal>
+      )}
+
+      {pendingDelete && (
+        <ConfirmDialog
+          t={t}
+          title={tr("settings.users.delete")}
+          message={tr("settings.users.deleteConfirm", { name: pendingDelete.username })}
+          confirmLabel={tr("common.delete")}
+          cancelLabel={tr("common.cancel")}
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={confirmDelete}
+        />
       )}
     </div>
   );

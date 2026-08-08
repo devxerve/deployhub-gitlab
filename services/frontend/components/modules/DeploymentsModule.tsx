@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import type { Theme } from "@/lib/themes";
 import { statusColor } from "@/lib/themes";
-import { Badge, Bar, Btn, Card, Select } from "@/components/ui";
+import { Badge, Bar, Btn, Card, ConfirmDialog, Select } from "@/components/ui";
 import {
   createDeployment,
   deleteDeployment,
@@ -30,6 +30,7 @@ import {
 } from "@/lib/api";
 import { joinDeployRoom, onDeployLog, onDeployStatus } from "@/lib/socket";
 import { deploySiteUrl } from "@/lib/config";
+import { useNotifications } from "@/lib/notifications";
 import { useTranslation, type TranslateFn } from "@/lib/i18n/context";
 
 const STATUS_PROGRESS: Record<string, number> = {
@@ -53,6 +54,7 @@ function timeAgo(dateStr: string, tr: TranslateFn) {
 
 export function DeploymentsModule({ t }: { t: Theme }) {
   const { t: tr } = useTranslation();
+  const { addNotification } = useNotifications();
   const [deploys, setDeploys] = useState<Deploy[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selected, setSelected] = useState<Deploy | null>(null);
@@ -69,6 +71,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
   const [commitsError, setCommitsError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
   const selectedProject = projects.find((project) => project.id === projectId);
@@ -225,6 +228,13 @@ export function DeploymentsModule({ t }: { t: Theme }) {
       setDeploys((previous) => [deployment, ...previous]);
       setSelected(deployment);
       setShowForm(false);
+      addNotification({
+        type: "info",
+        titleKey: "notif.deployCreatedTitle",
+        bodyKey: "notif.deployCreatedBody",
+        bodyVars: { project: deployment.projectId },
+        timeKey: "common.time.justNow",
+      });
     } catch {
       setError(tr("deployments.createError"));
     } finally {
@@ -232,14 +242,29 @@ export function DeploymentsModule({ t }: { t: Theme }) {
     }
   }
 
-  async function handleDelete(id: string, event: React.MouseEvent) {
+  function requestDelete(id: string, event: React.MouseEvent) {
     event.stopPropagation();
-    if (!window.confirm(tr("deployments.confirmDelete"))) return;
+    setPendingDeleteId(id);
+  }
+
+  async function confirmDelete() {
+    const id = pendingDeleteId;
+    if (!id) return;
+    setPendingDeleteId(null);
+
+    const deployment = deploys.find((item) => item.id === id);
 
     try {
       await deleteDeployment(id);
-      setDeploys((previous) => previous.filter((deployment) => deployment.id !== id));
+      setDeploys((previous) => previous.filter((deploy) => deploy.id !== id));
       if (selected?.id === id) setSelected(null);
+      addNotification({
+        type: "info",
+        titleKey: "notif.deployDeletedTitle",
+        bodyKey: "notif.deployDeletedBody",
+        bodyVars: { project: deployment?.projectId ?? id },
+        timeKey: "common.time.justNow",
+      });
     } catch {
       setError(tr("deployments.deleteError"));
     }
@@ -442,7 +467,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
                 <button
                   aria-label={tr("deployments.deleteAria", { id: deployment.id })}
                   title={tr("deployments.deleteTitle")}
-                  onClick={(event) => handleDelete(deployment.id, event)}
+                  onClick={(event) => requestDelete(deployment.id, event)}
                   style={{ width: 30, height: 30, borderRadius: 7, background: "transparent", border: `1px solid ${t.border}`, color: t.muted, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
                 >
                   <Trash2 size={14} />
@@ -519,6 +544,18 @@ export function DeploymentsModule({ t }: { t: Theme }) {
             </div>
           </Card>
         </div>
+      )}
+
+      {pendingDeleteId && (
+        <ConfirmDialog
+          t={t}
+          title={tr("deployments.deleteTitle")}
+          message={tr("deployments.confirmDelete")}
+          confirmLabel={tr("common.delete")}
+          cancelLabel={tr("common.cancel")}
+          onCancel={() => setPendingDeleteId(null)}
+          onConfirm={confirmDelete}
+        />
       )}
     </div>
   );

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import type { Theme } from "@/lib/themes";
 import { statusColor } from "@/lib/themes";
-import { Badge, Btn, Card, Modal, TextInput } from "@/components/ui";
+import { Badge, Btn, Card, ConfirmDialog, Modal, TextInput } from "@/components/ui";
 import {
   createProject,
   deleteProject,
@@ -23,6 +23,7 @@ import {
   type Project,
 } from "@/lib/api";
 import { useTranslation, type TranslateFn } from "@/lib/i18n/context";
+import { useNotifications } from "@/lib/notifications";
 
 interface ProjectStats {
   status: "live" | "building" | "failing" | "idle";
@@ -68,11 +69,13 @@ const FILTER_KEYS: Record<string, string> = {
 
 export function ProjectsModule({ t }: { t: Theme }) {
   const { t: tr } = useTranslation();
+  const { addNotification } = useNotifications();
   const [projects, setProjects] = useState<Project[]>([]);
   const [deploys, setDeploys] = useState<Deploy[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [selected, setSelected] = useState<Project | null>(null);
+  const [pendingRemove, setPendingRemove] = useState<Project | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
@@ -137,23 +140,38 @@ export function ProjectsModule({ t }: { t: Theme }) {
       setProjects((current) => [project, ...current]);
       setForm(EMPTY_FORM);
       setShowCreate(false);
+      addNotification({
+        type: "success",
+        titleKey: "notif.projectCreatedTitle",
+        bodyKey: "notif.projectCreatedBody",
+        bodyVars: { project: project.name },
+        timeKey: "common.time.justNow",
+      });
     } catch (error) {
       setFormError(error instanceof Error ? error.message : tr("projects.form.error"));
     }
   }
 
-  async function handleRemove(project: Project) {
-    const hasDeployments = (statsByProject[project.id]?.totalDeploys ?? 0) > 0;
-    const question = hasDeployments
-      ? tr("projects.confirmRemoveWithDeploys", { name: project.name })
-      : tr("projects.confirmRemove", { name: project.name });
+  function requestRemove(project: Project) {
+    setPendingRemove(project);
+  }
 
-    if (!window.confirm(question)) return;
+  async function confirmRemove() {
+    const project = pendingRemove;
+    if (!project) return;
+    setPendingRemove(null);
 
     try {
       await deleteProject(project.id);
       setProjects((current) => current.filter((item) => item.id !== project.id));
       if (selected?.id === project.id) setSelected(null);
+      addNotification({
+        type: "info",
+        titleKey: "notif.projectDeletedTitle",
+        bodyKey: "notif.projectDeletedBody",
+        bodyVars: { project: project.name },
+        timeKey: "common.time.justNow",
+      });
     } catch {
       setListError(tr("projects.deleteError"));
     }
@@ -253,7 +271,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
                   <button
                     aria-label={tr("projects.removeAriaLabel", { name: project.name })}
                     title={tr("projects.removeTitle")}
-                    onClick={(event) => { event.stopPropagation(); handleRemove(project); }}
+                    onClick={(event) => { event.stopPropagation(); requestRemove(project); }}
                     style={{ width: 30, height: 30, borderRadius: 8, background: "transparent", border: `1px solid ${t.border}`, color: t.muted, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
                   >
                     <Trash2 size={14} />
@@ -346,6 +364,22 @@ export function ProjectsModule({ t }: { t: Theme }) {
             </Btn>
           </div>
         </Modal>
+      )}
+
+      {pendingRemove && (
+        <ConfirmDialog
+          t={t}
+          title={tr("projects.removeTitle")}
+          message={
+            (statsByProject[pendingRemove.id]?.totalDeploys ?? 0) > 0
+              ? tr("projects.confirmRemoveWithDeploys", { name: pendingRemove.name })
+              : tr("projects.confirmRemove", { name: pendingRemove.name })
+          }
+          confirmLabel={tr("common.delete")}
+          cancelLabel={tr("common.cancel")}
+          onCancel={() => setPendingRemove(null)}
+          onConfirm={confirmRemove}
+        />
       )}
     </div>
   );
