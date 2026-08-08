@@ -105,6 +105,30 @@ export function Modal({
 }
 
 
+export function ConfirmDialog({
+  t, title, message, confirmLabel, cancelLabel, onConfirm, onCancel, danger = true,
+}: {
+  t: Theme;
+  title: string;
+  message: string;
+  confirmLabel: string;
+  cancelLabel: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  danger?: boolean;
+}) {
+  return (
+    <Modal t={t} title={title} onClose={onCancel}>
+      <p style={{ margin: "0 0 22px", color: t.muted, fontSize: 13.5, lineHeight: 1.6 }}>{message}</p>
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <Btn t={t} variant="ghost" onClick={onCancel}>{cancelLabel}</Btn>
+        <Btn t={t} variant={danger ? "danger" : "primary"} onClick={onConfirm}>{confirmLabel}</Btn>
+      </div>
+    </Modal>
+  );
+}
+
+
 type BtnVariant = "primary" | "secondary" | "danger" | "ghost";
 export function Btn({
   t, children, onClick, variant = "primary", style = {}, disabled = false,

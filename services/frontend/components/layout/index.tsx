@@ -9,6 +9,7 @@ import type { Theme } from "@/lib/themes";
 import Image from "next/image";
 import { getDeployments } from "@/lib/api";
 import { API_URL } from "@/lib/config";
+import { useNotifications, type AppNotification } from "@/lib/notifications";
 import { useRouter } from "next/navigation";
 import { useTranslation, useLanguage } from "@/lib/i18n/context";
 import type { Language } from "@/lib/i18n/translations";
@@ -439,19 +440,6 @@ export function TopBar({
   );
 }
 
- 
-export interface AppNotification {
-  id: string | number;
-  type: "success" | "error" | "warn" | "info";
-  title?: string;
-  titleKey?: string;
-  body?: string;
-  bodyKey?: string;
-  bodyVars?: Record<string, string | number>;
-  time?: string;
-  timeKey?: string;
-  read: boolean;
-}
 
 function NotificationIcon({ type, color }: { type: string; color: string }) {
   if (type === "success") return <CheckCircle2 size={17} color={color} />;
@@ -762,7 +750,7 @@ export function DashboardShell({
   const [showNotif, setShowNotif] = useState(false);
   const [showLogout, setShowLogout] =useState(false);
   const [logoutLoading, setLogoutLoading] =useState(false);
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const { notifications, addNotification, markAllRead } = useNotifications();
   const lastStatusRef = useRef<Record<string, string>>({});
   const firstPollRef = useRef(true);
   const unread = notifications.filter((notification) => !notification.read).length;
@@ -775,20 +763,17 @@ export function DashboardShell({
         const deploys = await getDeployments();
         if (cancelled) return;
 
-        const newNotifications: AppNotification[] = [];
         for (const deploy of deploys) {
           const status = deploy.status.toLowerCase();
           const previousStatus = lastStatusRef.current[deploy.id];
 
           if (!firstPollRef.current && previousStatus !== status && (status === "success" || status === "failed")) {
-            newNotifications.push({
-              id: `deploy-${deploy.id}-${status}-${Date.now()}`,
+            addNotification({
               type: status === "success" ? "success" : "error",
               titleKey: status === "success" ? "notif.deploySuccessTitle" : "notif.deployFailedTitle",
               bodyKey: status === "success" ? "notif.deploySuccessBody" : "notif.deployFailedBody",
               bodyVars: { project: deploy.projectId },
               timeKey: "common.time.justNow",
-              read: false,
             });
           }
 
@@ -796,12 +781,8 @@ export function DashboardShell({
         }
 
         firstPollRef.current = false;
-
-        if (newNotifications.length > 0) {
-          setNotifications((current) => [...newNotifications, ...current]);
-        }
       } catch {
-         
+
       }
     }
 
@@ -811,11 +792,8 @@ export function DashboardShell({
       cancelled = true;
       window.clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  function markAllNotificationsRead() {
-    setNotifications((current) => current.map((notification) => ({ ...notification, read: true })));
-  }
 
   async function handleLogout() {
   if (logoutLoading) return;
@@ -887,7 +865,7 @@ export function DashboardShell({
           t={t}
           notifications={notifications}
           onClose={() => setShowNotif(false)}
-          onMarkAllRead={markAllNotificationsRead}
+          onMarkAllRead={markAllRead}
         />
       )}
       <LogoutDialog

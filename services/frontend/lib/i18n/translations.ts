@@ -49,6 +49,21 @@ const ENTRIES: Entry[] = [
   ["notif.deploySuccessBody", "{project} deployed successfully", "{project} se desplegó correctamente", "{project} a été déployé avec succès"],
   ["notif.deployFailedBody", "{project} failed to deploy", "El despliegue de {project} ha fallado", "Le déploiement de {project} a échoué"],
 
+  ["notif.projectCreatedTitle", "Project created", "Proyecto creado", "Projet créé"],
+  ["notif.projectCreatedBody", "{project} was registered", "{project} se registró", "{project} a été enregistré"],
+  ["notif.projectDeletedTitle", "Project deleted", "Proyecto eliminado", "Projet supprimé"],
+  ["notif.projectDeletedBody", "{project} was removed", "{project} se eliminó", "{project} a été supprimé"],
+
+  ["notif.deployCreatedTitle", "Deployment started", "Despliegue iniciado", "Déploiement démarré"],
+  ["notif.deployCreatedBody", "A new deployment for {project} was started", "Se inició un nuevo despliegue de {project}", "Un nouveau déploiement de {project} a démarré"],
+  ["notif.deployDeletedTitle", "Deployment deleted", "Despliegue eliminado", "Déploiement supprimé"],
+  ["notif.deployDeletedBody", "A deployment for {project} was removed", "Se eliminó un despliegue de {project}", "Un déploiement de {project} a été supprimé"],
+
+  ["notif.userCreatedTitle", "User created", "Usuario creado", "Utilisateur créé"],
+  ["notif.userCreatedBody", "{user} was added to the team", "{user} se añadió al equipo", "{user} a été ajouté à l'équipe"],
+  ["notif.userDeletedTitle", "User deleted", "Usuario eliminado", "Utilisateur supprimé"],
+  ["notif.userDeletedBody", "{user} was removed from the team", "{user} se eliminó del equipo", "{user} a été supprimé de l'équipe"],
+
    
   ["logout.title", "Sign out of DeployHub?", "¿Cerrar sesión en DeployHub?", "Se déconnecter de DeployHub ?"],
   [
@@ -301,6 +316,7 @@ const ENTRIES: Entry[] = [
 
   ["settings.tabs.users", "Users", "Usuarios", "Utilisateurs"],
   ["settings.tabs.about", "About", "Acerca de", "À propos"],
+  ["settings.tabs.terms", "Terms of Service", "Términos del servicio", "Conditions d'utilisation"],
   ["settings.tabs.privacy", "Privacy Policy", "Política de privacidad", "Politique de confidentialité"],
 
   ["settings.users.title", "Team Members", "Miembros del equipo", "Membres de l'équipe"],
@@ -364,6 +380,103 @@ const ENTRIES: Entry[] = [
     "Built with Next.js, NestJS, PostgreSQL and Docker, served behind Traefik with a ModSecurity WAF.",
     "Construido con Next.js, NestJS, PostgreSQL y Docker, servido detrás de Traefik con un WAF ModSecurity.",
     "Construit avec Next.js, NestJS, PostgreSQL et Docker, servi derrière Traefik avec un WAF ModSecurity.",
+  ],
+
+  ["settings.terms.title", "Terms of Service", "Términos del servicio", "Conditions d'utilisation"],
+  [
+    "settings.terms.subtitle",
+    "The rules for using DeployHub.",
+    "Las reglas para usar DeployHub.",
+    "Les règles d'utilisation de DeployHub.",
+  ],
+  ["settings.terms.lastUpdated", "Last updated: {date}", "Última actualización: {date}", "Dernière mise à jour : {date}"],
+  [
+    "settings.terms.contact",
+    "Questions about these terms? Contact your workspace administrator.",
+    "¿Tienes preguntas sobre estos términos? Contacta con el administrador de tu espacio de trabajo.",
+    "Des questions sur ces conditions ? Contactez l'administrateur de votre espace de travail.",
+  ],
+
+  ["settings.terms.s1.title", "Acceptance of terms", "Aceptación de los términos", "Acceptation des conditions"],
+  [
+    "settings.terms.s1.b1",
+    "By creating an account or signing in with Google, GitHub or 42 Intra, you agree to these terms.",
+    "Al crear una cuenta o iniciar sesión con Google, GitHub o 42 Intra, aceptas estos términos.",
+    "En créant un compte ou en vous connectant avec Google, GitHub ou 42 Intra, vous acceptez ces conditions.",
+  ],
+  [
+    "settings.terms.s1.b2",
+    "If you don't agree with any part of these terms, please don't use DeployHub.",
+    "Si no estás de acuerdo con alguna parte de estos términos, por favor no uses DeployHub.",
+    "Si vous n'acceptez pas une partie de ces conditions, merci de ne pas utiliser DeployHub.",
+  ],
+
+  ["settings.terms.s2.title", "Your account", "Tu cuenta", "Votre compte"],
+  [
+    "settings.terms.s2.b1",
+    "You're responsible for keeping your credentials safe and for everything that happens under your account.",
+    "Eres responsable de mantener tus credenciales seguras y de todo lo que ocurra bajo tu cuenta.",
+    "Vous êtes responsable de la sécurité de vos identifiants et de tout ce qui se passe sur votre compte.",
+  ],
+  [
+    "settings.terms.s2.b2",
+    "One account per person. Don't share your login with others.",
+    "Una cuenta por persona. No compartas tu inicio de sesión con otras personas.",
+    "Un compte par personne. Ne partagez pas vos identifiants avec d'autres personnes.",
+  ],
+  [
+    "settings.terms.s2.b3",
+    "A workspace administrator can suspend or delete accounts that violate these terms — this immediately ends your active session.",
+    "Un administrador del espacio de trabajo puede suspender o eliminar cuentas que incumplan estos términos — esto termina de inmediato tu sesión activa.",
+    "Un administrateur de l'espace de travail peut suspendre ou supprimer les comptes qui enfreignent ces conditions — cela met fin immédiatement à votre session active.",
+  ],
+
+  ["settings.terms.s3.title", "Acceptable use", "Uso aceptable", "Utilisation acceptable"],
+  [
+    "settings.terms.s3.b1",
+    "Only register and deploy repositories you own or have permission to run.",
+    "Registra y despliega únicamente repositorios que sean tuyos o que tengas permiso para ejecutar.",
+    "N'enregistrez et ne déployez que des dépôts qui vous appartiennent ou que vous êtes autorisé à exécuter.",
+  ],
+  [
+    "settings.terms.s3.b2",
+    "Don't use DeployHub to run malware, cryptomining, or anything intended to attack other users, this platform, or third parties.",
+    "No uses DeployHub para ejecutar malware, minería de criptomonedas, ni nada destinado a atacar a otros usuarios, esta plataforma o a terceros.",
+    "N'utilisez pas DeployHub pour exécuter des logiciels malveillants, du minage de cryptomonnaie, ou toute action visant à attaquer d'autres utilisateurs, cette plateforme ou des tiers.",
+  ],
+  [
+    "settings.terms.s3.b3",
+    "Deployments consume shared server resources — keep them within reason so other accounts on the same host aren't affected.",
+    "Los despliegues consumen recursos compartidos del servidor — mantenlos dentro de lo razonable para no afectar a otras cuentas en el mismo host.",
+    "Les déploiements consomment des ressources serveur partagées — restez raisonnable pour ne pas affecter les autres comptes sur le même hôte.",
+  ],
+
+  ["settings.terms.s4.title", "Service availability", "Disponibilidad del servicio", "Disponibilité du service"],
+  [
+    "settings.terms.s4.b1",
+    "DeployHub is provided on a best-effort basis, as-is, with no uptime guarantee.",
+    "DeployHub se ofrece sobre una base de mejor esfuerzo, tal cual, sin garantía de disponibilidad.",
+    "DeployHub est fourni au mieux, tel quel, sans garantie de disponibilité.",
+  ],
+  [
+    "settings.terms.s4.b2",
+    "Deployments, logs, and other data may be restarted, moved, or removed at any time without notice.",
+    "Los despliegues, logs y otros datos pueden reiniciarse, moverse o eliminarse en cualquier momento sin previo aviso.",
+    "Les déploiements, journaux et autres données peuvent être redémarrés, déplacés ou supprimés à tout moment sans préavis.",
+  ],
+
+  ["settings.terms.s5.title", "Changes and termination", "Cambios y terminación", "Modifications et résiliation"],
+  [
+    "settings.terms.s5.b1",
+    "These terms may change over time; continuing to use DeployHub means you accept the current version.",
+    "Estos términos pueden cambiar con el tiempo; seguir usando DeployHub implica aceptar la versión vigente.",
+    "Ces conditions peuvent évoluer ; continuer à utiliser DeployHub signifie que vous acceptez la version en vigueur.",
+  ],
+  [
+    "settings.terms.s5.b2",
+    "If your account is deleted, your projects and deployment history are removed with it and cannot be recovered.",
+    "Si tu cuenta se elimina, tus proyectos e historial de despliegues se eliminan con ella y no se pueden recuperar.",
+    "Si votre compte est supprimé, vos projets et votre historique de déploiements le sont également et ne peuvent pas être récupérés.",
   ],
 
   ["settings.privacy.title", "Privacy Policy", "Política de privacidad", "Politique de confidentialité"],
