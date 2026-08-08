@@ -9,6 +9,7 @@ import { useTranslation } from "@/lib/i18n/context";
 import {
   AlertCircle,
   AlertTriangle,
+  Download,
   ExternalLink,
   Info,
   ShieldCheck,
@@ -50,13 +51,46 @@ export function MonitoringModule({ t }: { t: Theme }) {
           setAlerts(a);
         }
       } catch {
-  return;
-}
+        return;
+      }
     };
     fetchMetrics();
     const interval = setInterval(fetchMetrics, 5000);
     return () => { active = false; clearInterval(interval); };
   }, []);
+
+  function exportMetricsCsv() {
+    const lines: string[] = ["Type,Timestamp_or_Hour,Metric,Value,Unit"];
+
+    if (overview) {
+      const now = new Date().toISOString();
+      lines.push(`Overview,${now},CPU_Usage,${Math.round(live.cpuPct || 0)},%`);
+      lines.push(`Overview,${now},Memory_Usage,${Math.round(live.memPct || 0)},%`);
+      lines.push(`Overview,${now},Memory_Used_Bytes,${live.memUsedBytes || 0},Bytes`);
+      lines.push(`Overview,${now},Memory_Limit_Bytes,${live.memLimitBytes || 0},Bytes`);
+      lines.push(`Overview,${now},Network_IO_Bytes_Sec,${live.netIoBytesPerSec || 0},Bytes/s`);
+      lines.push(`Overview,${now},Requests_Per_Min,${Math.round(live.requestsPerMin || 0)},req/min`);
+      lines.push(`Overview,${now},Latency_P95_Ms,${Math.round(live.latencyP95Ms || 0)},ms`);
+      lines.push(`Overview,${now},Uptime_Seconds,${live.uptimeSeconds || 0},s`);
+    }
+
+    for (const pt of history) {
+      lines.push(`History,${pt.hour},CPU_Usage,${pt.cpu},%`);
+      lines.push(`History,${pt.hour},Memory_Usage,${pt.mem},%`);
+    }
+
+    for (const a of alerts) {
+      lines.push(`Alert,${a.startsAt},${a.severity},"${a.message.replace(/"/g, '""')}",alert`);
+    }
+
+    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `deployhub-metrics-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   const live = overview || {
     cpuPct: 0,
@@ -80,10 +114,15 @@ export function MonitoringModule({ t }: { t: Theme }) {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginBottom: 16 }}>
+        <Btn t={t} variant="secondary" onClick={exportMetricsCsv} disabled={history.length === 0 && !overview}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+            <Download size={14} aria-hidden="true" /> {tr("monitoring.exportCsv")}
+          </span>
+        </Btn>
         <Btn t={t} variant="secondary" onClick={() => window.open(GRAFANA_URL, "_blank", "noreferrer")}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
-            <ExternalLink size={14} /> {tr("monitoring.openGrafana")}
+            <ExternalLink size={14} aria-hidden="true" /> {tr("monitoring.openGrafana")}
           </span>
         </Btn>
       </div>

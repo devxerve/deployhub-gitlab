@@ -288,6 +288,7 @@ const ENTRIES: Entry[] = [
   ["monitoring.activeAlerts", "Active Alerts", "Alertas activas", "Alertes actives"],
   ["monitoring.noAlerts", "No active alerts — everything looks healthy.", "Sin alertas activas — todo funciona correctamente.", "Aucune alerte active — tout fonctionne normalement."],
   ["monitoring.openGrafana", "Open in Grafana", "Abrir en Grafana", "Ouvrir dans Grafana"],
+  ["monitoring.exportCsv", "Export CSV", "Exportar CSV", "Exporter en CSV"],
 
    
   ["logs.searchPlaceholder", "Search logs...", "Buscar registros...", "Rechercher dans les journaux..."],
