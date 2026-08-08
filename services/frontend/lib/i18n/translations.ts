@@ -653,6 +653,8 @@ const ENTRIES: Entry[] = [
     "Error de conexión al intentar registrar la cuenta",
     "Erreur de connexion lors de la tentative d'inscription du compte",
   ],
+  ["login.successTitle", "Success", "Éxito", "Succès"],
+  ["login.errorTitle", "Error", "Error", "Erreur"],
 
    
   ["terminal.title", "production-terminal", "production-terminal", "production-terminal"],

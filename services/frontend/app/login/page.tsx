@@ -6,6 +6,8 @@ import { useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/context";
 import { API_URL, AUTH_SERVICE_URL } from "@/lib/config";
+import { Modal, Btn } from "@/components/ui";
+import { DARK, LIGHT } from "@/lib/themes";
 
 
 const GitHubIcon = ({ color }: { color: string }) => (
@@ -60,6 +62,7 @@ export default function LoginPage() {
   const [isDark, setIsDark] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [popup, setPopup] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
 
   async function handleLogin(e: React.FormEvent) {
@@ -78,10 +81,10 @@ export default function LoginPage() {
         router.push("/dashboard");
       } else {
         const data = await res.json();
-        alert(data.message || tr("login.errorLogin"));
+        setPopup({ type: "error", message: data.message || tr("login.errorLogin") });
       }
     } catch {
-      alert(tr("login.errorConnect"));
+      setPopup({ type: "error", message: tr("login.errorConnect") });
     } finally {
       setLoading(false);
     }
@@ -106,17 +109,17 @@ async function handleRegister(e: React.FormEvent) {
 
     if (res.ok) {
 
-      alert(tr("login.registerSuccess"));
+      setPopup({ type: "success", message: tr("login.registerSuccess") });
       setIsRegistering(false);
       setPassword("");
       setEmail("");
     } else {
       const data = await res.json();
 
-      alert(data.message || tr("login.errorRegister"));
+      setPopup({ type: "error", message: data.message || tr("login.errorRegister") });
     }
   } catch {
-  alert(tr("login.errorRegisterConnect"));
+  setPopup({ type: "error", message: tr("login.errorRegisterConnect") });
 } finally {
 
     setLoading(false);
@@ -124,6 +127,7 @@ async function handleRegister(e: React.FormEvent) {
 }
 
   const t = isDark ? light : dark;
+  const modalTheme = isDark ? LIGHT : DARK;
 
 
   return (
@@ -302,6 +306,23 @@ async function handleRegister(e: React.FormEvent) {
             </button>
           </div>
         </form>
+
+        {popup && (
+          <Modal
+            t={modalTheme}
+            title={popup.type === "success" ? tr("login.successTitle") : tr("login.errorTitle")}
+            onClose={() => setPopup(null)}
+          >
+            <p style={{ margin: "0 0 22px", color: modalTheme.muted, fontSize: 13.5, lineHeight: 1.6 }}>
+              {popup.message}
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Btn t={modalTheme} variant="primary" onClick={() => setPopup(null)}>
+                {tr("common.close")}
+              </Btn>
+            </div>
+          </Modal>
+        )}
       </div>
     </>
   );
