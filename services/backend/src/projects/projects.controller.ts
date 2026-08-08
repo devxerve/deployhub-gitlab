@@ -1,10 +1,12 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -40,5 +42,22 @@ export class ProjectsController {
   @Delete(":id")
   remove(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.projectsService.remove(id, user.user_id);
+  }
+
+  @Get(":id/branches")
+  getBranches(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.projectsService.getBranches(id, user.user_id);
+  }
+
+  @Get(":id/commits")
+  getCommits(
+    @Param("id") id: string,
+    @Query("branch") branch: string | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    if (!branch?.trim()) {
+      throw new BadRequestException("El parámetro 'branch' es obligatorio.");
+    }
+    return this.projectsService.getCommits(id, user.user_id, branch.trim());
   }
 }

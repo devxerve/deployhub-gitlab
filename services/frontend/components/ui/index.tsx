@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import type { Theme } from "@/lib/themes";
 
 
@@ -156,6 +156,46 @@ export function TextInput({
       onFocus={(e) => { e.target.style.borderColor = t.accent; }}
       onBlur={(e)  => { e.target.style.borderColor = t.border; }}
     />
+  );
+}
+
+
+export function Select({
+  t, value, onChange, options, placeholder, icon, disabled = false, style = {},
+}: {
+  t: Theme; value: string; onChange: (v: string) => void;
+  options: { value: string; label: string }[]; placeholder?: string;
+  icon?: React.ReactNode; disabled?: boolean; style?: React.CSSProperties;
+}) {
+  return (
+    <div style={{ position: "relative", ...style }}>
+      {icon && (
+        <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", display: "flex", color: t.accent, pointerEvents: "none" }}>
+          {icon}
+        </span>
+      )}
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        style={{
+          width: "100%", padding: `10px 34px 10px ${icon ? 36 : 12}px`, borderRadius: 10,
+          border: `1px solid ${t.border}`, background: t.inputBg, color: t.text,
+          fontSize: 13, fontWeight: 600, outline: "none", boxSizing: "border-box",
+          fontFamily: "inherit", cursor: disabled ? "not-allowed" : "pointer",
+          opacity: disabled ? 0.6 : 1, appearance: "none", WebkitAppearance: "none", MozAppearance: "none",
+          transition: "border-color 0.2s",
+        }}
+        onFocus={(e) => { e.target.style.borderColor = t.accent; }}
+        onBlur={(e)  => { e.target.style.borderColor = t.border; }}
+      >
+        {placeholder && <option value="" disabled>{placeholder}</option>}
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>{option.label}</option>
+        ))}
+      </select>
+      <ChevronDown size={15} style={{ position: "absolute", right: 11, top: "50%", transform: "translateY(-50%)", color: t.muted, pointerEvents: "none" }} />
+    </div>
   );
 }
 

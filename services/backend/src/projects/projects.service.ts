@@ -13,12 +13,16 @@ import {
   normalizeGitHubUrl,
   slugifyProjectName,
 } from "./utils/github.utils";
+import { GithubApiService, RepoBranch, RepoCommit } from "./github-api.service";
 
 @Injectable()
 export class ProjectsService {
   private readonly logger = new Logger(ProjectsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly githubApi: GithubApiService,
+  ) {}
 
   async findAll(userId: string) {
     await this.backfillFromDeploys(userId);
@@ -79,6 +83,30 @@ export class ProjectsService {
       throw new NotFoundException(`Project ${id} not found.`);
     }
     await this.prisma.project.delete({ where: { id } });
+  }
+
+  async getBranches(id: string, userId: string): Promise<RepoBranch[]> {
+    const project = await this.findOwned(id, userId);
+    return this.githubApi.listBranches(project.repoUrl);
+  }
+
+  async getCommits(
+    id: string,
+    userId: string,
+    branch: string,
+  ): Promise<RepoCommit[]> {
+    const project = await this.findOwned(id, userId);
+    return this.githubApi.listCommits(project.repoUrl, branch);
+  }
+
+  private async findOwned(id: string, userId: string) {
+    const project = await this.prisma.project.findFirst({
+      where: { id, userId },
+    });
+    if (!project) {
+      throw new NotFoundException(`Project ${id} not found.`);
+    }
+    return project;
   }
 
   private async backfillFromDeploys(userId: string) {

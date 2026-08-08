@@ -22,6 +22,19 @@ export function isValidGitHubRepoUrl(value: string): boolean {
   }
 }
 
+export function parseGitHubRepo(
+  value: string,
+): { owner: string; repo: string } | null {
+  try {
+    const url = new URL(normalizeGitHubUrl(value));
+    const [owner, repo] = url.pathname.split("/").filter(Boolean);
+    if (!owner || !repo) return null;
+    return { owner, repo };
+  } catch {
+    return null;
+  }
+}
+
 export function slugifyProjectName(value: string): string {
   return value
     .trim()

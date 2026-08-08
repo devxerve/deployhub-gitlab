@@ -149,6 +149,36 @@ export async function deleteProject(id: string): Promise<void> {
   if (!res.ok) throw new Error("Error al eliminar el proyecto");
 }
 
+export interface RepoBranch {
+  name: string;
+  commitSha: string;
+}
+
+export interface RepoCommit {
+  sha: string;
+  message: string;
+  author: string;
+  date: string;
+}
+
+export async function getProjectBranches(projectId: string): Promise<RepoBranch[]> {
+  const res = await fetch(`${API_URL}/projects/${projectId}/branches`, { credentials: "include" });
+  if (!res.ok) {
+    const body: { message?: string } | null = await res.json().catch(() => null);
+    throw new Error(body?.message || "Error al obtener las ramas del repositorio");
+  }
+  return res.json();
+}
+
+export async function getProjectCommits(projectId: string, branch: string): Promise<RepoCommit[]> {
+  const res = await fetch(`${API_URL}/projects/${projectId}/commits?branch=${encodeURIComponent(branch)}`, { credentials: "include" });
+  if (!res.ok) {
+    const body: { message?: string } | null = await res.json().catch(() => null);
+    throw new Error(body?.message || "Error al obtener los commits del repositorio");
+  }
+  return res.json();
+}
+
 export interface RegisterUserInput {
   username: string;
   email: string;

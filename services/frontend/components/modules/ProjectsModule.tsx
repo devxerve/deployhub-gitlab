@@ -34,7 +34,6 @@ interface ProjectStats {
 const EMPTY_FORM = {
   name: "",
   repoUrl: "",
-  defaultBranch: "main",
   description: "",
 };
 
@@ -267,9 +266,6 @@ export function ProjectsModule({ t }: { t: Theme }) {
                 {project.description || tr("projects.descriptionFallback")}
               </p>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 7, color: t.muted, fontSize: 11, marginBottom: 8 }}>
-                <GitBranch size={13} /> {project.defaultBranch}
-              </div>
               <div style={{ display: "flex", alignItems: "center", gap: 7, color: t.muted, fontSize: 11, marginBottom: 14, minWidth: 0 }}>
                 <GitBranch size={13} />
                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{project.repoUrl.replace("https://", "")}</span>
@@ -299,10 +295,6 @@ export function ProjectsModule({ t }: { t: Theme }) {
               <TextInput t={t} value={form.repoUrl} onChange={(value) => setForm((current) => ({ ...current, repoUrl: value }))} placeholder={tr("projects.form.repoUrlPlaceholder")} style={{ marginTop: 6 }} />
             </label>
             <label style={{ fontSize: 12, color: t.muted }}>
-              {tr("projects.form.branch")}
-              <TextInput t={t} value={form.defaultBranch} onChange={(value) => setForm((current) => ({ ...current, defaultBranch: value }))} placeholder="main" style={{ marginTop: 6 }} />
-            </label>
-            <label style={{ fontSize: 12, color: t.muted }}>
               {tr("projects.form.description")}
               <TextInput t={t} value={form.description} onChange={(value) => setForm((current) => ({ ...current, description: value }))} placeholder={tr("projects.form.descriptionPlaceholder")} style={{ marginTop: 6 }} />
             </label>
@@ -330,7 +322,6 @@ export function ProjectsModule({ t }: { t: Theme }) {
           {([
             [tr("projects.detail.repository"), selected.repoUrl],
             [tr("projects.detail.projectId"), selected.id],
-            [tr("projects.detail.defaultBranch"), selected.defaultBranch],
             [tr("projects.detail.status"), tr(FILTER_KEYS[statsByProject[selected.id]?.status ?? "idle"])],
             [tr("projects.detail.totalDeployments"), String(statsByProject[selected.id]?.totalDeploys ?? 0)],
             [tr("projects.detail.lastDeployment"), statsByProject[selected.id]?.lastDeploy ?? tr("common.time.never")],

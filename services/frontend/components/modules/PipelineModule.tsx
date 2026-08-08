@@ -246,7 +246,7 @@ export function PipelineModule({ t }: { t: Theme }) {
               const isLast = i === STAGE_ORDER.length - 1;
 
               return (
-                <div key={stageId} style={{ display: "flex", alignItems: "flex-start", flex: isLast ? "0 0 auto" : 1, minWidth: 180 }}>
+                <div key={stageId} style={{ flex: isLast ? "0 0 auto" : 1, minWidth: 180 }}>
                   <div style={{ minWidth: 180 }}>
                     <div style={{ display: "flex", alignItems: "center" }}>
                       <div

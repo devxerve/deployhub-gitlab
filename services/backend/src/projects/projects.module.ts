@@ -1,13 +1,15 @@
 import { Module } from "@nestjs/common";
+import { HttpModule } from "@nestjs/axios";
 import { ProjectsController } from "./projects.controller";
 import { ProjectsService } from "./projects.service";
+import { GithubApiService } from "./github-api.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuthModule } from "../auth/auth.module";
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, HttpModule],
   controllers: [ProjectsController],
-  providers: [ProjectsService, PrismaService],
+  providers: [ProjectsService, GithubApiService, PrismaService],
   exports: [ProjectsService],
 })
 export class ProjectsModule {}

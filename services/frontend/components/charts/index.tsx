@@ -1,11 +1,34 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import type { Theme } from "@/lib/themes";
 import type { Deploy } from "@/lib/api";
 import { useLanguage } from "@/lib/i18n/context";
 import type { Language } from "@/lib/i18n/translations";
 
- 
+// Measures the pixel width of a container so charts can be drawn with a
+// viewBox that matches it 1:1. Without this, a small viewBox stretched to
+// width:100% gets scaled up by the browser — text, strokes and spacing all
+// balloon in proportion to how much wider the container is than the viewBox.
+function useContainerWidth<T extends HTMLElement>(fallback: number) {
+  const ref = useRef<T | null>(null);
+  const [width, setWidth] = useState(fallback);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width;
+      if (w) setWidth(w);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return [ref, width] as const;
+}
+
+
 export function SparklineArea({
   data, color, h = 36, w = 120,
 }: { data: number[]; color: string; h?: number; w?: number }) {
@@ -58,7 +81,8 @@ import { HistoryPoint } from "@/lib/api";
 
 export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {
   const chartData = data ?? [];
-  const svgW = 600, svgH = 160, pad = { l: 30, r: 10, t: 10, b: 20 };
+  const [containerRef, svgW] = useContainerWidth<HTMLDivElement>(600);
+  const svgH = 110, pad = { l: 30, r: 10, t: 10, b: 20 };
   const w = svgW - pad.l - pad.r, h = svgH - pad.t - pad.b;
 
   const mkPath = (key: keyof HistoryPoint, min: number, max: number) => {
@@ -77,7 +101,8 @@ export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {
 };
 
   return (
-    <svg viewBox={`0 0 ${svgW} ${svgH}`} width="100%" style={{ overflow: "visible" }}>
+    <div ref={containerRef} style={{ width: "100%" }}>
+    <svg viewBox={`0 0 ${svgW} ${svgH}`} width={svgW} height={svgH} style={{ display: "block" }}>
       {[0, 25, 50, 75, 100].map((pct) => {
         const y = pad.t + h - (pct / 100) * h;
         return (
@@ -112,6 +137,7 @@ export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {
         <text key={i} x={pad.l + (i * Math.max(1, Math.floor(chartData.length / 6)) / Math.max(1, chartData.length - 1)) * w} y={svgH - 4} textAnchor="middle" fontSize="9" fill={t.muted}>{d.hour}</text>
       ))}
     </svg>
+    </div>
   );
 }
 
@@ -124,6 +150,7 @@ const LOCALE_BY_LANGUAGE: Record<Language, string> = {
 
 export function DeployActivityChart({ t, deploys }: { t: Theme; deploys: Deploy[] }) {
   const { language } = useLanguage();
+  const [containerRef, svgW] = useContainerWidth<HTMLDivElement>(600);
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
@@ -134,24 +161,28 @@ export function DeployActivityChart({ t, deploys }: { t: Theme; deploys: Deploy[
   const success = days.map((day) => deploys.filter((dep) => dep.status.toLowerCase() === "success" && new Date(dep.createdAt).toDateString() === day.toDateString()).length);
   const fail = days.map((day) => deploys.filter((dep) => dep.status.toLowerCase() === "failed" && new Date(dep.createdAt).toDateString() === day.toDateString()).length);
 
-  const barW = 28, gap = 10, h = 140, pad = 10;
+  const h = 85, pad = 10, svgH = h + 30;
+  const slot = (svgW - pad * 2) / days.length;
+  const barW = Math.min(28, slot * 0.4);
   const maxVal = Math.max(1, ...success, ...fail);
-  const x = (i: number) => pad + i * (barW + gap);
+  const x = (i: number) => pad + i * slot + (slot - barW * 2) / 2;
 
   return (
-    <svg width="100%" viewBox={`0 0 ${pad * 2 + days.length * (barW + gap)} ${h + 30}`} style={{ overflow: "visible" }}>
+    <div ref={containerRef} style={{ width: "100%" }}>
+    <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ display: "block" }}>
       {[0, 1, 2, 3, 4].map((i) => (
-        <line key={i} x1={0} x2={pad * 2 + days.length * (barW + gap)} y1={h - (i / 4) * (h - pad)} y2={h - (i / 4) * (h - pad)} stroke={t.border} strokeWidth="1" />
+        <line key={i} x1={0} x2={svgW} y1={h - (i / 4) * (h - pad)} y2={h - (i / 4) * (h - pad)} stroke={t.border} strokeWidth="1" />
       ))}
       {success.map((v, i) => (
-        <rect key={`s${i}`} x={x(i)} y={h - (v / maxVal) * (h - pad)} width={barW * 0.5} height={(v / maxVal) * (h - pad)} fill={t.success} opacity="0.7" rx="3" />
+        <rect key={`s${i}`} x={x(i)} y={h - (v / maxVal) * (h - pad)} width={barW} height={(v / maxVal) * (h - pad)} fill={t.success} opacity="0.7" rx="3" />
       ))}
       {fail.map((v, i) => (
-        <rect key={`f${i}`} x={x(i) + barW * 0.5} y={h - (v / maxVal) * (h - pad)} width={barW * 0.5} height={(v / maxVal) * (h - pad)} fill={t.danger} opacity="0.7" rx="3" />
+        <rect key={`f${i}`} x={x(i) + barW} y={h - (v / maxVal) * (h - pad)} width={barW} height={(v / maxVal) * (h - pad)} fill={t.danger} opacity="0.7" rx="3" />
       ))}
       {labels.map((l, i) => (
-        <text key={i} x={x(i) + barW / 2} y={h + 16} textAnchor="middle" fontSize="10" fill={t.muted}>{l}</text>
+        <text key={i} x={pad + i * slot + slot / 2} y={h + 16} textAnchor="middle" fontSize="10" fill={t.muted}>{l}</text>
       ))}
     </svg>
+    </div>
   );
 }

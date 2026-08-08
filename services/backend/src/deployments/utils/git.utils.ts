@@ -44,6 +44,7 @@ export class GitUtil {
     repoUrl: string,
     repositoryPath: string,
     id: string,
+    branch?: string,
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       if (!fs.existsSync(repositoryPath)) {
@@ -52,7 +53,10 @@ export class GitUtil {
         });
       }
 
-      const child = spawn("git", ["clone", repoUrl, repositoryPath]);
+      const args = branch
+        ? ["clone", "-b", branch, repoUrl, repositoryPath]
+        : ["clone", repoUrl, repositoryPath];
+      const child = spawn("git", args);
 
       child.stdout.on("data", (data: Buffer) => {
         this.deploymentsService.addLogRealtime(id, data.toString());

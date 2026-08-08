@@ -61,10 +61,17 @@ export class DeploymentsProcessor {
       );
       await this.deploymentsService.addLogRealtime(
         id,
-        `Step 1/3: Cloning repository...`,
+        deploy.branch
+          ? `Step 1/3: Cloning repository (branch: ${deploy.branch})...`
+          : `Step 1/3: Cloning repository...`,
       );
 
-      await this.gitUtil.cloneRepository(deploy.repoUrl, workDir, id);
+      await this.gitUtil.cloneRepository(
+        deploy.repoUrl,
+        workDir,
+        id,
+        deploy.branch || undefined,
+      );
       await this.deploymentsService.addLogRealtime(
         id,
         `Repository cloned successfully.`,

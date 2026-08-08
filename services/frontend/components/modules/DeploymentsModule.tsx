@@ -4,23 +4,29 @@ import { useEffect, useRef, useState } from "react";
 import {
   ExternalLink,
   GitBranch,
+  GitCommitHorizontal,
   LoaderCircle,
   Play,
   Rocket,
   Trash2,
+  User,
   X,
 } from "lucide-react";
 import type { Theme } from "@/lib/themes";
 import { statusColor } from "@/lib/themes";
-import { Badge, Bar, Btn, Card, TextInput } from "@/components/ui";
+import { Badge, Bar, Btn, Card, Select } from "@/components/ui";
 import {
   createDeployment,
   deleteDeployment,
   getDeploymentLogs,
   getDeployments,
+  getProjectBranches,
+  getProjectCommits,
   getProjects,
   type Deploy,
   type Project,
+  type RepoBranch,
+  type RepoCommit,
 } from "@/lib/api";
 import { joinDeployRoom, onDeployLog, onDeployStatus } from "@/lib/socket";
 import { deploySiteUrl } from "@/lib/config";
@@ -53,12 +59,20 @@ export function DeploymentsModule({ t }: { t: Theme }) {
   const [liveLogs, setLiveLogs] = useState<string[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [projectId, setProjectId] = useState("");
+  const [branch, setBranch] = useState("");
+  const [branches, setBranches] = useState<RepoBranch[]>([]);
+  const [branchesLoading, setBranchesLoading] = useState(false);
+  const [branchesError, setBranchesError] = useState<string | null>(null);
   const [commitHash, setCommitHash] = useState("");
+  const [commits, setCommits] = useState<RepoCommit[]>([]);
+  const [commitsLoading, setCommitsLoading] = useState(false);
+  const [commitsError, setCommitsError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
   const selectedProject = projects.find((project) => project.id === projectId);
+  const selectedCommit = commits.find((commit) => commit.sha === commitHash);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,6 +93,67 @@ export function DeploymentsModule({ t }: { t: Theme }) {
     .then(setDeploys)
     .catch(() => setError(tr("deployments.apiError")));
 }, [tr]);
+
+  useEffect(() => {
+    if (!projectId) {
+      setBranches([]);
+      setBranch("");
+      return;
+    }
+    let cancelled = false;
+    setBranchesLoading(true);
+    setBranchesError(null);
+    getProjectBranches(projectId)
+      .then((fetched) => {
+        if (cancelled) return;
+        setBranches(fetched);
+        const fallback = fetched.some((b) => b.name === selectedProject?.defaultBranch)
+          ? selectedProject?.defaultBranch ?? ""
+          : fetched[0]?.name ?? "";
+        setBranch(fallback);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setBranches([]);
+        setBranch("");
+        setBranchesError(err instanceof Error ? err.message : tr("deployments.branchesError"));
+      })
+      .finally(() => {
+        if (!cancelled) setBranchesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
+
+  useEffect(() => {
+    if (!projectId || !branch) {
+      setCommits([]);
+      setCommitHash("");
+      return;
+    }
+    let cancelled = false;
+    setCommitsLoading(true);
+    setCommitsError(null);
+    setCommitHash("");
+    getProjectCommits(projectId, branch)
+      .then((fetched) => {
+        if (!cancelled) setCommits(fetched);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setCommits([]);
+        setCommitsError(err instanceof Error ? err.message : tr("deployments.commitsError"));
+      })
+      .finally(() => {
+        if (!cancelled) setCommitsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, branch]);
 
   useEffect(() => {
     const active = deploys.some((deploy) => ["pending", "cloning", "building", "running"].includes(deploy.status.toLowerCase()));
@@ -136,7 +211,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
   }, [selectedId]);
 
   async function handleCreate() {
-    if (!selectedProject) return;
+    if (!selectedProject || !branch) return;
     setLoading(true);
     setError(null);
 
@@ -144,13 +219,12 @@ export function DeploymentsModule({ t }: { t: Theme }) {
       const deployment = await createDeployment({
         repoUrl: selectedProject.repoUrl,
         projectId: selectedProject.id,
-        branch: selectedProject.defaultBranch,
-        commitHash: commitHash.trim() || undefined,
+        branch,
+        commitHash: commitHash || undefined,
       });
       setDeploys((previous) => [deployment, ...previous]);
       setSelected(deployment);
       setShowForm(false);
-      setCommitHash("");
     } catch {
       setError(tr("deployments.createError"));
     } finally {
@@ -247,37 +321,66 @@ export function DeploymentsModule({ t }: { t: Theme }) {
               </div>
 
               {selectedProject && (
-                <div style={{ display: "grid", gap: 7, padding: 12, borderRadius: 10, border: `1px solid ${t.border}`, background: t.hover }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, color: t.text, fontSize: 12 }}>
-                    <GitBranch size={14} color={t.accent} />
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedProject.repoUrl}</span>
-                    <a href={selectedProject.repoUrl} target="_blank" rel="noreferrer" aria-label={tr("deployments.openGithubRepoAria")} style={{ color: t.accent, display: "inline-flex", marginLeft: "auto" }}>
-                      <ExternalLink size={14} />
-                    </a>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, color: t.muted, fontSize: 12 }}>
-                    <GitBranch size={14} /> {tr("deployments.configuredBranch", { branch: selectedProject.defaultBranch })}
-                  </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, color: t.text, fontSize: 12, padding: 12, borderRadius: 10, border: `1px solid ${t.border}`, background: t.hover }}>
+                  <GitBranch size={14} color={t.accent} />
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedProject.repoUrl}</span>
+                  <a href={selectedProject.repoUrl} target="_blank" rel="noreferrer" aria-label={tr("deployments.openGithubRepoAria")} style={{ color: t.accent, display: "inline-flex", marginLeft: "auto" }}>
+                    <ExternalLink size={14} />
+                  </a>
                 </div>
               )}
 
-              <label style={{ fontSize: 12, color: t.muted }}>
-                {tr("deployments.commitHashLabel")}
-                <TextInput
-                  t={t}
-                  value={commitHash}
-                  onChange={setCommitHash}
-                  placeholder={tr("deployments.commitHashPlaceholder")}
-                  style={{ marginTop: 6 }}
-                />
-              </label>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <label style={{ fontSize: 12, color: t.muted }}>
+                  {tr("deployments.branchLabel")}
+                  <Select
+                    t={t}
+                    value={branch}
+                    onChange={setBranch}
+                    disabled={branchesLoading || branches.length === 0}
+                    placeholder={branchesLoading ? tr("deployments.branchesLoading") : undefined}
+                    options={branches.map((b) => ({ value: b.name, label: b.name }))}
+                    icon={<GitBranch size={14} />}
+                    style={{ marginTop: 6 }}
+                  />
+                </label>
 
-              <div style={{ fontSize: 11, color: t.muted, lineHeight: 1.5 }}>
-                {tr("deployments.commitHashHelp")}
+                <label style={{ fontSize: 12, color: t.muted }}>
+                  {tr("deployments.commitLabel")}
+                  <Select
+                    t={t}
+                    value={commitHash}
+                    onChange={setCommitHash}
+                    disabled={commitsLoading || !branch}
+                    placeholder={commitsLoading ? tr("deployments.commitsLoading") : undefined}
+                    options={[
+                      { value: "", label: tr("deployments.commitLatest") },
+                      ...commits.map((c) => ({ value: c.sha, label: `${c.sha.slice(0, 7)} · ${c.message}` })),
+                    ]}
+                    icon={<GitCommitHorizontal size={14} />}
+                    style={{ marginTop: 6 }}
+                  />
+                </label>
               </div>
+              {(branchesError || commitsError) && (
+                <div role="alert" style={{ color: t.danger, fontSize: 12 }}>{branchesError || commitsError}</div>
+              )}
+
+              {selectedCommit && (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, border: `1px solid ${t.accentBorder}`, background: t.accentSoft }}>
+                  <GitCommitHorizontal size={16} color={t.accent} style={{ flexShrink: 0 }} />
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: t.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedCommit.message}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: t.muted, marginTop: 2 }}>
+                      <User size={11} /> {selectedCommit.author}
+                    </div>
+                  </div>
+                  <Badge label={selectedCommit.sha.slice(0, 7)} color={t.accent} />
+                </div>
+              )}
 
               <div style={{ display: "flex", gap: 8 }}>
-                <Btn t={t} onClick={handleCreate} disabled={loading || !selectedProject} style={{ flex: 1 }}>
+                <Btn t={t} onClick={handleCreate} disabled={loading || !selectedProject || !branch} style={{ flex: 1 }}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
                     {loading ? <LoaderCircle size={15} className="icon-spin" /> : <Play size={15} />}
                     {loading ? tr("deployments.starting") : tr("deployments.deployProject")}
