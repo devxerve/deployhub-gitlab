@@ -384,7 +384,7 @@ export function SettingsModule({
           <p style={{ margin: "0 0 18px", color: t.muted, fontSize: 12.5 }}>{tr("settings.about.subtitle")}</p>
 
           <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 10 }}>
-            {["settings.about.f1", "settings.about.f2", "settings.about.f3", "settings.about.f4"].map((key) => (
+            {["settings.about.f1", "settings.about.f2", "settings.about.f3", "settings.about.f4", "settings.about.f5", "settings.about.f6"].map((key) => (
               <li key={key} style={{ color: t.text, fontSize: 13, lineHeight: 1.6 }}>{tr(key)}</li>
             ))}
           </ul>
