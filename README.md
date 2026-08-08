@@ -1,241 +1,437 @@
-*This project has been created as part of the 42 curriculum by loruzqui, cgil, gmaccha-, sreffers and dacastil*
+*This project has been created as part of the 42 curriculum by loruzqui, cgil, gmaccha-, sreffers, dacastil*
 
-# DeployHub
+# Description
 
-## Description
+## DeployHub
 
-**DeployHub** is a mini PaaS (Platform-as-a-Service) web application: users connect
-a Git repository, trigger a deployment, and watch it being built and run in real
-time — repo clone → Docker image build → container start → live logs streamed to
-the browser.
+DeployHub is a mini **PaaS (Platform-as-a-Service)** that allows users to connect Git repositories, deploy Dockerized applications and monitor their deployments in real time.
 
-Core flow:
+The main workflow is:
 
-1. User creates a project and connects a repository.
-2. User triggers a deploy.
-3. Backend clones the repo, builds a Docker image and starts a container.
-4. Build/runtime logs and status are streamed to the frontend over WebSockets.
-5. Deployment health and infrastructure metrics are visible on Prometheus/Grafana
-   dashboards.
-
-Key features:
-
-- Email/password authentication with hashed passwords, plus OAuth login (Google,
-  GitHub, 42).
-- Project/deployment creation and lifecycle tracking (`PENDING → BUILDING → RUNNING
-  / FAILED`).
-- Real-time build logs and deployment status via WebSockets, with support for
-  multiple simultaneous viewers per deployment.
-- Infrastructure and application monitoring dashboards (Prometheus + Grafana +
-  cAdvisor).
-- Analytics/KPI dashboard with charts over deployment activity.
-
-## Instructions
-
-### Prerequisites
-
-- Docker and Docker Compose (or Podman equivalent)
-- Node.js 20+ and npm (only needed for local frontend/backend development outside
-  Docker)
-- OAuth applications registered on Google Cloud Console, GitHub Developer
-  Settings, and the 42 Intranet (to obtain client IDs/secrets)
-
-### Environment setup
-
-1. Copy the example environment files:
-   ```bash
-
-   ```
-
-### Running the project
-
-```bash
-docker compose up -d --build
+```text
+Git Repository
+     ↓
+Create Project
+     ↓
+Deploy
+     ↓
+Clone Repository
+     ↓
+Build Docker Image
+     ↓
+Run Container
+     ↓
+Live Logs & Status
 ```
-
-Services and default ports:
-
-| Service | Port | Description |
-|---|---|---|
-| Frontend (Next.js) | 3000 | Web UI |
-| Backend (NestJS) | 3001 / 8000 <!-- TODO: confirm exact port --> | Deployment engine + WebSocket gateway |
-| Auth service (Express) | 3001 | Authentication & OAuth |
-| PostgreSQL | 5432 | Database |
-| Prometheus | 9090 | Metrics collection |
-| Grafana | 3000 <!-- TODO: confirm, avoid port clash with frontend --> | Monitoring dashboards |
-| Traefik | 80 | Reverse proxy / routing |
-
-## Resources
-
-- NestJS documentation — https://docs.nestjs.com
-- Next.js documentation — https://nextjs.org/docs
-- Prisma documentation — https://www.prisma.io/docs
-- Traefik documentation — https://doc.traefik.io/traefik/
-- Socket.IO documentation — https://socket.io/docs/v4/
-- Prometheus / Grafana documentation
-
-### AI usage disclosure
-
-
-
-## Team Information
-
-The subject requires four role types (Product Owner, Project Manager/Scrum
-Master, Technical Lead/Architect, Developers). Our team additionally split
-implementation work into five functional areas ("Polos"). Both mappings are
-listed below.
-
-| Member | 42 login | Subject role(s) | Functional area ("Polo") | Responsibilities |
-|---|---|---|---|---|
-| Loreto | loruzqui | <!-- TODO --> | Polo D — Real-time | WebSocket gateway, live log/status streaming, multi-client synchronization |
-| Claudia | cgil | <!-- TODO --> | Polo B — Deployment engine | `/deploy` endpoint, git clone + Docker build/run pipeline, deployment state machine |
-| Daniel | dacastil | <!-- TODO --> | Polo C — Security & data | PostgreSQL schema, Prisma, authentication, OAuth, roles |
-| Giselle | gmaccha- | <!-- TODO --> | Polo E — Frontend & dashboard | Dashboard UI, deploy view, auth UI, WebSocket client integration |
-| Sam | sreffers | <!-- TODO --> | Polo A — Infrastructure | Docker Compose, Traefik reverse proxy, Prometheus/Grafana monitoring |
-
-## Project Management
-
-- Task tracking tool used: Trello, Notion
-- Communication channel:
-- Meeting cadence: weekly sync
-- How work was divided: the project was split into five functional areas
-  ("Polos") described above, each owned by one team member, with explicit
-  dependencies between them (e.g. Polo B depends on Polo A's Docker setup;
-  Polo D depends on Polo B's log output; Polo E depends on Polo B/C/D).
-
-## Technical Stack
-
-**Frontend**
-- Next.js 16 (React 19), used as the frontend framework
-- Tailwind CSS v4 for styling
-- `socket.io-client` for real-time updates
-- `recharts` for analytics charts
-- `next-auth` / `next-themes` / `react-hot-toast`
-
-**Backend**
-- NestJS 11 (deployment engine + WebSocket gateway), TypeScript
-- Express-based standalone **auth-service** (separate microservice) for
-  authentication and OAuth
-- `socket.io` (via `@nestjs/websockets` + `@nestjs/platform-socket.io`) for
-  real-time communication
-- `prom-client` for exposing Prometheus metrics
-- `class-validator` / `class-transformer` for DTO validation <!-- TODO: currently
-  not enforced globally, see Known Limitations -->
-
-**Database**
-- PostgreSQL, accessed through **Prisma ORM**
-- Chosen for relational integrity between users and deployments, and native
-  Docker image availability
-
-**Infrastructure**
-- Docker / Docker Compose for containerization
-- Traefik as reverse proxy / router
-- Prometheus + cAdvisor for metrics collection, Grafana for dashboards
-
-**Justification for major technical choices**
-
-## Database Schema
-
-Defined in `services/auth-service/prisma/schema.prisma` (PostgreSQL).
-
-**`users`**
-
-| Field | Type | Notes |
-|---|---|---|
-| `user_id` | UUID (PK) | |
-| `username` | varchar(50), unique | |
-| `email` | varchar(100), unique | |
-| `password_hash` | varchar, nullable | null for OAuth-only accounts |
-| `provider` | varchar(20), nullable | `local` \| `google` \| `github` \| `42` |
-| `provider_id` | varchar(255), nullable | unique per provider (`@@unique([provider, provider_id])`) |
-| `role` | varchar(20), nullable | <!-- TODO: not currently enforced by any guard, see Known Limitations --> |
-| `created_at` | timestamp | |
-
-**`deploy`**
-
-| Field | Type | Notes |
-|---|---|---|
-| `deployment_id` | UUID (PK) | |
-| `user_id` | UUID (FK → `users.user_id`, `onDelete: Cascade`) | |
-| `status` | enum: `PENDING`, `QUEUED`, `BUILDING`, `SUCCESS`, `FAILED` | |
-| `repoUrl` | varchar(255) | |
-| `commitHash` | varchar(255), nullable | |
-| `envVariables` | JSON, nullable | |
-| `port` | int, nullable | |
-| `created_at` / `updated_at` | timestamp | |
-
-**Relations**: one `user` has many `deploy` rows (1‑to‑many).
-
-<!-- TODO (team): confirm whether services/backend reads/writes the `deploy`
-table via this same Prisma schema or through its own copy, and whether it goes
-through auth-service's API for user data or queries the DB directly — this
-affects whether the "Microservices" module counts as properly decoupled. -->
 
 ## Features List
 
-| Feature | Status | Owner |
-|---|---|---|
-| Email/password signup & login (bcrypt-hashed) | ✅ Done | Daniel |
-| OAuth login (Google, GitHub, 42) | ✅ Done | Daniel |
-| Roles column on users | ⚠️ Schema only, not enforced | Daniel |
-| Deploy pipeline (clone → build → run) | ✅ Done | Claudia |
-| Deployment state tracking | ✅ Done | Claudia |
-| Real-time build logs (WebSocket) | ✅ Done | Loreto |
-| Real-time deployment status | ✅ Done | Loreto |
-| Reconnection / multi-client sync | ⚠️ In progress | Loreto |
-| Dashboard UI (projects, deploy status) | ✅ Done | Giselle |
-| Live log terminal view | ✅ Done | Giselle |
-| Analytics/KPI charts | ⚠️ Partial (no export/date filters yet) | Giselle |
-| Notification system | ❌ Not started | Claudia / Loreto / Giselle |
-| Search functionality | ❌ Not started | Claudia / Giselle |
-| Multi-language (i18n) | ❌ Not started | Giselle |
-| Reverse proxy + routing | ✅ Done | Sam |
-| HTTPS | ❌ Not started | Sam |
-| Prometheus + Grafana monitoring | ⚠️ Partial (no alerting rules, Grafana access not secured) | Sam |
-| WAF / ModSecurity | ❌ Not started | Sam |
-| HashiCorp Vault | ❌ Not started | Daniel |
-| Privacy Policy / Terms of Service pages | ❌ Not started | Giselle |
+* **User authentication** — User registration, login, JWT authentication and secure password hashing with bcrypt.
+  **Contributors:** Daniel
+
+* **OAuth authentication** — Authentication through Google, GitHub and 42 Intra.
+  **Contributors:** Daniel
+
+* **Git repository integration** — Connect projects to Git repositories and deploy from a selected commit.
+  **Contributors:** Claudia
+
+* **Docker deployments** — Clone repositories, build Docker images and run application containers.
+  **Contributors:** Claudia
+
+* **Environment configuration** — Configure environment variables for deployments.
+  **Contributors:** Claudia
+
+* **Automatic port allocation** — Assign an available port when launching a deployment.
+  **Contributors:** Claudia
+
+* **Deployment status tracking** — Track deployment progress and final status.
+  **Contributors:** Claudia / Loreto
+
+* **Real-time deployment logs** — Display deployment output and status updates through WebSockets without refreshing the page.
+  **Contributors:** Loreto / Claudia / Giselle
+
+* **Deployment history** — Access previous deployments and their information.
+  **Contributors:** Claudia / Giselle
+
+* **Advanced log search and filtering** — Search and filter deployment logs, with pagination and CSV export.
+  **Contributors:** Giselle / Claudia
+
+* **Dashboard and analytics** — Visualize projects, deployments and relevant application data.
+  **Contributors:** Giselle
+
+* **Infrastructure monitoring** — Monitor application and container metrics using Prometheus, Grafana and cAdvisor.
+  **Contributors:** Sam
+
+* **HTTPS and reverse proxy** — Secure application traffic and route requests through Traefik.
+  **Contributors:** Sam
+
+* **Web Application Firewall** — Protect the application using ModSecurity and OWASP CRS.
+  **Contributors:** Sam
+
+* **Responsive interface and themes** — Responsive UI with dark/light theme support and reusable components.
+  **Contributors:** Giselle
+
+* **Privacy Policy and Terms of Service** — Accessible pages containing the application's privacy and service information.
+  **Contributors:** Giselle / team
+
+## Instructions
+
+### Requirements
+
+* Docker
+* Docker Compose
+* Git
+* Node.js 20+ for local development
+
+### Environment
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+Configure the required database, authentication, OAuth and service variables.
+
+**Never commit real credentials or secrets to the repository.**
+
+### Run
+
+Start the complete application with:
+
+```bash
+docker compose up --build
+```
+
+Stop the application with:
+
+```bash
+docker compose down
+```
+
+## Resources
+
+* [Next.js](https://nextjs.org/docs)
+* [NestJS](https://docs.nestjs.com)
+* [Prisma](https://www.prisma.io/docs)
+* [PostgreSQL](https://www.postgresql.org/docs/)
+* [Docker](https://docs.docker.com/)
+* [Traefik](https://doc.traefik.io/traefik/)
+* [Socket.IO](https://socket.io/docs/)
+* [Prometheus](https://prometheus.io/docs/)
+* [Grafana](https://grafana.com/docs/)
+* [ModSecurity](https://github.com/owasp-modsecurity/ModSecurity)
+
+### AI Usage
+
+AI tools were used as a development support throughout the project.
+
+The team used AI mainly for:
+
+* Understanding and researching technical concepts.
+* Getting help with debugging and resolving development errors.
+* Exploring possible implementations and approaches.
+* Reviewing and improving code.
+* Generating ideas for UI components and project organization.
+* Helping with documentation and project explanations.
+
+AI-generated suggestions were reviewed and adapted by the team before being integrated into the project. The final implementation, architecture and technical decisions were made and validated by the team.
+
+## Team Information
+
+| Member                   | Role                           | Area                 | Responsibilities |
+| ------------------------ | ------------------------------ | --------------------- | ----------------- |
+| **Loreto** (`loruzqui`)  | Product Owner                  | Real-Time             | Defined product requirements and priorities; implemented real-time functionality, including the WebSocket gateway, deployment rooms, and live deployment logs and status updates. |
+| **Claudia** (`cgil`)     | Developer                      | Deployment Engine     | Built the Deployment Engine: Git repository integration, Docker build/run pipeline, deployment state management, port allocation, environment variable configuration, and deployment error handling. |
+| **Daniel** (`dacastil`)  | Developer                      | Security & Data       | Implemented the authentication service, including PostgreSQL/Prisma integration, password hashing, JWT authentication, and OAuth 2.0 with Google, GitHub, and 42 Intra. |
+| **Giselle** (`gmaccha-`) | Project Manager / Scrum Master | Frontend & Dashboard  | Coordinated team tasks and communication; developed the frontend, project and deployment interfaces, logs interface, and analytics dashboard with reusable UI components. |
+| **Sam** (`sreffers`)     | Technical Lead                 | Infrastructure        | Defined the technical architecture; set up Docker Compose infrastructure, Traefik with HTTPS, ModSecurity, and the monitoring stack (Prometheus, Grafana, cAdvisor, Alertmanager). |
+
+The project was divided into five functional areas:
+
+* **Polo A — Infrastructure**
+* **Polo B — Deployment Engine**
+* **Polo C — Security & Data**
+* **Polo D — Real-Time**
+* **Polo E — Frontend & Dashboard**
+
+## Project Management
+
+The team organized the project by dividing responsibilities between the five Polos and coordinating their dependencies.
+
+* **Task management:** Trello and Notion
+* **Meetings:** Weekly team synchronization
+* **Communication:** Google Team calls and WhatsApp group
+
+All team members contributed to the project and worked on their assigned areas.
+
+## Technical Stack
+
+### Frontend
+
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+* Socket.IO Client
+* Recharts
+* Framer Motion
+
+### Backend
+
+* NestJS
+* TypeScript
+* Socket.IO
+* Prisma
+* Axios
+* Prometheus client
+
+### Authentication
+
+* Express
+* JWT
+* bcrypt
+* OAuth 2.0
+* Google
+* GitHub
+* 42 Intra
+
+### Infrastructure
+
+* Docker
+* Docker Compose
+* Traefik
+* ModSecurity / OWASP CRS
+* Prometheus
+* Grafana
+* cAdvisor
+* Alertmanager
+
+### Main Technical Choices
+
+**Next.js + NestJS:** provide a structured frontend/backend architecture.
+
+**PostgreSQL + Prisma:** provide relational data storage and type-safe database access.
+
+**Docker:** provides isolated and reproducible application environments.
+
+**Socket.IO:** enables real-time deployment updates and live logs.
+
+**Traefik:** provides reverse proxying and HTTPS routing.
+
+**Prometheus + Grafana:** provide infrastructure and application monitoring.
+
+## Database Schema
+
+The database is implemented with **PostgreSQL and Prisma**, using the PostgreSQL `backend` schema.
+
+The Prisma schema is located at:
+
+```text
+services/auth-service/prisma/schema.prisma
+```
+
+The current database contains three main models:
+
+* **Project** — Stores the projects created by users, including the repository URL, project name, default branch and description.
+* **Deploy** — Stores deployment information, including the associated user, project, repository, status, port, commit, branch and environment variables.
+* **DeployLog** — Stores the logs generated by each deployment, including the deployment reference, message and creation timestamp.
+
+### Project
+
+| Field         | Type                          |
+| ------------- | ------------------------------ |
+| id            | String (PK, cuid, no default)  |
+| userId        | String                         |
+| name          | String                         |
+| repoUrl       | String                         |
+| defaultBranch | String (default: `"main"`)     |
+| description   | String? (optional)             |
+| createdAt     | DateTime (default: `now()`)    |
+
+### Deploy
+
+| Field        | Type                          |
+| ------------ | ------------------------------ |
+| id           | String (PK, default: `cuid()`) |
+| userId       | String                         |
+| repoUrl      | String                         |
+| projectId    | String                         |
+| status       | String                         |
+| port         | Int? (optional)                |
+| commitHash   | String? (optional)             |
+| branch       | String? (optional)             |
+| envVariables | String? (optional)             |
+| createdAt    | DateTime (default: `now()`)    |
+
+### DeployLog
+
+| Field     | Type                            |
+| --------- | -------------------------------- |
+| id        | String (PK, default: `cuid()`)   |
+| deployId  | String (indexed)                 |
+| message   | String                           |
+| createdAt | DateTime (default: `now()`)      |
+
+An index on `deployId` is used to efficiently retrieve logs belonging to a deployment.
+
+### Persistence Model
+
+Projects and deployments are persisted in **PostgreSQL** through Prisma, using the `backend` schema with `multiSchema` support.
+
+The current Prisma schema does **not** define a `Team` model. Project ownership and deployment ownership are represented through `userId` fields.
+
+The `Project` and `Deploy` models use plain string identifiers (`userId`, `projectId`) to associate deployments with projects and users. The current Prisma schema does not explicitly define Prisma relation fields (`@relation`) between these models — associations are maintained at the application level rather than enforced by foreign key constraints in the schema.
+
 
 ## Modules
 
-Target: **18 points** (14 required + 4 buffer), recalculated per the subject's
-actual point values (WAF + Vault count as **one** 2-point Major module, not
-two separate ones).
+The project reaches **19 points** through the following modules:
 
-| Category | Module | Type | Points | Status | Owner(s) |
-|---|---|---|---|---|---|
-| Web | Frontend framework (Next.js) + Backend framework (NestJS) | Major | 2 | ✅ Done | Claudia / Giselle |
-| Web | Real-time features (WebSockets) | Major | 2 | ⚠️ Needs reconnection/multi-user hardening | Loreto |
-| Web | ORM (Prisma) | Minor | 1 | ✅ Done | Daniel |
-| Web | Custom design system (10+ reusable components) | Minor | 1 | ⚠️ Components exist, not fully consistent/documented | Giselle |
-| Web | Advanced search (filters/sort/pagination) | Minor | 1 | ❌ Not started | Claudia / Giselle |
-| Web | Notification system | Minor | 1 | ❌ Not started | Claudia / Loreto / Giselle |
-| Accessibility & i18n | Multiple languages (i18n, 3+) | Minor | 1 | ❌ Not started | Giselle |
-| Accessibility & i18n | Additional browser support | Minor | 1 | ❌ Not verified | Giselle |
-| User Management | OAuth 2.0 (Google/GitHub/42) | Minor | 1 | ✅ Done | Daniel |
-| Cybersecurity | WAF/ModSecurity + HashiCorp Vault | Major | 2 | ❌ Not started | Sam / Daniel |
-| DevOps | Monitoring (Prometheus + Grafana) | Major | 2 | ⚠️ Needs alerting rules + secured access | Sam |
-| DevOps | Microservices | Major | 2 | ⚠️ Needs clearer service boundary (see Database Schema note) | Daniel / Claudia |
-| Data & Analytics | Analytics dashboard | Major | 2 | ⚠️ Needs export (PDF/CSV) + date filters | Giselle / Claudia |
+| Module                            | Type  | Points |
+| --------------------------------- | ----- | -----: |
+| Frontend + Backend Frameworks     | Major |      2 |
+| Real-Time Features                | Major |      2 |
+| ORM — Prisma                      | Minor |      1 |
+| OAuth 2.0                         | Minor |      1 |
+| Advanced Permissions System       | Major |      2 |
+| Monitoring — Prometheus + Grafana | Major |      2 |
+| Notifications                     | Minor |      1 |
+| Advanced Search                   | Minor |      1 |
+| Multiple Languages                | Minor |      1 |
+| Backend as Microservices          | Major |      2 |
+| Support for additional browsers   | Minor |      1 |
+| Advanced analytics dashboard      | Major |      2 |
+| User activity Analytics           | Minor |      1 |
+| **Total**                         |       | **19** |
 
-**Justification** <!-- TODO (team): 1-2 sentences per module explaining why it
-was chosen and how it adds value, required by the subject for every module and
-mandatory for the two custom/complex ones. -->
+### Frontend + Backend Frameworks — Major — 2 pts
+
+**Who:** Giselle + Sam / team
+
+**How it was implemented:** The frontend was built with Next.js/React and the backend with NestJS. Responsibilities are separated between the user interface, API and backend services.
+
+### Real-Time Features — Major — 2 pts
+
+**Who:** Loreto + Claudia + Giselle
+
+**How it was implemented:** The Deployment Engine generates deployment state changes and process logs. The backend converts this information into Socket.IO events, which are received by subscribed clients without requiring a page refresh. Rooms are used to separate events by deployment.
+
+### ORM — Prisma — Minor — 1 pt
+
+**Who:** Daniel
+
+**How it was implemented:** Prisma is used as the ORM between the backend and PostgreSQL. The Prisma schema defines the database models and relationships, while Prisma Client provides type-safe database access from TypeScript.
+
+### OAuth 2.0 — Minor — 1 pt
+
+**Who:** Daniel
+
+**How it was implemented:** OAuth providers are integrated to allow external authentication through Google, GitHub and 42 Intra, in addition to the application's local authentication.
+
+### Advanced Permissions System — Major — 2 pts
+
+**Who:** Daniel + team
+
+**How it was implemented:** The application implements different access levels according to the user's role and permissions. These permissions determine which resources and actions each user can access or manage.
+
+The implementation provides different views and available actions depending on the user's permissions.
+
+### Monitoring — Major — 2 pts
+
+**Who:** Sam + team
+
+**How it was implemented:** The infrastructure is monitored using Prometheus, Grafana and cAdvisor. Prometheus collects metrics, cAdvisor provides container-level metrics and Grafana visualizes the collected information. Alertmanager handles monitoring alerts.
+
+### Notifications — Minor — 1 pt
+
+**Who:** Loreto + Giselle
+
+**How it was implemented:** DeployHub incorporates a notification system to inform users about relevant application events, particularly events related to the status and progress of their deployments. Notifications are integrated with the application's event system so users receive updates without having to refresh the page.
+
+### Advanced Search — Minor — 1 pt
+
+**Who:** Giselle + Claudia
+
+**How it was implemented:** Deployment logs can be searched and filtered using different criteria. Results support pagination, allowing users to navigate through large amounts of log information efficiently.
+
+### Multiple Languages — Minor — 1 pt
+
+**Who:** Loreto
+
+**How it was implemented:** The frontend uses an internationalization (i18n) system to support multiple languages. User-facing text is handled through translations and users can switch between the available languages through the interface.
+
+### Backend as Microservices — Major — 2 pts
+
+**Who:** Daniel + Sam
+
+**How it was implemented:** Authentication is separated into an independent service from the main backend. The main NestJS backend handles deployment functionality, WebSockets and monitoring-related functionality.
+
+This separation isolates responsibilities and allows the different services to be developed and maintained independently.
+
+
+### Support for Additional Browsers — Minor — 1 pt
+
+**Who:** Sam
+
+**How it was implemented:** The application is designed to work correctly across different modern web browsers, ensuring that the main functionality and user interface remain accessible and usable beyond a single browser environment.
+
+### Advanced Analytics Dashboard — Major — 2 pts
+
+**Who:** Sam
+
+**How it was implemented:** Interactive dashboard with line, bar and pie charts showing deployment metrics — success/failure rates, build duration and resource usage. Data updates in real time via Socket.IO, supports custom date range filters, and can be exported as PDF/CSV.
+
+### User Activity Analytics and Insights Dashboard — Minor — 1 pt
+
+**Who:** Sam
+
+**How it was implemented:** DeployHub provides an analytics dashboard that collects and presents user activity and deployment-related data through visualizations and aggregated metrics. This allows users to obtain insights into their activity and the overall behavior of their deployments from a centralized dashboard.
 
 ## Individual Contributions
 
-<!-- TODO (team): each member should write 2-4 sentences here on what they
-built, in their own words, plus any challenge they hit and how they solved it.
-Git commit counts (from `git shortlog -sn --all`) as a starting reference:
-loreeue/Loreto Uzquiano Esteban: 27, Giselle Maccha: 19, DanielCasti11o: 16,
-Claudia/Claudia Gil: 17, samael_maza: 8. -->
+### Loreto — Product Owner
 
-- **Loreto (Polo D — Real-time)**:
-- **Claudia (Polo B — Deployment engine)**:
-- **Daniel (Polo C — Security & data)**:
-- **Giselle (Polo E — Frontend & dashboard)**:
-- **Sam (Polo A — Infrastructure)**:
+* Product requirements and prioritization.
+* Real-time functionality.
+* WebSocket gateway.
+* Deployment rooms.
+* Live deployment logs and status.
 
-## Known Limitations
+### Claudia — Developer
 
+* Deployment Engine.
+* Git integration.
+* Docker build/run pipeline.
+* Deployment states.
+* Port allocation.
+* Environment variables.
+* Deployment error handling.
 
+### Daniel — Developer
+
+* PostgreSQL and Prisma.
+* Authentication service.
+* Password hashing.
+* JWT.
+* Google, GitHub and 42 OAuth.
+
+### Giselle — Project Manager / Scrum Master
+
+* Team coordination and task management.
+* Frontend and dashboard.
+* Project and deployment interfaces.
+* Logs interface.
+* Analytics and reusable UI components.
+
+### Sam — Technical Lead
+
+* Technical architecture.
+* Docker Compose infrastructure.
+* Traefik and HTTPS.
+* ModSecurity.
+* Prometheus, Grafana, cAdvisor and Alertmanager.
+
+## Privacy & Terms
+
+DeployHub provides accessible **Privacy Policy** and **Terms of Service** pages containing information relevant to the application.
