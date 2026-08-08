@@ -173,7 +173,7 @@ export function PipelineModule({ t }: { t: Theme }) {
       </div>
 
       {projects.length === 0 ? (
-        <Card t={t} style={{ padding: 20, borderColor: t.accentBorder }}>
+        <Card t={t} style={{ marginBottom: 20, padding: 20, borderColor: t.accentBorder }}>
           <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
             <GitBranch size={22} color={t.accent} />
             <div>

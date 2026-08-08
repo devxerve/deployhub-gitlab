@@ -92,7 +92,9 @@ export function DashboardModule({ t }: { t: Theme }) {
                 <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{d.projectId}</div>
                 <div style={{ fontSize: 11, color: t.muted }}>{d.commitHash?.slice(0, 7) ?? "—"} · {d.repoUrl.split("/").slice(-1)[0]}</div>
               </div>
-              <Badge label={tr(`status.${d.status.toLowerCase()}`).toUpperCase()} color={c} />
+              <div style={{ textAlign: "center" }}>
+                <Badge label={tr(`status.${d.status.toLowerCase()}`).toUpperCase()} color={c} />
+              </div>
               <span style={{ fontSize: 12, color: d.port ? t.success : t.muted }}>{d.port ? `:${d.port}` : "—"}</span>
               <span style={{ fontSize: 12, color: t.muted, textAlign: "right" }}>{timeAgo(d.createdAt, tr)}</span>
             </div>

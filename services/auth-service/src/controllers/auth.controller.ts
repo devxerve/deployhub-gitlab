@@ -146,7 +146,7 @@ export const login = async (
   }
 };
 
-export const validate = (req: Request, res: Response): void => {
+export const validate = async (req: Request, res: Response): Promise<void> => {
   try {
     const cookies: unknown = req.cookies;
     let token: string | undefined;
@@ -178,6 +178,18 @@ export const validate = (req: Request, res: Response): void => {
 
     if (!decoded) {
       res.status(401).json({ message: 'Token inválido o expirado' });
+      return;
+    }
+
+    // The JWT signature alone doesn't know if the account behind it still
+    // exists — without this, a deleted user keeps full access until their
+    // token naturally expires (up to JWT_EXPIRES_IN).
+    const user = await prisma.users.findUnique({
+      where: { user_id: String(decoded.user_id) },
+    });
+
+    if (!user) {
+      res.status(401).json({ message: 'Cuenta no encontrada o eliminada' });
       return;
     }
 

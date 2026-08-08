@@ -23,6 +23,7 @@ import {
   type Project,
 } from "@/lib/api";
 import { joinDeployRoom, onDeployLog, onDeployStatus } from "@/lib/socket";
+import { deploySiteUrl } from "@/lib/config";
 import { useTranslation, type TranslateFn } from "@/lib/i18n/context";
 
 const STATUS_PROGRESS: Record<string, number> = {
@@ -318,11 +319,13 @@ export function DeploymentsModule({ t }: { t: Theme }) {
                     {deployment.commitHash?.slice(0, 7) ?? deployment.branch ?? "default"} · {deployment.repoUrl.split("/").slice(-1)[0]}
                   </div>
                 </div>
-                <Badge label={statusLabel} color={color} />
+                <div style={{ textAlign: "center" }}>
+                  <Badge label={statusLabel} color={color} />
+                </div>
                 <span style={{ fontSize: 11, color: t.muted }}>{timeAgo(deployment.createdAt, tr)}</span>
                 {statusLower === "success" && (
                   <a
-                    href={`https://${deployment.id}.localhost`}
+                    href={deploySiteUrl(deployment.id)}
                     target="_blank"
                     rel="noreferrer"
                     onClick={(event) => event.stopPropagation()}
@@ -362,7 +365,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               {selected.status.toLowerCase() === "success" && (
-                <Btn t={t} onClick={() => window.open(`https://${selected.id}.localhost`, "_blank", "noreferrer")}>
+                <Btn t={t} onClick={() => window.open(deploySiteUrl(selected.id), "_blank", "noreferrer")}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><ExternalLink size={14} /> {tr("deployments.openSite")}</span>
                 </Btn>
               )}
