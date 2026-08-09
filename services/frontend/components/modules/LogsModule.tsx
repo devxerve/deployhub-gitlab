@@ -79,6 +79,9 @@ export function LogsModule({ t }: { t: Theme }) {
           />
 
           <input
+            id="logs-search"
+            name="logs-search"
+            autoComplete="off"
             value={search}
             onChange={(event) => {
               setSearch(event.target.value);

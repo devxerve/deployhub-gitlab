@@ -29,54 +29,6 @@ function useContainerWidth<T extends HTMLElement>(fallback: number) {
 }
 
 
-export function SparklineArea({
-  data, color, h = 36, w = 120,
-}: { data: number[]; color: string; h?: number; w?: number }) {
-  const min = Math.min(...data), max = Math.max(...data), rng = max - min || 1;
-  const divisor = Math.max(1, data.length - 1);
-
-const pts = data
-  .map(
-    (v, i) =>
-      `${(i / divisor) * w},${h - ((v - min) / rng) * (h - 4) - 2}`,
-  )
-  .join(" ");
-  const id = `sa-${color.replace(/[^a-z0-9]/gi, "")}`;
-  return (
-    <svg width={w} height={h} style={{ display: "block", overflow: "visible" }}>
-      <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon points={`0,${h} ${pts} ${w},${h}`} fill={`url(#${id})`} />
-      <polyline fill="none" stroke={color} strokeWidth="1.8" points={pts} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
- 
-export function DonutChart({
-  value, max = 100, color, size = 80, stroke = 7,
-}: { value: number; max?: number; color: string; size?: number; stroke?: number }) {
-  const r = (size - stroke) / 2;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (value / max) * circ;
-  return (
-    <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(148,163,184,0.12)" strokeWidth={stroke} />
-      <circle
-        cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-        strokeDasharray={`${circ} ${circ}`} strokeDashoffset={offset}
-        strokeLinecap="round"
-        style={{ transition: "stroke-dashoffset 0.8s ease", filter: `drop-shadow(0 0 4px ${color}66)` }}
-      />
-    </svg>
-  );
-}
-
-
 import { HistoryPoint } from "@/lib/api";
 
 export function MetricsChart({ t, data }: { t: Theme, data?: HistoryPoint[] }) {

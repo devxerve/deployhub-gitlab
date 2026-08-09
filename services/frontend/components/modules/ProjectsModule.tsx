@@ -6,7 +6,6 @@ import {
   ExternalLink,
   FolderGit2,
   GitBranch,
-  PackageCheck,
   Plus,
   Search,
   Trash2,
@@ -203,6 +202,9 @@ export function ProjectsModule({ t }: { t: Theme }) {
         <div style={{ position: "relative", flex: 1, minWidth: 220 }}>
           <Search size={16} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: t.muted, pointerEvents: "none" }} />
           <input
+            id="projects-search"
+            name="projects-search"
+            autoComplete="off"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder={tr("projects.searchPlaceholder")}
@@ -306,15 +308,15 @@ export function ProjectsModule({ t }: { t: Theme }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
             <label style={{ fontSize: 12, color: t.muted }}>
               {tr("projects.form.name")}
-              <TextInput t={t} value={form.name} onChange={(value) => setForm((current) => ({ ...current, name: value }))} placeholder={tr("projects.form.namePlaceholder")} style={{ marginTop: 6 }} />
+              <TextInput t={t} id="project-name" value={form.name} onChange={(value) => setForm((current) => ({ ...current, name: value }))} placeholder={tr("projects.form.namePlaceholder")} style={{ marginTop: 6 }} />
             </label>
             <label style={{ fontSize: 12, color: t.muted }}>
               {tr("projects.form.repoUrl")}
-              <TextInput t={t} value={form.repoUrl} onChange={(value) => setForm((current) => ({ ...current, repoUrl: value }))} placeholder={tr("projects.form.repoUrlPlaceholder")} style={{ marginTop: 6 }} />
+              <TextInput t={t} id="project-repo-url" value={form.repoUrl} onChange={(value) => setForm((current) => ({ ...current, repoUrl: value }))} placeholder={tr("projects.form.repoUrlPlaceholder")} style={{ marginTop: 6 }} />
             </label>
             <label style={{ fontSize: 12, color: t.muted }}>
               {tr("projects.form.description")}
-              <TextInput t={t} value={form.description} onChange={(value) => setForm((current) => ({ ...current, description: value }))} placeholder={tr("projects.form.descriptionPlaceholder")} style={{ marginTop: 6 }} />
+              <TextInput t={t} id="project-description" value={form.description} onChange={(value) => setForm((current) => ({ ...current, description: value }))} placeholder={tr("projects.form.descriptionPlaceholder")} style={{ marginTop: 6 }} />
             </label>
 
             {formError && (
@@ -357,11 +359,6 @@ export function ProjectsModule({ t }: { t: Theme }) {
                 </span>
               </Btn>
             </a>
-            <Btn t={t} style={{ flex: 1 }} onClick={() => setSelected(null)}>
-              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-                <PackageCheck size={14} /> {tr("projects.readyToDeploy")}
-              </span>
-            </Btn>
           </div>
         </Modal>
       )}

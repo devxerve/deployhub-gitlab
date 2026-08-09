@@ -37,24 +37,12 @@ export async function createDeployment(dto: CreateDeployDto): Promise<Deploy> {
   return res.json();
 }
 
-export async function getDeployment(id: string): Promise<Deploy> {
-  const res = await fetch(`${API_URL}/deploy/${id}`, { credentials: "include" });
-  if (!res.ok) throw new Error("Error al obtener deployment");
-  return res.json();
-}
-
 export async function deleteDeployment(id: string): Promise<void> {
   const res = await fetch(`${API_URL}/deploy/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
   if (!res.ok) throw new Error("Error al eliminar deployment");
-}
-
-export async function getDeploymentStatus(id: string): Promise<{ id: string; status: string }> {
-  const res = await fetch(`${API_URL}/deploy/${id}/status`, { credentials: "include" });
-  if (!res.ok) throw new Error("Error al obtener estado");
-  return res.json();
 }
 
 export async function getDeploymentLogs(id: string): Promise<string[]> {

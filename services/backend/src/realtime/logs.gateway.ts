@@ -80,17 +80,4 @@ export class LogsGateway {
       status,
     });
   }
-
-  sendStart(deployId: string): void {
-    this.server.to(`deploy-${deployId}`).emit("deploy:start", {
-      deployId,
-    });
-  }
-
-  sendEnd(deployId: string, success: boolean): void {
-    this.server.to(`deploy-${deployId}`).emit("deploy:end", {
-      deployId,
-      success,
-    });
-  }
 }

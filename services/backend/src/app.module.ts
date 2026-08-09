@@ -1,6 +1,4 @@
 import { Module, MiddlewareConsumer, NestModule } from "@nestjs/common";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
 import { RealtimeModule } from "./realtime/realtime.module";
 import { DeploymentsModule } from "./deployments/deployments.module";
 import { AuthModule } from "./auth/auth.module";
@@ -16,8 +14,6 @@ import { ProjectsModule } from "./projects/projects.module";
     MonitoringModule,
     ProjectsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

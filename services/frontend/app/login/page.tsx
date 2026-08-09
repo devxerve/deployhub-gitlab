@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/context";
+import { useTheme } from "@/hooks/useTheme";
 import { API_URL, AUTH_SERVICE_URL } from "@/lib/config";
 import { Modal, Btn } from "@/components/ui";
 import { DARK, LIGHT } from "@/lib/themes";
@@ -56,10 +57,10 @@ const BoltIcon = () => (
 export default function LoginPage() {
   const { t: tr } = useTranslation();
   const router = useRouter();
+  const { isDark, toggle: toggleTheme } = useTheme();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isDark, setIsDark] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
   const [popup, setPopup] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -126,8 +127,8 @@ async function handleRegister(e: React.FormEvent) {
   }
 }
 
-  const t = isDark ? light : dark;
-  const modalTheme = isDark ? LIGHT : DARK;
+  const t = isDark ? dark : light;
+  const modalTheme = isDark ? DARK : LIGHT;
 
 
   return (
@@ -141,7 +142,7 @@ async function handleRegister(e: React.FormEvent) {
         <div style={{ ...styles.glow2, background: t.glow2 }} />
 
         <button
-          onClick={() => setIsDark(!isDark)}
+          onClick={toggleTheme}
           style={{ ...styles.themeToggle, ...t.toggleStyle }}
         >
           {isDark ? (
@@ -157,6 +158,7 @@ async function handleRegister(e: React.FormEvent) {
           )}
         </button>
 
+        <div style={styles.cardColumn}>
         <form
           onSubmit={isRegistering ? handleRegister : handleLogin}
           style={{ ...styles.card, ...t.cardStyle }}
@@ -211,9 +213,12 @@ async function handleRegister(e: React.FormEvent) {
           )}
 
           <div style={styles.field}>
-            <label style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.username")}</label>
+            <label htmlFor="login-username" style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.username")}</label>
             <input
+              id="login-username"
+              name="username"
               type="text"
+              autoComplete="username"
               placeholder={tr("login.usernamePlaceholder")}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -226,9 +231,12 @@ async function handleRegister(e: React.FormEvent) {
 
           {isRegistering && (
             <div style={styles.field}>
-              <label style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.email")}</label>
+              <label htmlFor="login-email" style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.email")}</label>
               <input
+                id="login-email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 placeholder={tr("login.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -241,9 +249,12 @@ async function handleRegister(e: React.FormEvent) {
           )}
 
           <div style={styles.field}>
-            <label style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.password")}</label>
+            <label htmlFor="login-password" style={{ ...styles.fieldLabel, color: t.labelColor }}>{tr("login.password")}</label>
             <input
+              id="login-password"
+              name="password"
               type="password"
+              autoComplete={isRegistering ? "new-password" : "current-password"}
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -306,6 +317,17 @@ async function handleRegister(e: React.FormEvent) {
             </button>
           </div>
         </form>
+
+        <div style={{ ...styles.legalFooter, color: t.footerColor }}>
+          <a href="/settings?tab=privacy" style={{ color: "inherit", textDecoration: "none" }}>
+            {tr("settings.tabs.privacy")}
+          </a>
+          <span aria-hidden="true">·</span>
+          <a href="/settings?tab=terms" style={{ color: "inherit", textDecoration: "none" }}>
+            {tr("settings.tabs.terms")}
+          </a>
+        </div>
+        </div>
 
         {popup && (
           <Modal
@@ -385,6 +407,13 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 500,
     transition: "all 0.2s",
     border: "none",
+  },
+  cardColumn: {
+    display: "flex",
+    flexDirection: "column" as const,
+    alignItems: "center",
+    position: "relative",
+    zIndex: 1,
   },
   card: {
     position: "relative",
@@ -518,6 +547,16 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: "center" as const,
     marginTop: 20,
     fontSize: 12,
+  },
+  legalFooter: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 20,
+    fontSize: 11,
+    position: "relative",
+    zIndex: 1,
   },
 };
 

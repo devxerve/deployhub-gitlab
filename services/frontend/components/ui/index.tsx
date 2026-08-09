@@ -160,13 +160,17 @@ export function Btn({
 
 
 export function TextInput({
-  t, value, onChange, placeholder, type = "text", style = {},
+  t, value, onChange, placeholder, type = "text", style = {}, id, name, autoComplete,
 }: {
   t: Theme; value: string; onChange: (v: string) => void;
   placeholder?: string; type?: string; style?: React.CSSProperties;
+  id?: string; name?: string; autoComplete?: string;
 }) {
   return (
     <input
+      id={id}
+      name={name ?? id}
+      autoComplete={autoComplete}
       type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -185,11 +189,12 @@ export function TextInput({
 
 
 export function Select({
-  t, value, onChange, options, placeholder, icon, disabled = false, style = {},
+  t, value, onChange, options, placeholder, icon, disabled = false, style = {}, id, name,
 }: {
   t: Theme; value: string; onChange: (v: string) => void;
   options: { value: string; label: string }[]; placeholder?: string;
   icon?: React.ReactNode; disabled?: boolean; style?: React.CSSProperties;
+  id?: string; name?: string;
 }) {
   return (
     <div style={{ position: "relative", ...style }}>
@@ -199,6 +204,8 @@ export function Select({
         </span>
       )}
       <select
+        id={id}
+        name={name ?? id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
@@ -220,35 +227,5 @@ export function Select({
       </select>
       <ChevronDown size={15} style={{ position: "absolute", right: 11, top: "50%", transform: "translateY(-50%)", color: t.muted, pointerEvents: "none" }} />
     </div>
-  );
-}
-
-
-export function SectionHeader({
-  t, title, subtitle, action,
-}: { t: Theme; title: string; subtitle?: string; action?: React.ReactNode }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
-      <div>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: t.text }}>{title}</h2>
-        {subtitle && <p style={{ margin: "4px 0 0", fontSize: 13, color: t.muted }}>{subtitle}</p>}
-      </div>
-      {action}
-    </div>
-  );
-}
-
-
-export function StatusBadge({ label, color }: { label: string; color: string }) {
-  return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5,
-      padding: "3px 10px", borderRadius: 999,
-      background: `${color}18`, color, fontSize: 11, fontWeight: 700,
-      border: `1px solid ${color}33`,
-    }}>
-      <span style={{ width: 5, height: 5, borderRadius: "50%", background: color, boxShadow: `0 0 4px ${color}` }} />
-      {label}
-    </span>
   );
 }

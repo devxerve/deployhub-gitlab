@@ -34,8 +34,3 @@ export function onDeployStatus(cb: (data: { deployId: string; status: string }) 
   getSocket().on("deploy:status", cb);
   return () => getSocket().off("deploy:status", cb);
 }
-
-export function disconnectSocket() {
-  socket?.disconnect();
-  socket = null;
-}

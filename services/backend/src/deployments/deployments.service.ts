@@ -129,14 +129,6 @@ export class DeploymentsService {
     });
   }
 
-  async getDeployStatus(id: string, userId: string) {
-    const deploy = await this.getDeployByIdForUser(id, userId);
-    return {
-      id: deploy.id,
-      status: deploy.status,
-    };
-  }
-
   async remove(id: string, userId: string) {
     await this.getDeployByIdForUser(id, userId);
     return await this.prisma.deploy.delete({

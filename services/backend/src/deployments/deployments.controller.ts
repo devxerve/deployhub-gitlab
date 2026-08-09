@@ -59,16 +59,6 @@ export class DeploymentsController {
     return this.deploymentsService.remove(id, user.user_id);
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.deploymentsService.getDeployByIdForUser(id, user.user_id);
-  }
-
-  @Get(":id/status")
-  getStatus(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.deploymentsService.getDeployStatus(id, user.user_id);
-  }
-
   @Get(":id/logs")
   getDeployLogs(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.deploymentsService.getDeployLogs(id, user.user_id);

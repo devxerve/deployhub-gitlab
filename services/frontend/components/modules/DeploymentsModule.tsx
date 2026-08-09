@@ -360,6 +360,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
                   {tr("deployments.branchLabel")}
                   <Select
                     t={t}
+                    id="deploy-branch"
                     value={branch}
                     onChange={setBranch}
                     disabled={branchesLoading || branches.length === 0}
@@ -374,6 +375,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
                   {tr("deployments.commitLabel")}
                   <Select
                     t={t}
+                    id="deploy-commit"
                     value={commitHash}
                     onChange={setCommitHash}
                     disabled={commitsLoading || !branch}

@@ -167,6 +167,14 @@ export function SettingsModule({
   const privacySections = getPrivacySections(tr);
   const termsSections = getTermsSections(tr);
 
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("tab") as TabId | null;
+    if (requested && visibleTabs.some((tabItem) => tabItem.id === requested)) {
+      setTab(requested);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [members, setMembers] = useState<TeamMember[] | null>(null);
   const [membersError, setMembersError] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -405,16 +413,18 @@ export function SettingsModule({
             <Badge label={tr("settings.terms.lastUpdated", { date: "2026-08-08" })} color={t.muted} />
           </div>
 
-          {termsSections.map((section) => (
-            <div key={section.title} style={{ marginBottom: 20 }}>
-              <h4 style={{ margin: "0 0 8px", color: t.text, fontSize: 13, fontWeight: 700 }}>{section.title}</h4>
-              <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
-                {section.body.map((line) => (
-                  <li key={line} style={{ color: t.muted, fontSize: 12.5, lineHeight: 1.6 }}>{line}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "20px 28px" }}>
+            {termsSections.map((section) => (
+              <div key={section.title}>
+                <h4 style={{ margin: "0 0 8px", color: t.text, fontSize: 13, fontWeight: 700 }}>{section.title}</h4>
+                <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
+                  {section.body.map((line) => (
+                    <li key={line} style={{ color: t.muted, fontSize: 12.5, lineHeight: 1.6 }}>{line}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
 
           <div style={{ paddingTop: 12, borderTop: `1px solid ${t.border}`, color: t.muted, fontSize: 12 }}>
             {tr("settings.terms.contact")}
@@ -432,16 +442,18 @@ export function SettingsModule({
             <Badge label={tr("settings.privacy.lastUpdated", { date: "2026-08-06" })} color={t.muted} />
           </div>
 
-          {privacySections.map((section) => (
-            <div key={section.title} style={{ marginBottom: 20 }}>
-              <h4 style={{ margin: "0 0 8px", color: t.text, fontSize: 13, fontWeight: 700 }}>{section.title}</h4>
-              <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
-                {section.body.map((line) => (
-                  <li key={line} style={{ color: t.muted, fontSize: 12.5, lineHeight: 1.6 }}>{line}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "20px 28px" }}>
+            {privacySections.map((section) => (
+              <div key={section.title}>
+                <h4 style={{ margin: "0 0 8px", color: t.text, fontSize: 13, fontWeight: 700 }}>{section.title}</h4>
+                <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
+                  {section.body.map((line) => (
+                    <li key={line} style={{ color: t.muted, fontSize: 12.5, lineHeight: 1.6 }}>{line}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
 
           <div style={{ paddingTop: 12, borderTop: `1px solid ${t.border}`, color: t.muted, fontSize: 12 }}>
             {tr("settings.privacy.contact")}
@@ -453,16 +465,16 @@ export function SettingsModule({
         <Modal t={t} title={tr("settings.users.modalTitle")} onClose={() => setShowCreate(false)}>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div>
-              <label style={{ fontSize: 12, color: t.muted }}>{tr("settings.users.form.username")}</label>
-              <TextInput t={t} value={form.username} onChange={(value) => setForm((current) => ({ ...current, username: value }))} style={{ marginTop: 6 }} />
+              <label htmlFor="new-user-username" style={{ fontSize: 12, color: t.muted }}>{tr("settings.users.form.username")}</label>
+              <TextInput t={t} id="new-user-username" value={form.username} onChange={(value) => setForm((current) => ({ ...current, username: value }))} style={{ marginTop: 6 }} />
             </div>
             <div>
-              <label style={{ fontSize: 12, color: t.muted }}>{tr("settings.users.form.email")}</label>
-              <TextInput t={t} value={form.email} onChange={(value) => setForm((current) => ({ ...current, email: value }))} type="email" style={{ marginTop: 6 }} />
+              <label htmlFor="new-user-email" style={{ fontSize: 12, color: t.muted }}>{tr("settings.users.form.email")}</label>
+              <TextInput t={t} id="new-user-email" value={form.email} onChange={(value) => setForm((current) => ({ ...current, email: value }))} type="email" autoComplete="email" style={{ marginTop: 6 }} />
             </div>
             <div>
-              <label style={{ fontSize: 12, color: t.muted }}>{tr("settings.users.form.password")}</label>
-              <TextInput t={t} value={form.password} onChange={(value) => setForm((current) => ({ ...current, password: value }))} type="password" style={{ marginTop: 6 }} />
+              <label htmlFor="new-user-password" style={{ fontSize: 12, color: t.muted }}>{tr("settings.users.form.password")}</label>
+              <TextInput t={t} id="new-user-password" value={form.password} onChange={(value) => setForm((current) => ({ ...current, password: value }))} type="password" autoComplete="new-password" style={{ marginTop: 6 }} />
             </div>
 
             {formError && (

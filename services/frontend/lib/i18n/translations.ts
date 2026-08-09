@@ -185,7 +185,6 @@ const ENTRIES: Entry[] = [
   ["projects.detail.totalDeployments", "Total deployments", "Despliegues totales", "Déploiements au total"],
   ["projects.detail.lastDeployment", "Last deployment", "Último despliegue", "Dernier déploiement"],
   ["projects.openGithub", "Open GitHub", "Abrir GitHub", "Ouvrir GitHub"],
-  ["projects.readyToDeploy", "Ready to deploy", "Listo para desplegar", "Prêt à déployer"],
 
    
   ["deployments.history", "Deployment history", "Historial de despliegues", "Historique des déploiements"],
@@ -319,6 +318,7 @@ const ENTRIES: Entry[] = [
   ["settings.tabs.about", "About", "Acerca de", "À propos"],
   ["settings.tabs.terms", "Terms of Service", "Términos del servicio", "Conditions d'utilisation"],
   ["settings.tabs.privacy", "Privacy Policy", "Política de privacidad", "Politique de confidentialité"],
+  ["settings.backToLogin", "Back to login", "Volver al inicio de sesión", "Retour à la connexion"],
 
   ["settings.users.title", "Team Members", "Miembros del equipo", "Membres de l'équipe"],
   ["settings.users.invite", "Invite", "Invitar", "Inviter"],
