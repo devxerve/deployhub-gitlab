@@ -100,13 +100,14 @@ Configure the required database, authentication, OAuth and service variables.
 Start the complete application with:
 
 ```bash
-docker compose up --build
+docker compose up -d
 ```
 
 Stop the application with:
 
 ```bash
-docker compose down
+docker compose down -v --rmi local --remove-orphans
+docker network rm paas_network
 ```
 
 ## Resources
@@ -141,11 +142,11 @@ AI-generated suggestions were reviewed and adapted by the team before being inte
 
 | Member                   | Role                           | Area                 | Responsibilities |
 | ------------------------ | ------------------------------ | --------------------- | ----------------- |
-| **Loreto** (`loruzqui`)  | Product Owner                  | Real-Time             | Defined product requirements and priorities; implemented real-time functionality, including the WebSocket gateway, deployment rooms, and live deployment logs and status updates. |
+| **Loreto** (`loruzqui`)  | Product Owner + Developer                  | Real-Time             | Defined product requirements and priorities; implemented real-time functionality, including the WebSocket gateway, deployment rooms, and live deployment logs and status updates. |
 | **Claudia** (`cgil`)     | Developer                      | Deployment Engine     | Built the Deployment Engine: Git repository integration, Docker build/run pipeline, deployment state management, port allocation, environment variable configuration, and deployment error handling. |
 | **Daniel** (`dacastil`)  | Developer                      | Security & Data       | Implemented the authentication service, including PostgreSQL/Prisma integration, password hashing, JWT authentication, and OAuth 2.0 with Google, GitHub, and 42 Intra. |
-| **Giselle** (`gmaccha-`) | Project Manager / Scrum Master | Frontend & Dashboard  | Coordinated team tasks and communication; developed the frontend, project and deployment interfaces, logs interface, and analytics dashboard with reusable UI components. |
-| **Sam** (`sreffers`)     | Technical Lead                 | Infrastructure        | Defined the technical architecture; set up Docker Compose infrastructure, Traefik with HTTPS, ModSecurity, and the monitoring stack (Prometheus, Grafana, cAdvisor, Alertmanager). |
+| **Giselle** (`gmaccha-`) | Project Manager / Scrum Master + Developer | Frontend & Dashboard  | Coordinated team tasks and communication; developed the frontend, project and deployment interfaces, logs interface, and analytics dashboard with reusable UI components. |
+| **Sam** (`sreffers`)     | Technical Lead + Developer                 | Infrastructure        | Defined the technical architecture; set up Docker Compose infrastructure, Traefik with HTTPS, ModSecurity, and the monitoring stack (Prometheus, Grafana, cAdvisor, Alertmanager). |
 
 The project was divided into five functional areas:
 
@@ -390,7 +391,7 @@ This separation isolates responsibilities and allows the different services to b
 
 ## Individual Contributions
 
-### Loreto — Product Owner
+### Loreto — Product Owner + Developer
 
 * Product requirements and prioritization.
 * Real-time functionality.
@@ -416,7 +417,7 @@ This separation isolates responsibilities and allows the different services to b
 * JWT.
 * Google, GitHub and 42 OAuth.
 
-### Giselle — Project Manager / Scrum Master
+### Giselle — Project Manager / Scrum Master + Developer
 
 * Team coordination and task management.
 * Frontend and dashboard.
@@ -424,7 +425,7 @@ This separation isolates responsibilities and allows the different services to b
 * Logs interface.
 * Analytics and reusable UI components.
 
-### Sam — Technical Lead
+### Sam — Technical Lead + Developer
 
 * Technical architecture.
 * Docker Compose infrastructure.
