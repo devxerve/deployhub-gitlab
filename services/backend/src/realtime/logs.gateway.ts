@@ -11,7 +11,7 @@ import {
 import type { Server, Socket } from "socket.io";
 
 const socketAllowedOrigins = (
-  process.env.CORS_ORIGINS ?? "https://localhost,http://localhost:3000"
+  process.env.CORS_ORIGINS ?? "https://localhost:8443,http://localhost:3000"
 )
   .split(",")
   .map((origin) => origin.trim())

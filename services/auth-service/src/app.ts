@@ -8,7 +8,6 @@ import oauthRoutes from './routes/oauth.routes';
 
 const app = express();
 
-
 app.use(cors({
   origin: true,
   credentials: true,

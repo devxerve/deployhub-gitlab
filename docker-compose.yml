@@ -80,6 +80,8 @@ services:
       - ANOMALY_OUTBOUND=4
       - ALLOWED_METHODS=GET HEAD POST OPTIONS DELETE PUT PATCH
       - BACKEND=http://dummy:80
+    volumes:
+      - "./services/infra/modsecurity/request-900-exclusion-before-crs.conf:/etc/modsecurity.d/owasp-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf:ro"
     networks:
       - paas_network
 
@@ -242,14 +244,23 @@ services:
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - NODE_ENV=production
-    ports:
-      - "${PORT_AUTH_SERVICE}:${PORT_AUTH_SERVICE}"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.auth.rule=Host(`auth.localhost`)"
       - "traefik.http.routers.auth.entrypoints=websecure"
       - "traefik.http.routers.auth.tls=true"
+      - "traefik.http.routers.auth.middlewares=waf@docker"
       - "traefik.http.services.auth.loadbalancer.server.port=3001"
+      # Google's OAuth policy only exempts the exact host "localhost" (or
+      # loopback IPs) from domain verification, not subdomains like
+      # auth.localhost — so the Google callback needs this path-based route
+      # on plain localhost instead.
+      - "traefik.http.routers.auth-local.rule=Host(`localhost`) && PathPrefix(`/auth`)"
+      - "traefik.http.routers.auth-local.entrypoints=websecure"
+      - "traefik.http.routers.auth-local.tls=true"
+      - "traefik.http.routers.auth-local.priority=100"
+      - "traefik.http.routers.auth-local.service=auth"
+      - "traefik.http.routers.auth-local.middlewares=waf@docker"
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:${PORT_AUTH_SERVICE}/health || exit 1"]
       interval: 30s
