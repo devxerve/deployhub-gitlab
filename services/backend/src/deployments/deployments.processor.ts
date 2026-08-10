@@ -6,38 +6,6 @@ import { DeploymentsService } from "./deployments.service";
 import { GitUtil } from "./utils/git.utils";
 import { DockerUtil } from "./utils/docker.utils";
 
-type EnvVariables = Record<string, string>;
-
-function isEnvVariables(value: unknown): value is EnvVariables {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    return false;
-  }
-
-  return Object.values(value).every((item) => typeof item === "string");
-}
-
-function parseEnvVariables(value: unknown): EnvVariables {
-  if (value === null || value === undefined || value === "") {
-    return {};
-  }
-
-  let parsed: unknown = value;
-
-  if (typeof value === "string") {
-    try {
-      parsed = JSON.parse(value) as unknown;
-    } catch {
-      throw new Error("Invalid environment variables: malformed JSON.");
-    }
-  }
-
-  if (!isEnvVariables(parsed)) {
-    throw new Error("Invalid environment variables: expected string values.");
-  }
-
-  return parsed;
-}
-
 @Injectable()
 export class DeploymentsProcessor {
   private readonly logger = new Logger(DeploymentsProcessor.name);
@@ -93,28 +61,6 @@ export class DeploymentsProcessor {
             `Git Error: Failed to checkout commit ${deploy.commitHash}.`,
           );
         }
-      }
-
-      const variables = parseEnvVariables(deploy.envVariables);
-
-      const envPath = path.join(workDir, ".env");
-      if (variables && Object.keys(variables).length > 0) {
-        await this.deploymentsService.addLogRealtime(
-          id,
-          `Configuring environment variables securely...`,
-        );
-
-        const envContent = Object.entries(variables)
-          .map(([key, value]) => `${key}=${value}`)
-          .join("\n");
-
-        fs.writeFileSync(envPath, envContent, "utf-8");
-        await this.deploymentsService.addLogRealtime(
-          id,
-          `✅ Environment variables injected successfully.`,
-        );
-      } else {
-        fs.writeFileSync(envPath, "", "utf-8");
       }
 
       const dockerfilePath = path.join(workDir, "Dockerfile");

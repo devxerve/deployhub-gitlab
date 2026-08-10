@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { spawn } from "child_process";
-import * as path from "path";
 import { DeploymentsService } from "../deployments.service";
 
 @Injectable()
@@ -87,8 +86,6 @@ export class DockerUtil {
     return new Promise((resolve, reject) => {
       const netWorkName = process.env.DOCKER_NETWORK_NAME || "paas_network";
 
-      const workDir = path.join(process.env.DEPLOY_TMP_DIR || "/app/tmp", id);
-
       const child = spawn("docker", [
         "run",
         "-d",
@@ -106,8 +103,6 @@ export class DockerUtil {
         `traefik.http.routers.deploy-${id}.tls=true`,
         "--label",
         `traefik.http.services.deploy-${id}.loadbalancer.server.port=${targetPort}`,
-        "--env-file",
-        `${workDir}/.env`,
         `image-${id}`,
       ]);
 
