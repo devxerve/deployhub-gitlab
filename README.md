@@ -110,6 +110,12 @@ docker compose down -v --rmi local --remove-orphans
 docker network rm paas_network
 ```
 
+### Repository Requirements for Deployment
+
+To deploy a project through DeployHub, the connected Git repository must meet the following requirements:
+
+* **A `Dockerfile` at the root of the repository is mandatory.** If no `Dockerfile` is found, the deployment fails immediately with `Cannot process request: Dockerfile missing.` There is no default/fallback Dockerfile — the platform does not build or run a project that doesn't provide one.
+
 ## Resources
 
 * [Next.js](https://nextjs.org/docs)
