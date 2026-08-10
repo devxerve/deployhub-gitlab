@@ -120,6 +120,11 @@ export function MonitoringModule({ t }: { t: Theme }) {
             <Download size={14} aria-hidden="true" /> {tr("monitoring.exportCsv")}
           </span>
         </Btn>
+        <Btn t={t} variant="secondary" onClick={() => window.print()}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+            <Download size={14} aria-hidden="true" /> Export PDF
+          </span>
+        </Btn>
         <Btn t={t} variant="secondary" onClick={() => window.open(GRAFANA_URL, "_blank", "noreferrer")}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
             <ExternalLink size={14} aria-hidden="true" /> {tr("monitoring.openGrafana")}

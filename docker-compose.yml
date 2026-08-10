@@ -39,7 +39,6 @@ services:
         condition: service_completed_successfully
     command:
       - "--api.dashboard=true"
-      - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=paas_network"
@@ -61,12 +60,16 @@ services:
       # below) — only the host-facing mapping changes.
       - "8000:80"
       - "8443:443"
-      - "8080:8080"
     volumes:
       - "${DOCKER_SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock:ro"
       - "./services/infra/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro"
       - "./services/infra/traefik/certs:/etc/traefik/certs:ro"
-    labels: []
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-api.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.traefik-api.entrypoints=websecure"
+      - "traefik.http.routers.traefik-api.tls=true"
+      - "traefik.http.routers.traefik-api.service=api@internal"
     networks:
       - paas_network
 
