@@ -10,7 +10,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { CreateProjectDto } from "./dto/create-project.dto";
 import {
   isValidGitRepoUrl,
-  normalizeGitHubUrl,
+  normalizeGitRepoUrl,
   slugifyProjectName,
 } from "./utils/git.utils";
 import { GithubApiService, RepoBranch, RepoCommit } from "./github-api.service";
@@ -33,10 +33,10 @@ export class ProjectsService {
   }
 
   async create(dto: CreateProjectDto, userId: string) {
-    const repoUrl = normalizeGitHubUrl(dto.repoUrl);
+    const repoUrl = normalizeGitRepoUrl(dto.repoUrl);
     if (!isValidGitRepoUrl(repoUrl)) {
       throw new BadRequestException(
-        "Introduce una URL válida de un repositorio de GitHub.",
+        "Introduce una URL válida de un repositorio compatible.",
       );
     }
 

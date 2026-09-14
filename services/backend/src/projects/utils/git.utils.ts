@@ -1,4 +1,9 @@
-export function normalizeGitUrl(value: string): string {
+interface GitRepoUrl {
+  host: string;
+  path: string;
+}
+
+export function normalizeGitRepoUrl(value: string): string {
   const trimmed = value.trim();
   if (!trimmed) return "";
 
@@ -7,16 +12,25 @@ export function normalizeGitUrl(value: string): string {
     const path = url.pathname
       .replace(/^\/+|\/+$/g, "")
       .replace(/\.git$/i, "");
+
     return `${url.origin}/${path}`;
   } catch {
     return trimmed;
   }
 }
 
+export function parseGitRepoUrl(url: URL): GitRepoUrl {
+  return {
+    host: url.hostname,
+    path: url.pathname.replace(/^\/+|\/+$/g, ""),
+  };
+}
+
 export function isValidGitRepoUrl(value: string): boolean {
   try {
-    const url = new URL(normalizeGitUrl(value));
+    const url = new URL(normalizeGitRepoUrl(value));
     const segments = url.pathname.split("/").filter(Boolean);
+
     return url.protocol === "https:" && segments.length >= 2;
   } catch {
     return false;
@@ -27,7 +41,7 @@ export function parseGitRepo(
   value: string,
 ): { owner: string; repo: string } | null {
   try {
-    const url = new URL(normalizeGitUrl(value));
+    const url = new URL(normalizeGitRepoUrl(value));
     const segments = url.pathname.split("/").filter(Boolean);
 
     if (segments.length < 2) return null;
@@ -38,6 +52,14 @@ export function parseGitRepo(
     return { owner, repo };
   } catch {
     return null;
+  }
+}
+
+function identifyGitProvider(url: URL) {
+  const gitRepo = parseGitRepoUrl(url);
+
+  if (gitRepo.host === "github.com") {
+    console.log("github encontrado");
   }
 }
 
