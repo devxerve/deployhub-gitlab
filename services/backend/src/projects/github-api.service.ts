@@ -3,7 +3,7 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { isAxiosError } from "axios";
 import { firstValueFrom } from "rxjs";
 
-import { parseGitHubRepo } from "./utils/github.utils";
+import { parseGitRepo } from "./utils/git.utils";
 
 export interface RepoBranch {
   name: string;
