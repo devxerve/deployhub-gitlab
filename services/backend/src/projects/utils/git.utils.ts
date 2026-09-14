@@ -1,3 +1,5 @@
+type GitProvider = "github" | "gitlab" | "unknown";
+
 interface GitRepoUrl {
   host: string;
   path: string;
@@ -9,9 +11,7 @@ export function normalizeGitRepoUrl(value: string): string {
 
   try {
     const url = new URL(trimmed);
-    const path = url.pathname
-      .replace(/^\/+|\/+$/g, "")
-      .replace(/\.git$/i, "");
+    const path = url.pathname.replace(/^\/+|\/+$/g, "").replace(/\.git$/i, "");
 
     return `${url.origin}/${path}`;
   } catch {
@@ -55,11 +55,23 @@ export function parseGitRepo(
   }
 }
 
-function identifyGitProvider(url: URL) {
+export async function identifyGitProvider(url: URL): Promise<GitProvider> {
   const gitRepo = parseGitRepoUrl(url);
 
-  if (gitRepo.host === "github.com") {
-    console.log("github encontrado");
+  if (gitRepo.host === "github.com") return "github";
+  else if (await probeGitLab(url)) return "gitlab";
+  else return "unknown";
+}
+
+export async function probeGitLab(url: URL): Promise<boolean> {
+  try {
+    const response = await fetch(new URL("/api/v4/version", url.origin), {
+      method: "HEAD",
+    });
+    const gitlabMeta = response.headers.get("x-gitlab-meta");
+    return gitlabMeta !== null;
+  } catch {
+    return false;
   }
 }
 

@@ -65,7 +65,7 @@ export class GithubApiService {
   }
 
   private parseOrThrow(repoUrl: string): { owner: string; repo: string } {
-    const parsed = parseGitHubRepo(repoUrl);
+    const parsed = parseGitRepo(repoUrl);
     if (!parsed) {
       throw new BadRequestException("URL de repositorio de GitHub no válida.");
     }
