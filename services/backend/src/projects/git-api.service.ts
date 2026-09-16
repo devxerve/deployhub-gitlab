@@ -4,11 +4,11 @@ import { isAxiosError } from "axios";
 import { firstValueFrom } from "rxjs";
 
 import { RepoBranch, RepoCommit } from "./api-shared-interfaces";
-import { parseGitRepo, gitProvider} from "./utils/git.utils";
+import { parseGitRepo, GitProvider} from "./utils/git.utils";
 
 export abstract class GitApiService {
   constructor(protected readonly httpService: HttpService) { }
-  protected abstract readonly providerName: gitProvider;
+  protected abstract readonly providerName: GitProvider;
 
   abstract listBranches(
     repoUrl: string
@@ -57,13 +57,21 @@ export abstract class GitApiService {
 
         if (error.response?.status === 429) {
           throw new BadRequestException(
-            "Límite de peticiones a la API de ${this.providerName} alcanzado. Inténtalo de nuevo en unos minutos.",
+            `Límite de peticiones a la API de ${this.providerName} alcanzado. Inténtalo de nuevo en unos minutos.`,
           );
         }
       }
-
+      if (isAxiosError(error)) {
+        console.error("Git API error:", {
+          url: error.config?.url,
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+      }
       throw new BadRequestException(
-        "No se pudo consultar ${this.providerName} para este repositorio.",
+        `No se pudo consultar ${this.providerName} para este repositorio.`,
+
       );
     }
   }

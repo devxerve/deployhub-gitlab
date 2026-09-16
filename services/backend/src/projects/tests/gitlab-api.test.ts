@@ -7,8 +7,11 @@ import { HttpService } from "@nestjs/axios";
 
 import {
   GitLabApiService,
-  RepoBranch,
 } from "../gitlab-api.service.js";
+import {
+  RepoBranch,
+  RepoCommit
+} from "../api-shared-interfaces";
 
 const execFileAsync = promisify(execFile);
 

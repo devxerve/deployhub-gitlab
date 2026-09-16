@@ -1,4 +1,7 @@
 import { HttpService } from "@nestjs/axios";
+import { Injectable } from "@nestjs/common";
+
+import { RepoBranch, RepoCommit } from "./api-shared-interfaces";
 import { GitApiService } from "./git-api.service";
 
 
@@ -17,7 +20,7 @@ interface GitHubCommitResponse {
 
 @Injectable()
 export class GithubApiService extends GitApiService{
-  protected providerName: "github";
+  protected readonly providerName: "github";
   constructor(httpService: HttpService) {
     super(httpService);
   }

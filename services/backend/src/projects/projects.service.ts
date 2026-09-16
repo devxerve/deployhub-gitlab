@@ -13,8 +13,7 @@ import {
   normalizeGitRepoUrl,
   slugifyProjectName,
 } from "./utils/git.utils";
-import { GithubApiService} from "./github-api.service";
-import { GitLabApiService } from "./gitlab-api.service";
+import { GitProviderService } from "./git-provider.service";
 import { RepoBranch, RepoCommit } from "./api-shared-interfaces";
 
 @Injectable()
@@ -23,7 +22,7 @@ export class ProjectsService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly gitApi: GitApiService;
+    private readonly gitProvider: GitProviderService,
   ) {}
 
   async findAll(userId: string) {
@@ -38,7 +37,7 @@ export class ProjectsService {
     const repoUrl = normalizeGitRepoUrl(dto.repoUrl);
     if (!isValidGitRepoUrl(repoUrl)) {
       throw new BadRequestException(
-        "Introduce una URL válida de un repositorio de GitHub.",
+        "Introduce una URL válida de un repositorio Git.",
       );
     }
 
@@ -89,7 +88,9 @@ export class ProjectsService {
 
   async getBranches(id: string, userId: string): Promise<RepoBranch[]> {
     const project = await this.findOwned(id, userId);
-    return this.gitApi.listBranches(project.repoUrl);
+    const gitApi = await this.gitProvider.resolve(project.repoUrl);
+
+    return gitApi.listBranches(project.repoUrl);
   }
 
   async getCommits(
@@ -98,7 +99,9 @@ export class ProjectsService {
     branch: string,
   ): Promise<RepoCommit[]> {
     const project = await this.findOwned(id, userId);
-    return this.gitApi.listCommits(project.repoUrl, branch);
+    const gitApi = await this.gitProvider.resolve(project.repoUrl);
+
+    return gitApi.listCommits(project.repoUrl, branch);
   }
 
   private async findOwned(id: string, userId: string) {
