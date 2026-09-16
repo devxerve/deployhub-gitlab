@@ -1,4 +1,4 @@
-type GitProvider = "github" | "gitlab" | "unknown";
+export type GitProvider = "github" | "gitlab" | "unknown";
 
 interface GitRepoUrl {
   host: string;

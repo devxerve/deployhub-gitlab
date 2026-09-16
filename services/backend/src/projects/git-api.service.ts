@@ -4,11 +4,11 @@ import { isAxiosError } from "axios";
 import { firstValueFrom } from "rxjs";
 
 import { RepoBranch, RepoCommit } from "./api-shared-interfaces";
-import { parseGitRepo } from "./utils/git.utils";
+import { parseGitRepo, gitProvider} from "./utils/git.utils";
 
-abstract class GitApiService {
-  constructor(private readonly httpService: HttpService) { }
-  protected abstract readonly providerName: string;
+export abstract class GitApiService {
+  constructor(protected readonly httpService: HttpService) { }
+  protected abstract readonly providerName: gitProvider;
 
   abstract listBranches(
     repoUrl: string
@@ -29,5 +29,42 @@ abstract class GitApiService {
     }
 
     return parsed;
+  }
+  protected async get<T>(url: string, repoUrl: string): Promise<T> {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get<T>(url, {
+          headers: {
+            Accept: "application/json",
+          },
+        }),
+      );
+
+      return response.data;
+    } catch (error: unknown) {
+      if (isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          throw new BadRequestException(
+            `No se encontró el repositorio o la rama en ${repoUrl}.`,
+          );
+        }
+
+        if (error.response?.status === 403) {
+          throw new BadRequestException(
+            `No se tiene acceso al repositorio ${repoUrl}.`,
+          );
+        }
+
+        if (error.response?.status === 429) {
+          throw new BadRequestException(
+            "Límite de peticiones a la API de ${this.providerName} alcanzado. Inténtalo de nuevo en unos minutos.",
+          );
+        }
+      }
+
+      throw new BadRequestException(
+        "No se pudo consultar ${this.providerName} para este repositorio.",
+      );
+    }
   }
 }

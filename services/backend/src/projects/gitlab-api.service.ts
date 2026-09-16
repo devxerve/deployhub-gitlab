@@ -1,11 +1,5 @@
 import { HttpService } from "@nestjs/axios";
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { isAxiosError } from "axios";
-import { firstValueFrom } from "rxjs";
-
-import { RepoBranch, RepoCommit } from "./api-shared-interfaces";
 import { GitApiService } from "./git-api.service";
-import { parseGitRepo } from "./utils/git.utils";
 
 interface GitLabBranchResponse {
   name: string;
@@ -24,6 +18,7 @@ interface GitLabCommitResponse {
 @Injectable()
 export class GitLabApiService extends GitApiService {
 
+  protected providerName: "gitlab";
   constructor(httpService: HttpService) {
     super(httpService);
   }
@@ -66,41 +61,5 @@ export class GitLabApiService extends GitApiService {
     }));
   }
 
-  private async get<T>(url: string, repoUrl: string): Promise<T> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get<T>(url, {
-          headers: {
-            Accept: "application/json",
-          },
-        }),
-      );
 
-      return response.data;
-    } catch (error: unknown) {
-      if (isAxiosError(error)) {
-        if (error.response?.status === 404) {
-          throw new BadRequestException(
-            `No se encontró el repositorio o la rama en ${repoUrl}.`,
-          );
-        }
-
-        if (error.response?.status === 403) {
-          throw new BadRequestException(
-            `No se tiene acceso al repositorio ${repoUrl}.`,
-          );
-        }
-
-        if (error.response?.status === 429) {
-          throw new BadRequestException(
-            "Límite de peticiones a la API de GitLab alcanzado. Inténtalo de nuevo en unos minutos.",
-          );
-        }
-      }
-
-      throw new BadRequestException(
-        "No se pudo consultar GitLab para este repositorio.",
-      );
-    }
-  }
 }
