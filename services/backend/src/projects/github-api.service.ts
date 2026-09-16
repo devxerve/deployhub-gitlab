@@ -1,21 +1,9 @@
 import { HttpService } from "@nestjs/axios";
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { isAxiosError } from "axios";
-import { firstValueFrom } from "rxjs";
+import { Injectable } from "@nestjs/common";
 
-import { parseGitHubRepo } from "./utils/github.utils";
+import { RepoBranch, RepoCommit } from "./api-shared-interfaces";
+import { GitApiService } from "./git-api.service";
 
-export interface RepoBranch {
-  name: string;
-  commitSha: string;
-}
-
-export interface RepoCommit {
-  sha: string;
-  message: string;
-  author: string;
-  date: string;
-}
 
 interface GitHubBranchResponse {
   name: string;
@@ -31,10 +19,13 @@ interface GitHubCommitResponse {
 }
 
 @Injectable()
-export class GithubApiService {
-  constructor(private readonly httpService: HttpService) {}
+export class GithubApiService extends GitApiService{
+  protected readonly providerName: "github";
+  constructor(httpService: HttpService) {
+    super(httpService);
+  }
 
-  async listBranches(repoUrl: string): Promise<RepoBranch[]> {
+  override async listBranches(repoUrl: string): Promise<RepoBranch[]> {
     const { owner, repo } = this.parseOrThrow(repoUrl);
 
     const branches = await this.get<GitHubBranchResponse[]>(
@@ -48,7 +39,7 @@ export class GithubApiService {
     }));
   }
 
-  async listCommits(repoUrl: string, branch: string): Promise<RepoCommit[]> {
+  override async listCommits(repoUrl: string, branch: string): Promise<RepoCommit[]> {
     const { owner, repo } = this.parseOrThrow(repoUrl);
 
     const commits = await this.get<GitHubCommitResponse[]>(
@@ -62,40 +53,5 @@ export class GithubApiService {
       author: entry.commit.author?.name ?? "unknown",
       date: entry.commit.author?.date ?? "",
     }));
-  }
-
-  private parseOrThrow(repoUrl: string): { owner: string; repo: string } {
-    const parsed = parseGitHubRepo(repoUrl);
-    if (!parsed) {
-      throw new BadRequestException("URL de repositorio de GitHub no válida.");
-    }
-    return parsed;
-  }
-
-  private async get<T>(url: string, repoUrl: string): Promise<T> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get<T>(url, {
-          headers: { Accept: "application/vnd.github+json" },
-        }),
-      );
-      return response.data;
-    } catch (error: unknown) {
-      if (isAxiosError(error)) {
-        if (error.response?.status === 404) {
-          throw new BadRequestException(
-            `No se encontró el repositorio o la rama en ${repoUrl}.`,
-          );
-        }
-        if (error.response?.status === 403) {
-          throw new BadRequestException(
-            "Límite de peticiones a la API de GitHub alcanzado. Inténtalo de nuevo en unos minutos.",
-          );
-        }
-      }
-      throw new BadRequestException(
-        "No se pudo consultar GitHub para este repositorio.",
-      );
-    }
   }
 }

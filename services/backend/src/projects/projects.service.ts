@@ -9,11 +9,12 @@ import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateProjectDto } from "./dto/create-project.dto";
 import {
-  isValidGitHubRepoUrl,
-  normalizeGitHubUrl,
+  isValidGitRepoUrl,
+  normalizeGitRepoUrl,
   slugifyProjectName,
-} from "./utils/github.utils";
-import { GithubApiService, RepoBranch, RepoCommit } from "./github-api.service";
+} from "./utils/git.utils";
+import { GitProviderService } from "./git-provider.service";
+import { RepoBranch, RepoCommit } from "./api-shared-interfaces";
 
 @Injectable()
 export class ProjectsService {
@@ -21,7 +22,7 @@ export class ProjectsService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly githubApi: GithubApiService,
+    private readonly gitProvider: GitProviderService,
   ) {}
 
   async findAll(userId: string) {
@@ -33,10 +34,10 @@ export class ProjectsService {
   }
 
   async create(dto: CreateProjectDto, userId: string) {
-    const repoUrl = normalizeGitHubUrl(dto.repoUrl);
-    if (!isValidGitHubRepoUrl(repoUrl)) {
+    const repoUrl = normalizeGitRepoUrl(dto.repoUrl);
+    if (!isValidGitRepoUrl(repoUrl)) {
       throw new BadRequestException(
-        "Introduce una URL válida de un repositorio de GitHub.",
+        "Introduce una URL válida de un repositorio Git.",
       );
     }
 
@@ -87,7 +88,9 @@ export class ProjectsService {
 
   async getBranches(id: string, userId: string): Promise<RepoBranch[]> {
     const project = await this.findOwned(id, userId);
-    return this.githubApi.listBranches(project.repoUrl);
+    const gitApi = await this.gitProvider.resolve(project.repoUrl);
+
+    return gitApi.listBranches(project.repoUrl);
   }
 
   async getCommits(
@@ -96,7 +99,9 @@ export class ProjectsService {
     branch: string,
   ): Promise<RepoCommit[]> {
     const project = await this.findOwned(id, userId);
-    return this.githubApi.listCommits(project.repoUrl, branch);
+    const gitApi = await this.gitProvider.resolve(project.repoUrl);
+
+    return gitApi.listCommits(project.repoUrl, branch);
   }
 
   private async findOwned(id: string, userId: string) {
