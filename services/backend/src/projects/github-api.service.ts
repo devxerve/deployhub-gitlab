@@ -3,19 +3,9 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { isAxiosError } from "axios";
 import { firstValueFrom } from "rxjs";
 
+import { RepoBranch, RepoCommit } from "./api-shared-interfaces";
+import { GitApiService } from "./git-api.service";
 import { parseGitRepo } from "./utils/git.utils";
-
-export interface RepoBranch {
-  name: string;
-  commitSha: string;
-}
-
-export interface RepoCommit {
-  sha: string;
-  message: string;
-  author: string;
-  date: string;
-}
 
 interface GitHubBranchResponse {
   name: string;
@@ -31,11 +21,13 @@ interface GitHubCommitResponse {
 }
 
 @Injectable()
-export class GithubApiService {
-  constructor(private readonly httpService: HttpService) {}
+export class GithubApiService extends GitApiService{
+  constructor(httpService: HttpService) {
+    super(httpService);
+  }
 
-  async listBranches(repoUrl: string): Promise<RepoBranch[]> {
-    const { owner, repo } = this.parseOrThrow(repoUrl);
+  override async listBranches(repoUrl: string): Promise<RepoBranch[]> {
+    const { owner, repo } = super.parseOrThrow(repoUrl);
 
     const branches = await this.get<GitHubBranchResponse[]>(
       `https://api.github.com/repos/${owner}/${repo}/branches?per_page=100`,
@@ -48,8 +40,8 @@ export class GithubApiService {
     }));
   }
 
-  async listCommits(repoUrl: string, branch: string): Promise<RepoCommit[]> {
-    const { owner, repo } = this.parseOrThrow(repoUrl);
+  override async listCommits(repoUrl: string, branch: string): Promise<RepoCommit[]> {
+    const { owner, repo } = super.parseOrThrow(repoUrl);
 
     const commits = await this.get<GitHubCommitResponse[]>(
       `https://api.github.com/repos/${owner}/${repo}/commits?sha=${encodeURIComponent(branch)}&per_page=20`,
@@ -62,14 +54,6 @@ export class GithubApiService {
       author: entry.commit.author?.name ?? "unknown",
       date: entry.commit.author?.date ?? "",
     }));
-  }
-
-  private parseOrThrow(repoUrl: string): { owner: string; repo: string } {
-    const parsed = parseGitRepo(repoUrl);
-    if (!parsed) {
-      throw new BadRequestException("URL de repositorio de GitHub no válida.");
-    }
-    return parsed;
   }
 
   private async get<T>(url: string, repoUrl: string): Promise<T> {

@@ -3,19 +3,9 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { isAxiosError } from "axios";
 import { firstValueFrom } from "rxjs";
 
+import { RepoBranch, RepoCommit } from "./api-shared-interfaces";
+import { GitApiService } from "./git-api.service";
 import { parseGitRepo } from "./utils/git.utils";
-
-export interface RepoBranch {
-  name: string;
-  commitSha: string;
-}
-
-export interface RepoCommit {
-  sha: string;
-  message: string;
-  author: string;
-  date: string;
-}
 
 interface GitLabBranchResponse {
   name: string;
@@ -32,8 +22,11 @@ interface GitLabCommitResponse {
 }
 
 @Injectable()
-export class GitLabApiService {
-  constructor(private readonly httpService: HttpService) {}
+export class GitLabApiService extends GitApiService {
+
+  constructor(httpService: HttpService) {
+    super(httpService);
+  }
 
   async listBranches(repoUrl: string): Promise<RepoBranch[]> {
     const { owner, repo } = this.parseOrThrow(repoUrl);
@@ -71,14 +64,6 @@ export class GitLabApiService {
       author: entry.author_name ?? "unknown",
       date: entry.authored_date ?? "",
     }));
-  }
-
-  private parseOrThrow(repoUrl: string): { owner: string; repo: string } {
-    const parsed = parseGitRepo(repoUrl);
-    if (!parsed) {
-      throw new BadRequestException("URL de repositorio de GitLab no válida.");
-    }
-    return parsed;
   }
 
   private async get<T>(url: string, repoUrl: string): Promise<T> {
