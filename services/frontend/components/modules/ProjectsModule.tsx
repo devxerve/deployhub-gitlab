@@ -286,9 +286,38 @@ export function ProjectsModule({ t }: { t: Theme }) {
                 {project.description || tr("projects.descriptionFallback")}
               </p>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 7, color: t.muted, fontSize: 11, marginBottom: 14, minWidth: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  color: t.muted,
+                  fontSize: 11,
+                  marginBottom: 14,
+                  minWidth: 0,
+                }}
+              >
                 <GitBranch size={13} />
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{project.repoUrl.replace("https://", "")}</span>
+
+                <span
+                  style={{
+                    fontWeight: 600,
+                    color: t.text,
+                    flexShrink: 0,
+                  }}
+                >
+                  {project.provider === "gitlab" ? "GitLab" : "GitHub"}
+                </span>
+
+                <span
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {project.repoUrl.replace("https://", "")}
+                </span>
               </div>
 
               <div style={{ display: "flex", gap: 8, marginBottom: 13, flexWrap: "wrap" }}>
@@ -341,6 +370,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
         <Modal t={t} title={selected.name} onClose={() => setSelected(null)}>
           {([
             [tr("projects.detail.repository"), selected.repoUrl],
+            [tr("projects.detail.provider"), selected.provider === "gitlab" ? "GitLab" : "GitHub"],
             [tr("projects.detail.projectId"), selected.id],
             [tr("projects.detail.status"), tr(FILTER_KEYS[statsByProject[selected.id]?.status ?? "idle"])],
             [tr("projects.detail.totalDeployments"), String(statsByProject[selected.id]?.totalDeploys ?? 0)],
