@@ -349,7 +349,7 @@ export function DeploymentsModule({ t }: { t: Theme }) {
                 <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, color: t.text, fontSize: 12, padding: 12, borderRadius: 10, border: `1px solid ${t.border}`, background: t.hover }}>
                   <GitBranch size={14} color={t.accent} />
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedProject.repoUrl}</span>
-                  <a href={selectedProject.repoUrl} target="_blank" rel="noreferrer" aria-label={tr("deployments.openGithubRepoAria")} style={{ color: t.accent, display: "inline-flex", marginLeft: "auto" }}>
+                  <a href={selectedProject.repoUrl} target="_blank" rel="noreferrer" aria-label={tr("deployments.openRepoAria")} style={{ color: t.accent, display: "inline-flex", marginLeft: "auto" }}>
                     <ExternalLink size={14} />
                   </a>
                 </div>

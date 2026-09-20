@@ -20,7 +20,7 @@ interface GitHubCommitResponse {
 
 @Injectable()
 export class GithubApiService extends GitApiService{
-  protected readonly providerName: "github";
+  readonly providerName = "github" as const;
   constructor(httpService: HttpService) {
     super(httpService);
   }

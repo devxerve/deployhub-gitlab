@@ -54,13 +54,23 @@ export class ProjectsService {
     }
 
     this.logger.log(`Registering project: ${id}`);
+
     try {
+      const gitApi = await this.gitProvider.resolve(repoUrl);
+
+      if (gitApi.providerName === "unknown") {
+        throw new BadRequestException(
+          "No se pudo identificar el proveedor Git del repositorio.",
+        );
+      }
+
       return await this.prisma.project.create({
         data: {
           id,
           userId,
           name: dto.name.trim(),
           repoUrl,
+          provider: gitApi.providerName,
           defaultBranch: dto.defaultBranch?.trim() || "main",
           description: dto.description?.trim() || undefined,
         },
@@ -118,8 +128,14 @@ export class ProjectsService {
     const deploys = await this.prisma.deploy.findMany({
       where: { userId },
       orderBy: { createdAt: "asc" },
-      select: { projectId: true, repoUrl: true, branch: true, createdAt: true },
+      select: {
+        projectId: true,
+        repoUrl: true,
+        branch: true,
+        createdAt: true,
+      },
     });
+
     if (deploys.length === 0) return;
 
     const existingIds = new Set(
@@ -132,23 +148,46 @@ export class ProjectsService {
     );
 
     const missing = new Map<string, (typeof deploys)[number]>();
+
     for (const deploy of deploys) {
       if (!existingIds.has(deploy.projectId) && !missing.has(deploy.projectId)) {
         missing.set(deploy.projectId, deploy);
       }
     }
+
     if (missing.size === 0) return;
 
-    this.logger.log(`Backfilling ${missing.size} project(s) from deployment history`);
-    await this.prisma.project.createMany({
-      data: Array.from(missing.entries()).map(([projectId, deploy]) => ({
+    this.logger.log(
+      `Backfilling ${missing.size} project(s) from deployment history`,
+    );
+
+    const projectsToCreate: Prisma.ProjectCreateManyInput[] = [];
+
+    for (const [projectId, deploy] of missing.entries()) {
+      const gitApi = await this.gitProvider.resolve(deploy.repoUrl);
+
+      if (gitApi.providerName === "unknown") {
+        this.logger.warn(
+          `Could not identify Git provider for ${deploy.repoUrl}. Skipping project ${projectId}.`,
+        );
+        continue;
+      }
+
+      projectsToCreate.push({
         id: projectId,
         userId,
         name: projectId,
         repoUrl: deploy.repoUrl,
+        provider: gitApi.providerName,
         defaultBranch: deploy.branch || "main",
         createdAt: deploy.createdAt,
-      })),
+      });
+    }
+
+    if (projectsToCreate.length === 0) return;
+
+    await this.prisma.project.createMany({
+      data: projectsToCreate,
       skipDuplicates: true,
     });
   }

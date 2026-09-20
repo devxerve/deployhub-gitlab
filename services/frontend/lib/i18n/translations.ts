@@ -3,7 +3,7 @@ export type Language = "en" | "es" | "fr";
 type Entry = [key: string, en: string, es: string, fr: string];
 
 const ENTRIES: Entry[] = [
-   
+
   ["sidebar.dashboard", "Dashboard", "Panel", "Tableau de bord"],
   ["sidebar.projects", "Projects", "Proyectos", "Projets"],
   ["sidebar.deployments", "Deployments", "Despliegues", "Déploiements"],
@@ -18,7 +18,7 @@ const ENTRIES: Entry[] = [
   ["sidebar.online", "Online", "En línea", "En ligne"],
   ["sidebar.signOut", "Sign out", "Cerrar sesión", "Se déconnecter"],
 
-   
+
   ["topbar.toggleSidebar", "Toggle sidebar", "Alternar barra lateral", "Basculer la barre latérale"],
   ["topbar.platformTag", "DeployHub Platform · v1.0.1", "Plataforma DeployHub · v1.0.1", "Plateforme DeployHub · v1.0.1"],
   ["topbar.systemsOperational", "All systems operational", "Todos los sistemas operativos", "Tous les systèmes sont opérationnels"],
@@ -30,7 +30,7 @@ const ENTRIES: Entry[] = [
   ["topbar.switchToDark", "Switch to dark mode", "Cambiar a modo oscuro", "Passer en mode sombre"],
   ["topbar.selectLanguage", "Select language", "Seleccionar idioma", "Choisir la langue"],
 
-   
+
   ["pageTitle.dashboard", "Dashboard", "Panel", "Tableau de bord"],
   ["pageTitle.projects", "Projects", "Proyectos", "Projets"],
   ["pageTitle.deployments", "Deployments", "Despliegues", "Déploiements"],
@@ -39,7 +39,7 @@ const ENTRIES: Entry[] = [
   ["pageTitle.logs", "Logs", "Registros", "Journaux"],
   ["pageTitle.settings", "Settings", "Configuración", "Paramètres"],
 
-   
+
   ["notif.title", "Notifications", "Notificaciones", "Notifications"],
   ["notif.close", "Close notifications", "Cerrar notificaciones", "Fermer les notifications"],
   ["notif.empty", "No notifications yet", "Aún no hay notificaciones", "Aucune notification pour le moment"],
@@ -64,7 +64,7 @@ const ENTRIES: Entry[] = [
   ["notif.userDeletedTitle", "User deleted", "Usuario eliminado", "Utilisateur supprimé"],
   ["notif.userDeletedBody", "{user} was removed from the team", "{user} se eliminó del equipo", "{user} a été supprimé de l'équipe"],
 
-   
+
   ["logout.title", "Sign out of DeployHub?", "¿Cerrar sesión en DeployHub?", "Se déconnecter de DeployHub ?"],
   [
     "logout.description",
@@ -75,7 +75,7 @@ const ENTRIES: Entry[] = [
   ["logout.signOut", "Sign out", "Cerrar sesión", "Se déconnecter"],
   ["logout.signingOut", "Signing out", "Cerrando sesión", "Déconnexion en cours"],
 
-   
+
   ["common.cancel", "Cancel", "Cancelar", "Annuler"],
   ["common.close", "Close", "Cerrar", "Fermer"],
   ["common.save", "Save", "Guardar", "Enregistrer"],
@@ -87,7 +87,7 @@ const ENTRIES: Entry[] = [
   ["common.time.hrAgo", "{n} hr ago", "hace {n} h", "il y a {n} h"],
   ["common.time.daysAgo", "{n} days ago", "hace {n} días", "il y a {n} jours"],
 
-   
+
   ["dashboard.kpi.totalProjects", "Total Projects", "Proyectos totales", "Projets au total"],
   ["dashboard.kpi.totalProjectsSub", "unique projects", "proyectos únicos", "projets uniques"],
   ["dashboard.kpi.deploymentsToday", "Deployments Today", "Despliegues hoy", "Déploiements aujourd'hui"],
@@ -102,13 +102,13 @@ const ENTRIES: Entry[] = [
   ["dashboard.live", "Live", "En vivo", "En direct"],
   ["dashboard.noDeployments", "No deployments yet", "Aún no hay despliegues", "Aucun déploiement pour le moment"],
 
-   
+
   ["projects.title", "Projects", "Proyectos", "Projets"],
   [
     "projects.subtitle",
-    "Register GitHub repositories here. Deployments only executes registered projects.",
-    "Registra aquí tus repositorios de GitHub. Deployments solo ejecuta proyectos registrados.",
-    "Enregistrez vos dépôts GitHub ici. Déploiements n'exécute que les projets enregistrés.",
+    "Register public GitHub or GitLab repositories here. Deployments only execute registered projects.",
+    "Registra aquí tus repositorios públicos de GitHub o GitLab. Deployments solo ejecuta proyectos registrados.",
+    "Enregistrez ici vos dépôts publics GitHub ou GitLab. Deployments n'exécute que les projets enregistrés.",
   ],
   ["projects.addProject", "Add project", "Añadir proyecto", "Ajouter un projet"],
   ["projects.addFirstProject", "Add first project", "Añadir el primer proyecto", "Ajouter le premier projet"],
@@ -122,30 +122,40 @@ const ENTRIES: Entry[] = [
   ["projects.emptyTitle", "No projects registered", "No hay proyectos registrados", "Aucun projet enregistré"],
   [
     "projects.emptyBody",
-    "Add a public GitHub repository with a Dockerfile to make it deployable.",
-    "Añade un repositorio público de GitHub con un Dockerfile para poder desplegarlo.",
-    "Ajoutez un dépôt GitHub public contenant un Dockerfile pour pouvoir le déployer.",
+    "Add a public GitHub or GitLab repository with a Dockerfile to make it deployable.",
+    "Añade un repositorio público de GitHub o GitLab con un Dockerfile para poder desplegarlo.",
+    "Ajoutez un dépôt public GitHub ou GitLab contenant un Dockerfile pour pouvoir le déployer.",
   ],
   ["projects.removeAriaLabel", "Remove {name}", "Eliminar {name}", "Supprimer {name}"],
   ["projects.removeTitle", "Remove project", "Eliminar proyecto", "Supprimer le projet"],
   [
     "projects.descriptionFallback",
-    "GitHub project ready for deployment.",
-    "Proyecto de GitHub listo para desplegar.",
-    "Projet GitHub prêt à être déployé.",
+    "Public Git repository ready for deployment.",
+    "Repositorio Git público listo para desplegar.",
+    "Dépôt Git public prêt à être déployé.",
   ],
   ["projects.deploymentsCount", "{n} deployments", "{n} despliegues", "{n} déploiements"],
   ["projects.portLabel", "port {port}", "puerto {port}", "port {port}"],
   ["projects.lastDeployment", "Last deployment: {value}", "Último despliegue: {value}", "Dernier déploiement : {value}"],
-  ["projects.modalTitle", "Add GitHub project", "Añadir proyecto de GitHub", "Ajouter un projet GitHub"],
+  [
+    "projects.modalTitle",
+    "Add public GitHub or GitLab repository",
+    "Añadir repositorio público de GitHub o GitLab",
+    "Ajouter un dépôt public GitHub ou GitLab",
+  ],
   ["projects.form.name", "Project name", "Nombre del proyecto", "Nom du projet"],
   ["projects.form.namePlaceholder", "Example: customer-portal", "Ejemplo: customer-portal", "Exemple : customer-portal"],
-  ["projects.form.repoUrl", "GitHub repository URL", "URL del repositorio de GitHub", "URL du dépôt GitHub"],
+  [
+    "projects.form.repoUrl",
+    "Public GitHub or GitLab repository URL",
+    "URL del repositorio público de GitHub o GitLab",
+    "URL du dépôt public GitHub ou GitLab",
+  ],
   [
     "projects.form.repoUrlPlaceholder",
-    "https://github.com/organization/repository",
-    "https://github.com/organization/repository",
-    "https://github.com/organization/repository",
+    "https://github.com/user/repository or https://gitlab.com/user/repository",
+    "https://github.com/user/repository o https://gitlab.com/user/repository",
+    "https://github.com/user/repository ou https://gitlab.com/user/repository",
   ],
   ["projects.form.description", "Description", "Descripción", "Description"],
   [
@@ -184,9 +194,8 @@ const ENTRIES: Entry[] = [
   ["projects.detail.status", "Status", "Estado", "Statut"],
   ["projects.detail.totalDeployments", "Total deployments", "Despliegues totales", "Déploiements au total"],
   ["projects.detail.lastDeployment", "Last deployment", "Último despliegue", "Dernier déploiement"],
-  ["projects.openGithub", "Open GitHub", "Abrir GitHub", "Ouvrir GitHub"],
+  ["projects.openRepository", "Open repository", "Abrir repositorio", "Ouvrir le dépôt"],
 
-   
   ["deployments.history", "Deployment history", "Historial de despliegues", "Historique des déploiements"],
   [
     "deployments.historySubtitle",
@@ -197,15 +206,15 @@ const ENTRIES: Entry[] = [
   ["deployments.newDeployment", "New deployment", "Nuevo despliegue", "Nouveau déploiement"],
   [
     "deployments.registerFirst",
-    "Register a GitHub project first",
-    "Registra primero un proyecto de GitHub",
-    "Enregistrez d'abord un projet GitHub",
+    "Register a public GitHub or GitLab repository first",
+    "Registra primero un repositorio público de GitHub o GitLab",
+    "Enregistrez d'abord un dépôt public GitHub ou GitLab",
   ],
   [
     "deployments.registerFirstBody",
-    "Open Projects, add a public GitHub repository, then return here to deploy it.",
-    "Abre Proyectos, añade un repositorio público de GitHub y vuelve aquí para desplegarlo.",
-    "Ouvrez Projets, ajoutez un dépôt GitHub public, puis revenez ici pour le déployer.",
+    "Open Projects, add a public GitHub or GitLab repository, then return here to deploy it.",
+    "Abre Proyectos, añade un repositorio público de GitHub o GitLab y vuelve aquí para desplegarlo.",
+    "Ouvrez Projets, ajoutez un dépôt public GitHub ou GitLab, puis revenez ici pour le déployer.",
   ],
   [
     "deployments.apiError",
@@ -275,18 +284,18 @@ const ENTRIES: Entry[] = [
     "Esperando eventos de despliegue...",
     "En attente d'événements de déploiement...",
   ],
-  ["deployments.openGithubRepoAria", "Open GitHub repository", "Abrir repositorio de GitHub", "Ouvrir le dépôt GitHub"],
+  ["deployments.openRepoAria", "Open repository", "Abrir repositorio", "Ouvrir le dépôt"],
 
-   
+
   ["pipeline.title", "CI/CD Pipeline", "Pipeline CI/CD", "Pipeline CI/CD"],
   ["pipeline.subtitle", "Pick a registered project and watch its real clone → build → run pipeline.", "Elige un proyecto registrado y observa su pipeline real de clonado → build → arranque.", "Choisissez un projet enregistré et suivez son vrai pipeline clonage → build → démarrage."],
   ["pipeline.duration", "Elapsed:", "Transcurrido:", "Écoulé :"],
   ["pipeline.noProjects", "Register a project first", "Registra un proyecto primero", "Enregistrez d'abord un projet"],
-  ["pipeline.noProjectsBody", "Open Projects and add a public GitHub repository, then come back here to see its pipeline.", "Abre Proyectos, añade un repositorio público de GitHub y vuelve aquí para ver su pipeline.", "Ouvrez Projets, ajoutez un dépôt GitHub public, puis revenez ici pour voir son pipeline."],
+  ["pipeline.noProjectsBody", "Open Projects and add a public GitHub or GitLab repository, then come back here to see its pipeline.", "Abre Proyectos, añade un repositorio público de GitHub o GitLab y vuelve aquí para ver su pipeline.", "Ouvrez Projets, ajoutez un dépôt public GitHub ou GitLab, puis revenez ici pour voir son pipeline.",],
   ["pipeline.idle", "This project hasn't been deployed yet. Start a deployment from the Deployments tab to see its pipeline here.", "Este proyecto todavía no se ha desplegado. Inicia un despliegue desde la pestaña Deployments para ver aquí su pipeline.", "Ce projet n'a pas encore été déployé. Lancez un déploiement depuis l'onglet Deployments pour voir son pipeline ici."],
   ["pipeline.unknownFailure", "This run failed. Reopen it while it's running to see exactly which stage broke — past runs only show the final outcome.", "Este pipeline falló. Ábrelo mientras se ejecuta para ver en qué etapa falló exactamente — las ejecuciones pasadas solo muestran el resultado final.", "Cette exécution a échoué. Rouvrez-la pendant son exécution pour voir précisément quelle étape a échoué — les exécutions passées n'affichent que le résultat final."],
 
-   
+
   ["monitoring.cpuUsage", "CPU Usage", "Uso de CPU", "Utilisation du CPU"],
   ["monitoring.systemAvg", "System avg", "Promedio del sistema", "Moyenne système"],
   ["monitoring.memory", "Memory", "Memoria", "Mémoire"],
@@ -304,7 +313,7 @@ const ENTRIES: Entry[] = [
   ["monitoring.openGrafana", "Open in Grafana", "Abrir en Grafana", "Ouvrir dans Grafana"],
   ["monitoring.exportCsv", "Export CSV", "Exportar CSV", "Exporter en CSV"],
 
-   
+
   ["logs.searchPlaceholder", "Search logs...", "Buscar registros...", "Rechercher dans les journaux..."],
   ["logs.searchAriaLabel", "Search logs", "Buscar registros", "Rechercher dans les journaux"],
   ["logs.exportCsv", "Export CSV", "Exportar CSV", "Exporter en CSV"],
@@ -354,9 +363,9 @@ const ENTRIES: Entry[] = [
   ],
   [
     "settings.about.f1",
-    "Register any public GitHub repository as a Project and trigger one-click Docker deployments — cloning, building and starting the container with live progress.",
-    "Registra cualquier repositorio público de GitHub como un Proyecto y lanza despliegues Docker con un clic — clonado, build y arranque del contenedor con progreso en vivo.",
-    "Enregistrez n'importe quel dépôt GitHub public comme Projet et lancez des déploiements Docker en un clic — clonage, build et démarrage du conteneur avec suivi en direct.",
+    "Register any public GitHub or GitLab repository as a Project and trigger one-click Docker deployments — cloning, building and starting the container with live progress.",
+    "Registra cualquier repositorio público de GitHub o GitLab como Proyecto y lanza despliegues Docker con un clic — clonado, build y arranque del contenedor con progreso en vivo.",
+    "Enregistrez n'importe quel dépôt public GitHub ou GitLab comme Projet et lancez des déploiements Docker en un clic — clonage, build et démarrage du conteneur avec suivi en direct.",
   ],
   [
     "settings.about.f2",
@@ -601,7 +610,7 @@ const ENTRIES: Entry[] = [
     "Pour toute autre demande concernant vos données, contactez l'administrateur de votre espace de travail.",
   ],
 
-   
+
   [
     "login.subtitleLogin",
     "Intelligent deployment monitoring platform",
@@ -656,13 +665,13 @@ const ENTRIES: Entry[] = [
   ["login.successTitle", "Success", "Éxito", "Succès"],
   ["login.errorTitle", "Error", "Error", "Erreur"],
 
-   
+
   ["terminal.title", "production-terminal", "production-terminal", "production-terminal"],
   ["terminal.online", "ONLINE", "EN LÍNEA", "EN LIGNE"],
   ["terminal.placeholder", "Type a command...", "Escribe un comando...", "Tapez une commande..."],
   ["terminal.run", "Run", "Ejecutar", "Exécuter"],
 
-   
+
   ["status.pending", "Pending", "Pendiente", "En attente"],
   ["status.cloning", "Cloning", "Clonando", "Clonage"],
   ["status.building", "Building", "Compilando", "Compilation"],
@@ -672,7 +681,7 @@ const ENTRIES: Entry[] = [
   ["status.cancelled", "Cancelled", "Cancelado", "Annulé"],
   ["status.warning", "Warning", "Advertencia", "Avertissement"],
 
-   
+
   ["pipeline.stage.cloning.name", "Clone", "Clonado", "Clonage"],
   ["pipeline.stage.cloning.step1", "Cloning repository…", "Clonando repositorio…", "Clonage du dépôt…"],
   ["pipeline.stage.cloning.step2", "Checking out the requested commit, if any", "Cambiando al commit solicitado, si se indicó", "Basculement vers le commit demandé, le cas échéant"],
