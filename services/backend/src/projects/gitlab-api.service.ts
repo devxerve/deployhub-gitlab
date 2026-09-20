@@ -21,7 +21,7 @@ interface GitLabCommitResponse {
 @Injectable()
 export class GitLabApiService extends GitApiService {
 
-  protected readonly providerName: "gitlab";
+  readonly providerName = "gitlab" as const;
   constructor(httpService: HttpService) {
     super(httpService);
   }

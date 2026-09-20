@@ -81,6 +81,9 @@ export function ProjectsModule({ t }: { t: Theme }) {
   const [listError, setListError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const getProviderLabel = (provider: "github" | "gitlab") => {
+    return provider === "gitlab" ? "GitLab" : "GitHub";
+  };
   useEffect(() => {
     let cancelled = false;
 
@@ -286,9 +289,38 @@ export function ProjectsModule({ t }: { t: Theme }) {
                 {project.description || tr("projects.descriptionFallback")}
               </p>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 7, color: t.muted, fontSize: 11, marginBottom: 14, minWidth: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  color: t.muted,
+                  fontSize: 11,
+                  marginBottom: 14,
+                  minWidth: 0,
+                }}
+              >
                 <GitBranch size={13} />
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{project.repoUrl.replace("https://", "")}</span>
+
+                <span
+                  style={{
+                    fontWeight: 600,
+                    color: t.text,
+                    flexShrink: 0,
+                  }}
+                >
+                  {getProviderLabel(project.provider)}
+                </span>
+
+                <span
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {project.repoUrl.replace("https://", "")}
+                </span>
               </div>
 
               <div style={{ display: "flex", gap: 8, marginBottom: 13, flexWrap: "wrap" }}>
@@ -341,6 +373,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
         <Modal t={t} title={selected.name} onClose={() => setSelected(null)}>
           {([
             [tr("projects.detail.repository"), selected.repoUrl],
+            [tr("projects.detail.provider"), getProviderLabel(selected.provider)],
             [tr("projects.detail.projectId"), selected.id],
             [tr("projects.detail.status"), tr(FILTER_KEYS[statsByProject[selected.id]?.status ?? "idle"])],
             [tr("projects.detail.totalDeployments"), String(statsByProject[selected.id]?.totalDeploys ?? 0)],
@@ -355,7 +388,7 @@ export function ProjectsModule({ t }: { t: Theme }) {
             <a href={selected.repoUrl} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: "none" }}>
               <Btn t={t} variant="secondary" style={{ width: "100%" }}>
                 <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-                  <ExternalLink size={14} /> {tr("projects.openGithub")}
+                  <ExternalLink size={14} /> {tr("projects.openRepository")}
                 </span>
               </Btn>
             </a>

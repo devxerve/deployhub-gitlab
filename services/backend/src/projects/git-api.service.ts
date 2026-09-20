@@ -8,7 +8,7 @@ import { parseGitRepo, GitProvider} from "./utils/git.utils";
 
 export abstract class GitApiService {
   constructor(protected readonly httpService: HttpService) { }
-  protected abstract readonly providerName: GitProvider;
+  abstract readonly providerName: GitProvider;
 
   abstract listBranches(
     repoUrl: string

@@ -9,6 +9,13 @@ datasource db {
   schemas  = ["backend"]
 }
 
+enum GitProvider {
+  github
+  gitlab
+
+  @@schema("backend")
+}
+
 model Deploy {
   id           String   @id @default(cuid())
   userId       String
@@ -39,6 +46,7 @@ model Project {
   userId        String
   name          String
   repoUrl       String
+  provider      GitProvider
   defaultBranch String   @default("main")
   description   String?
   createdAt     DateTime @default(now())

@@ -96,6 +96,7 @@ export async function getActiveAlerts(): Promise<ActiveAlert[]> {
 export interface Project {
   id: string;
   name: string;
+  provider: "github" | "gitlab";
   repoUrl: string;
   defaultBranch: string;
   description?: string;
